@@ -329,18 +329,18 @@ sub write_service ($$)
     }
 
     print $f $s->{service};
-    print $f $s->{rpc_version} if $s->{rpc_version};
+    print $f "/". $s->{rpc_version} if $s->{rpc_version};
     print $f " ";
 
     print $f $s->{socket_type}. " ";
     print $f $s->{protocol}. " ";
 
     print $f ($s->{wait}? "wait":"nowait");
-    print $f $s->{max} if $s->{max};
+    print $f ".". $s->{max} if $s->{max};
     print $f " ";
 
     print $f $s->{user};
-    print $f $s->{group} if $s->{group};
+    print $f ".". $s->{group} if $s->{group};
     print $f " ";
 
     print $f $s->{server};
@@ -552,6 +552,7 @@ sub write_service ($$)
     }
     if ($s->{rpc_version})
     {
+	$s->{type} ||= ""; # prevent undef
 	$s->{type} .= " RPC" if ($s->{type} !~ /RPC/);
 	write_item $f, $s, "rpc_version";
     }
