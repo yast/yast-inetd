@@ -1024,7 +1024,7 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
     UI::ChangeWidget(`id(`servargs),  `Value, lookup(line, "server_args", ""));
     UI::ChangeWidget(`id(`comment),   `Value, lookup(line, "comment",     ""));
 
-    Wizard::ReplaceAbortButton(`Empty(`id(`abort)));
+    Wizard::HideAbortButton();
 
     // UI Loop
     repeat {
