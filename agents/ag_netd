@@ -6,6 +6,7 @@
 
 use ycp;
 use strict;
+use File::Basename;
 
 my $debug = defined ($ARGV[0]) && $ARGV[0] =~ "^-.*d";
 
@@ -333,6 +334,7 @@ sub parse_service ($)
 	$service =
 	{
 	 "iid" => "$reclineno:$file->{name}",
+	 "script" => basename ($file->{name}),
 
 	 "enabled" => $enabled,
 	 "comment" => $comment,
@@ -416,7 +418,7 @@ sub parse_service ($)
 	y2debug ($file->{name}, $file->{lineno}, "parse");
 
 	chomp;
-	next if /^$/;
+	next if /^\s*$/;
 	$reclineno ||= $file->{lineno};
 
 	if (s/^\s*#//)
@@ -453,6 +455,7 @@ sub parse_service ($)
 		    {
 		     "service" => $1,
 		     "iid" => "$reclineno:$file->{name}",
+		     "script" => basename ($file->{name}),
 		     # default values:
 		     "enabled" => ycp::to_bool (1),
 		     "rpc_version" => "",
@@ -478,7 +481,7 @@ sub parse_service ($)
 		}
 		else
 		{
-		    y2error ("Expecting \"service\" at".
+		    y2error ("Expecting \"service\" at ".
 			     "$file->{name}:$file->{lineno}");
 		}
 	    }
