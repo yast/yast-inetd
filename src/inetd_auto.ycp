@@ -87,7 +87,7 @@
 	    Inetd::Set(settings);
 	    set_contents();
 	}
-    } until (ret == `back || ret == `next || ret ==`key);
+    } until (ret == `back || ret == `next || ret ==`key || ret ==`auto);
 
     return [ret, settings];
 }
