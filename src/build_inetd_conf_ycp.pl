@@ -101,6 +101,7 @@ sub main()
          # Comment-Handling
          my $line = $l;
 	 $line =~ s/"/\\"/g;
+         $line =~ s/^\#/\# /;  # fixes   #swat ... in # swat
          @linc = split( /\s+/, $line );  
 
 	 my $anz = @linc;

@@ -21,7 +21,7 @@ config_DATA = inetd.y2cc
 module_DATA =			\
 	Inetd.ycp
 
-bin_SCRIPTS = 			\
+ybin_SCRIPTS = 			\
 	build_inetd_conf_ycp.pl
 
-EXTRA_DIST = $(bin_SCRIPTS) $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA)
+EXTRA_DIST = $(ybin_SCRIPTS) $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA)
