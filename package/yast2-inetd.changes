@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jun 21 10:34:10 CEST 2004 - mvidner@suse.cz
+
+- Added "testedfiles" to test cases to make it work with the new testsuite.
+- Cleaned up Inetd::Write
+- 2.10.0
+
+-------------------------------------------------------------------
 Fri Apr  2 14:57:52 CEST 2004 - mvidner@suse.cz
 
 - changed license to GPL
