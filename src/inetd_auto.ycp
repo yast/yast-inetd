@@ -63,7 +63,6 @@ else if (func == "Change") {
 //    y2milestone("%1", "Change");
 //    symbol ret = `back;
     Inetd::Import(param);
-    
     ret = PackageAutoDialog();
     if(ret == `back) {
 	return ret;
@@ -72,19 +71,17 @@ else if (func == "Change") {
 //    y2milestone("%1", ret);
 
     ret = InetdAutoSequence();
-    
 //    y2milestone("%1", ret);
 //    if(ret == `next) return Inetd::Export();
 //return $["ahoj":"voli"];
-    
 //    return ret;
 }
 /**
  * Return configuration data
  * return map or list
  */
-else if (func == "Result") {
-//    return $["Result":"Export"];
+else if (func == "Export") {
+//    return $["Export":"Export"];
     ret = Inetd::Export();
 }
 /**
