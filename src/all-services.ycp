@@ -1,0 +1,14 @@
+// A mapping between all available services and rpm packages
+// Generated on Mon Jan 13 16:39:44 CET 2003
+[
+$["package":"xinetd", "service":"chargen", "protocol":"tcp"],
+$["package":"xinetd", "service":"chargen", "protocol":"udp"],
+$["package":"xinetd", "service":"daytime", "protocol":"tcp"],
+$["package":"xinetd", "service":"daytime", "protocol":"udp"],
+$["package":"xinetd", "service":"echo", "protocol":"tcp"],
+$["package":"xinetd", "service":"echo", "protocol":"udp"],
+$["package":"xinetd", "service":"servers", "protocol":"tcp"],
+$["package":"xinetd", "service":"services", "protocol":"tcp"],
+$["package":"xinetd", "service":"time", "protocol":"tcp"],
+$["package":"xinetd", "service":"time", "protocol":"udp"],
+]

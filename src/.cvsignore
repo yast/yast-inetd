@@ -1,2 +1,4 @@
 Makefile
 Makefile.in
+all-services-pkgs
+etc
