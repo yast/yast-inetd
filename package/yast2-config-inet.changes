@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Apr 24 07:16:21 CEST 2001 - jbuch@suse.de
+
+- define -> global define 
+
+-------------------------------------------------------------------
 Tue Apr 17 17:20:41 CEST 2001 - kkaempf@suse.de
 
 - name change to "yast2-config-inet"
