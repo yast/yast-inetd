@@ -146,6 +146,12 @@ global boolean write_only = false;
 global boolean auto_mode = false;
 
 /**
+ * Autoyast now does not initially call Import $[] anymore. But our
+ * design is so broken that we need it and will work hard to achieve it.
+ */
+global boolean autoyast_initialized = false;
+
+/**
  * Data was modified? This function returnes modified variable.
  * @return true if modified
  */
@@ -237,15 +243,6 @@ global integer xinetd_status     = -1;
  * Values are the same as (x)inetd_status.
  */
 global integer netd_status       = -1;
-
-/**
- * Status of inetd module if autoinstallation mode.
- * Used in Summary.
- * This is the state of whole module. This variable is filled by Import().
- * Possible values are <br> `configured     --- imported configuration data are valid
- *                     <br> `not_configured --- configuration data are invalid
- */
-global symbol module_status      = `not_configured;
 
 /**
  * This variable is used for new iid "generator"
@@ -631,13 +628,6 @@ define map ConvertSles8Profile (map settings) ``{
 global define boolean Import (map settings) ``{
     EnsureDefaultConfLoaded ();
 
-    modified  = false;
-
-    if (settings == $[])
-	module_status = `not_configured;
-    else
-	module_status = `configured;
-
     if (haskey (settings, "start_inetd") || haskey (settings, "inetd_services"))
     {
 	settings = ConvertSles8Profile (settings);
@@ -820,7 +810,7 @@ global define string mkeServiceSummary() ``{
  */
 global define string Summary() ``{
     string S = "";
-    if(module_status == `not_configured) {
+    if(netd_conf == []) {
 	/*
 	 * Translators: Summary head, if nothing configured
 	 */
@@ -898,6 +888,13 @@ global define void changeLine(service_t new_line, any line_number) ``{
 global define map AutoPackages() ``{
 	return ($["install": [], "remove": []]);
 
+}
+
+global void DBG (string i) {
+    y2internal ("%1", i);
+    y2milestone ("  netd_conf: %1",   netd_conf);
+    y2milestone (" inetd_conf: %1",  inetd_conf);
+    y2milestone ("xinetd_conf: %1", xinetd_conf);
 }
 
 /* EOF */
