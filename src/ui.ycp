@@ -381,8 +381,9 @@ global define EditOrCreateServiceDlg( string title,
 		 || (UI::QueryWidget(`id(`user),      `Value) == "")
 		 || (UI::QueryWidget(`id(`servargs),  `Value) == ""))
 	    {	
-		UI::MessagePopup(_("Error: One of the fields server, protocol, flags, type, user, server/Args is empty.
-Please enter valid values.") );
+		UI::MessagePopup(_("Error: The server, protocol, flags, type, user, or server/Args field is empty.
+Enter valid values.
+") );
 
 		input_is_ok = false;
 	    }
@@ -435,7 +436,7 @@ global define ConfigureDialog() ``{
 		   `PushButton(`id(`create), _("&Create") ),	     
 		   `PushButton(`id(`delete), _("&Delete") ),	     
 		   `PushButton(`id(`edit),   _("&Edit") ),	     
-		   `PushButton(`id(`switch_activate),   _("&Activate/Deactivate") )
+		   `PushButton(`id(`switch_activate),   _("&Activate or Deactivate") )
 		   )
 	      );
 
@@ -582,7 +583,7 @@ global define ConfigureDialog() ``{
 		 else
 		 {
 		     // No line is selcted:
-		     UI::MessagePopup(_("To activate/deactivate a service, select one in the main dialog") );
+		     UI::MessagePopup(_("To activate or deactivate a service, select it in the main dialog") );
 		 }
 	     }
 

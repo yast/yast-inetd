@@ -24,19 +24,19 @@
     global define ConfigureHelp()``{
 
 	return
-	    _("<p>In the list, see all services preconfigured by SuSE</p>")
+	    _("<p>See all services preconfigured by SuSE in the list.</p>")
 	+
 _("<p>All services marked with \"#\" are <i>inactive</i> (locked).
 All services marked with \"Active!\" are <i>active</i> (unlocked).</p>") +
 
 _("<p>Inactive means these services are preconfigured in the configuration
-file of inetd (/etc/inetd.conf), but they are locked.</p>
+file of inetd (/etc/inetd.conf), but are locked.</p>
 ") +
 _("<p>To lock or unlock a service, click the respective
-entry then press the <b>activate/deactivate</b> button.
+entry then press the <b>activate or deactivate</b> button.
 </p>
 ") +
-_("<p>With the <b>Edit</b> button, change the parameters of a service.
+_("<p>Use the <b>Edit</b> button to change the parameters of a service.
 </p>
 ");
     }
@@ -63,22 +63,22 @@ _("<ul>
 <li>server program arguments
 </ul>")+
 
-_("<p>Here is a short description. For details, see <b>info inetd.conf</b>
+_("<p>This is a short description. For details, see <b>info inetd.conf</b>.
 </p>
 ")+
 
-_("<p>The <b>service name</b> entry is the name of a valid service
+_("<p>Enter a valid service name in <b>service name</b>.
 </p>
 ")+
 
-_("<p>The <b>socket type</b> should be one of stream, dgram, raw, rdm,
+_("<p>The <b>socket type</b> should be stream, dgram, raw, rdm,
 or seqpacket, depending on whether the socket is a stream, datagram,
 raw, reliably delivered message, or sequenced packet socket.
 
 </p>
 ")+
-_("<p>The <b>protocol</b> must be a valid protocol as given in /etc/protocols. 
-Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, or <i>rpc/udp</i>.
+_("<p>The <b>protocol</b> must be a valid protocol as specified in /etc/protocols.
+Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
 </p>
 ")+
 
@@ -93,8 +93,8 @@ the <b>user</b> field. This is useful to make services run with permissions
 less than root.
 </p>")+
 
-_("<p>The <b>server program</b> entry should contain the path name of the program which
-is executed by inetd when a request is found on its socket. 
+_("<p>In <b>server program</b>, enter the path name of the program to
+be executed by inetd when a request reaches its socket. 
 
 </p>
 ")+
@@ -146,12 +146,11 @@ An additional dialog will inform you whether it is safe to do so or not.
      */
     global define string MainDialogHelp () ``{	
 	return
-_("<p>Starting inetd will enable \"others\" to connect
-to network services installed on your server
-(e.g., telnet, finger, ftp). 
-Do you want inetd to be started at boot time?
-</p>
-") +
+_("<p>Starting inetd will allow outside connections
+to network services installed on your server,
+such as telnet, finger, or ftp.
+Should inetd be started at boot?
+</p>\n") +
     // helptext inetd configuration
 _("	
 <p>
