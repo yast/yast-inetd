@@ -574,7 +574,7 @@ global define symbol InetdDialog () ``{
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
-	    Label::BackButton(), Label::NextButton());
+	    Label::BackButton(), Label::FinishButton());
 
     Wizard::ReplaceBackButton(`Empty());
 
