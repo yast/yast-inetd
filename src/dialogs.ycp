@@ -216,7 +216,7 @@ define string CheckInstallable (string id) ``{
     else
     {
 	// ids of NotInstalled table items start with NI
-//	if (Inetd::configured_service != `xinetd || find (id, "NI") != 0)
+	if (find (id, "NI") != 0)
 	    return nil;
     }
     return id;

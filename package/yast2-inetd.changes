@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Feb 25 09:52:35 CET 2005 - mlazar@suse.cz
+
+- fixed Bug 66508 - error in log when configuring uninstalled service
+- 2.11.9
+
+-------------------------------------------------------------------
 Mon Feb 21 17:37:14 CET 2005 - mlazar@suse.cz
 
 - added maintainer keyword to header to default_conf_xinetd.ycp
