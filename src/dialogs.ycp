@@ -94,6 +94,10 @@ global define symbol PackageDialog() ``{
     if((Inetd::inetd_installed != 0) && (Inetd::xinetd_installed != 0)) {
 	UI::OpenDialog(contents);
 	any ret = UI::UserInput();
+	if (ret == `cancel)	// window-close button
+	{
+	    ret = `back;
+	}
 	boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
 	boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
 	UI::CloseDialog();
@@ -194,6 +198,10 @@ global define symbol PackageAutoDialog() ``{
     if(Inetd::netd_service == `none) {
 	UI::OpenDialog(contents);
 	any ret = UI::UserInput();
+	if (ret == `cancel)	// window-close button
+	{
+	    ret = `back;
+	}
 	boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
 	boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
 	UI::CloseDialog();
@@ -268,6 +276,10 @@ global define symbol WhatToConfigureDialog() ``{
     UI::OpenDialog(contents);
 
     any ret = UI::UserInput();
+    if (ret == `cancel)		// window-close button
+    {
+	ret = `back;
+    }
 
     // Check for selected service
     if(UI::QueryWidget(`id(`inetd), `Value) == true) { // inetd
@@ -617,6 +629,10 @@ global define symbol InetdDialog () ``{
 	    UI::SetFocus(`id(`stop));
 
 	ret = UI::UserInput();
+	if (ret == `cancel)	// window-close button
+	{
+	    ret = `abort;
+	}
 
 	if((ret == `editable) || (ret == `stop)) {
 	    boolean new_state = UI::QueryWidget(`id(`editable), `Value);
@@ -834,7 +850,7 @@ global define symbol InetdDialog () ``{
 		to_select    = "";
 	    }
 	}
-	else if(ret == `abort || ret == `cancel || ret == `back) {
+	else if(ret == `abort || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -1005,6 +1021,10 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
     // UI Loop
     repeat {
 	user_choice = UI::UserInput();
+	if (user_choice == `cancel) // window-close button
+	{
+	    user_choice = `back;
+	}
 
 	if (user_choice != `back) {
 
