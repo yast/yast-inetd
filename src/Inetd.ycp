@@ -163,7 +163,7 @@ global integer netd_status       = -1;
 global define boolean Read() ``{
 
     /* Inetd read dialog caption */
-    string caption = _("Initializing inetd configuration");
+    string caption = _("Initializing inetd Configuration");
 
     integer steps = 1;
 
@@ -171,7 +171,7 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New( caption, " ", steps, [
-	    _("Read the configuration"),
+	    _("Read the Configuration"),
 	], [
 	    _("Reading the configuration..."),
 	    _("Finished")
@@ -256,7 +256,7 @@ global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 global define boolean Write() ``{
 
     /* Inetd read dialog caption */
-    string caption = _("Saving inetd configuration");
+    string caption = _("Saving inetd Configuration");
 
     integer steps = 1;
 
@@ -420,7 +420,7 @@ global define boolean Write() ``{
     y2milestone("Writting done\n");
 
     // in future: catch errors
-    if(false) Report::Error (_("Can not write settings!"));
+    if(false) Report::Error (_("Cannot write settings!"));
     sleep(sl);
 
     if(Abort()) return false;
@@ -505,7 +505,7 @@ global define map Export () ``{
  * @return summary of the current configuration
  */
 global define list Summary() ``{
-    return [ _("Configuration summary ..."), [] ];
+    return [ _("Configuration Summary..."), [] ];
 }
 
 /**
