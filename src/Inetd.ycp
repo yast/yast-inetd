@@ -82,9 +82,12 @@ import "Directory";
 // remove this later when module initialization works from other languages
 import "Security";
 
+typedef map<string, any> service_t;
+typedef list<service_t> services_t;
+
 global define void EnsureDefaultConfLoaded ();
-global define list<map> mergeAfterInstall(list<map> system_c, list<map> user_c);
-global define list<map> MergeAyProfile (list<map> target, list<map> changes);
+global define services_t mergeAfterInstall(services_t system_c, services_t user_c);
+global define services_t MergeAyProfile (services_t target, services_t changes);
 
 /**
  * What service is in configuration process?
@@ -95,12 +98,12 @@ global symbol configured_service = `none;
 /**
  * Default configuration for inetd (all services in the distro)
  */
-global map default_conf_inetd = nil;
+global map<string, any> default_conf_inetd = nil;
 
 /**
  * Default configuration for xinetd (all services in the distro)
  */
-global map default_conf_xinetd = nil;
+global map<string, any> default_conf_xinetd = nil;
 
 /**
  * Abort function
@@ -201,25 +204,25 @@ global symbol netd_service       = `none;
  *  ]
  * </pre>
  */
-global list<map> inetd_conf           = [];
+global list<map <string, any> > inetd_conf           = [];
 
 /**
  * This variable holds xinetd configuration.
  * The structure is the same as inetd_conf.
  */
-global list<map> xinetd_conf          = [];
+global list<map <string, any> > xinetd_conf          = [];
 
 /**
  * Holds configuration of selected service (service in configuration process).
  * The name of this service is stored in configured_service.
  * Structure of this variable is the same as inetd_conf or xinetd_conf.
  */
-global list<map> netd_conf            = [];
+global list<map <string, any> > netd_conf            = [];
 
 /**
  * Holds default configuration for currently edited superserver.
  */
-global map default_conf          = $[];
+global map <string, any> default_conf          = $[];
 
 /**
  * Is inetd (or xinetd) running?
@@ -306,14 +309,14 @@ global define boolean Read() ``{
 	return false;
 
     if(netd_service == `both) {
-	inetd_conf  = (list<map>) SCR::Read(.etc.inetd_conf.services);
-	xinetd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+	inetd_conf  = (list<map <string, any> >) SCR::Read(.etc.inetd_conf.services);
+	xinetd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
     }
     else if(netd_service == `inetd) {
-	inetd_conf = (list<map>) SCR::Read(.etc.inetd_conf.services);
+	inetd_conf = (list<map <string, any> >) SCR::Read(.etc.inetd_conf.services);
     }
     else if(netd_service == `xinetd) {
-	xinetd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+	xinetd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
     }
 
     sleep(sl);
@@ -347,8 +350,8 @@ global define boolean Read() ``{
  * @param edited_conf holds old configuration (UI)
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
-global define list<map> MergeEditedWithSystem (list<map> system_conf, list<map> edited_conf) ``{
-    map new_entry = nil;
+global define services_t MergeEditedWithSystem (services_t system_conf, services_t edited_conf) ``{
+    service_t new_entry = nil;
 
     // Take system services as the basis
     // (they include the newly installed ones)
@@ -399,7 +402,7 @@ global define boolean Write() ``{
     // write settings
     if(Abort()) return false;
     if (write_only) {
-	list<map> new_conf = [];
+	services_t new_conf = [];
 	if (configured_service == `inetd) {
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("inetd", "enable");
@@ -411,7 +414,7 @@ global define boolean Write() ``{
 	    SCR::Write(.etc.inetd_conf.services, netd_conf);
 	}
 	else if (configured_service == `xinetd) {
-	    new_conf  = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+	    new_conf  = (services_t) SCR::Read(.etc.xinetd_conf.services);
 	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("xinetd", "enable");
@@ -542,7 +545,7 @@ global define boolean WriteOnly () ``{
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  * @see MergeAyProfile
  */
-global define list<map> mergeAfterInstall(list<map> system_c, list<map> user_c) ``{
+global define services_t mergeAfterInstall(services_t system_c, services_t user_c) ``{
     return MergeAyProfile (system_c, user_c);
 }
 
@@ -552,8 +555,8 @@ global define list<map> mergeAfterInstall(list<map> system_c, list<map> user_c) 
  * @return complete configuration with user changes
  * @see MergeAyProfile
  */
-global define list<map> mergeWithDefaults(list<map> changes) ``{
-    list<map> target = default_conf["netd_conf"]:[];
+global define services_t mergeWithDefaults(services_t changes) ``{
+    services_t target = default_conf["netd_conf"]:[];
     return MergeAyProfile (target, changes);
 }
 
@@ -581,7 +584,7 @@ global define map SafeRemove (map m, list keys) ``{
  * @return merged list of services
  * @see <a href="../autoyast_proto.xhtml">autoyast docs</a>.
  */
-global define list<map> MergeAyProfile (list<map> target, list<map> changes) ``{
+global define services_t MergeAyProfile (services_t target, services_t changes) ``{
     // for each change in the patch list:
     foreach (map<string, any> change_s, changes, ``{
 	integer matches = 0;
@@ -593,8 +596,8 @@ global define list<map> MergeAyProfile (list<map> target, list<map> changes) ``{
 	    /* || find (change_iid, "inst") == 0*/ ) // do nothing if matches is 0 and we add the service
 	{
 	    // apply the change to the target list:
-	    target = maplist(map<string, any> target_s, target, ``{
-		map new_entry = target_s;
+	    target = maplist(service_t target_s, target, ``{
+		service_t new_entry = target_s;
 		if (ServicesMatch (change_s, target_s))
 		{
 		    // yippee, it matches
@@ -606,7 +609,7 @@ global define list<map> MergeAyProfile (list<map> target, list<map> changes) ``{
 		    // AY UI must be avoided.
 		    // And while merging, iid must be also preserved
 		    map to_merge = SafeRemove (change_s, ["server", "iid"]);
-		    new_entry = union (new_entry, to_merge);
+		    new_entry = (service_t) union (new_entry, to_merge);
 		    new_entry = add (new_entry, "changed", true);
 		    // "enabled" is true - if not present
 		    new_entry = add (new_entry, "enabled",
@@ -699,9 +702,9 @@ global define boolean Import (map settings) ``{
  * @param config complete configuration
  * @return Returnse list of changes only
  */
-global define list getChanged(list config) ``{
-    list<map> defaults = [];
-    list changes  = [];
+global define services_t getChanged(services_t config) ``{
+    list<map <string, any> > defaults = [];
+    services_t changes  = [];
     map  def_line = $[];
 
     EnsureDefaultConfLoaded ();
@@ -876,7 +879,7 @@ global define void deleteLine(any line_number) ``{
  * @param new_line new_line contains new entry for global netd_conf configuration
  * @return void
  */
-global define void addLine(map new_line) ``{
+global define void addLine(service_t new_line) ``{
     // add
     new_line  = add(new_line, "changed", true);
     netd_conf = add(netd_conf, new_line);

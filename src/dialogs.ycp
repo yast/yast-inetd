@@ -21,9 +21,12 @@ import "Label";
 include "inetd/helps.ycp";
 include "inetd/routines.ycp";
 
+typedef map<string, any> service_t;
+typedef list<service_t> services_t;
+
 define string CheckInstallable (string id);
 define term IidToTerm (string selected_item);
-define map EditOrCreateServiceDlg(string title, map line);
+define service_t EditOrCreateServiceDlg(string title, service_t line);
 
 /**
  * local users and groups are stored here
@@ -412,9 +415,9 @@ define symbol InstallProvidedPackage(string selected_item) ``{
 	else {
 	    IsInstalledClearCache ();
 	    y2milestone("Rereading xinetd configuration");
-	    list<map> old_conf = Inetd::netd_conf;
+	    services_t old_conf = Inetd::netd_conf;
 	    // Reread configuration!
-	    Inetd::netd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+	    Inetd::netd_conf = (services_t) SCR::Read(.etc.xinetd_conf.services);
 	    Inetd::netd_conf = Inetd::MergeEditedWithSystem(Inetd::netd_conf, old_conf);
 	    /* Translators: The package name is stored in %1 */
 	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
@@ -625,6 +628,7 @@ define symbol InetdDialog () ``{
 	// skip time critical calculations if need_reindex == false (don't call indexTable())
 	boolean need_reindex = false;
 	// skip time critical calculations if need_rebuild == false (don't call CreateTableData())
+	// AARGH unused.
 	boolean need_rebuild = true;
 
 	if((boolean) UI::QueryWidget(`id(`editable), `Value))
@@ -657,11 +661,11 @@ define symbol InetdDialog () ``{
 	// create new entry
 	else if (ret == `create) {
 	    string selected_item   = (string) UI::QueryWidget(`id(`table), `CurrentItem);
-	    map return_val      = $[];
+	    service_t return_val      = $[];
 	    Inetd::last_created = Inetd::last_created + 1; // need uniq
 	    // default parameters for new service
 	    // TODO is "script: mandatory?
-	    map  new_line  = $["enabled":true, "service":"", "max":"",
+	    service_t  new_line  = $["enabled":true, "service":"", "max":"",
 		"socket_type":"stream", "protocol":"tcp", "wait":false, "server_args":"",
 		"user":"root", "group":"", "comment":"",
 		"iid":"new" + Inetd::last_created, "created":true];
@@ -833,10 +837,10 @@ define symbol InetdDialog () ``{
 		}
 		else
 		{
-		    map current_line = (map) select(filter(map<string, any> line, Inetd::netd_conf,
+		    service_t current_line = (service_t) select(filter(service_t line, Inetd::netd_conf,
 			``(line["iid"]:"0" == selected_item)), 0, $[]);
 		    /* Translators: Caption of EditOrCreateServiceDlg() */
-		    map return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
+		    service_t return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
 		    // check for changes
 		    if (return_val != nil) {
 			Inetd::changeLine(return_val, selected_item);
@@ -897,7 +901,7 @@ Internet super-server will be disabled."));
  * @param line line specifies new entry data-template
  * @return map nil on Cancel or new entry (map) for netd_conf on OK:
  */
-define map EditOrCreateServiceDlg(string title, map line) ``{
+define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 
     /* Translators: Special widget for inetd */
     term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
