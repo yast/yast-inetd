@@ -52,3 +52,4 @@ Name[lt]=Tinklo paslaugos (xinetd)
 Name[sl]=Mrežne storitve (xinetd)
 GenericName[sl]=Nastavi Mrežne Storitve (xinetd)
 Name[tr]=Ağ servisleri (xinetd)
+X-KDE-SubstituteUID=true
