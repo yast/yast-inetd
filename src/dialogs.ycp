@@ -216,9 +216,6 @@ global define indexTable() ``{
  */
 global define symbol InetdDialog () ``{
     
-    /* Inetd configure dialog caption */
-    string caption = _("Internet super-server configuration");
-
     /* XXPkg configure1 dialog contents */
     term contents =
 	`VBox(
@@ -231,7 +228,10 @@ global define symbol InetdDialog () ``{
 						_("Type "),
 						`Center(_("Protocol")),
 						_("Flags"),
-						_("User"), _("Server"), _("Server / Args")),
+						_("User"),
+						//_("Group"),
+						_("Server"),
+						_("Server / Args")),
 			   table_data)
 		    ),
 	      `HBox(
@@ -260,7 +260,17 @@ global define symbol InetdDialog () ``{
     else {
 	Inetd::netd_conf = Inetd::xinetd_conf;
     }
-    
+
+    /* Inetd configure dialog caption */
+    string caption = _("Internet super-server configuration");
+    if(Inetd::configured_service == `inetd) {
+	caption = caption + " (inetd)";
+    }
+    else {
+	caption = caption + " (xinetd)";
+    }
+    //string caption = _("Internet super-server configuration") + (Inetd::configured_service == `inetd) ? " (inetd)" : " (xinetd)";
+
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
 	    BackButtonLabel(), NextButtonLabel());
@@ -314,7 +324,7 @@ global define symbol InetdDialog () ``{
 	    any return_val = [];
 	    last_created   = last_created + 1; // need uniq
 	    map  new_line  = $["enabled":true, "service":"", "max":"",
-		"socket_type":"stream", "protocol":"tcp", "wait":true, "server_args":"",
+		"socket_type":"stream", "protocol":"tcp", "wait":false, "server_args":"",
 		"user":"root", "group":"", "comment":"",
 		"iid":"new" + last_created, "created":true];
 	    // execute dialog
@@ -412,7 +422,7 @@ global define symbol InetdDialog () ``{
 		to_select    = "";
 	    }
 	}
-	else if(ret == `abort || ret == `cancel) {
+	else if(ret == `abort || ret == `cancel || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -455,10 +465,12 @@ Internet super-server will be disabled."));
 
 global define EditOrCreateServiceDlg(string title, map line) ``{
 
-    term inetd_specific  = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
-    term xinetd_specific = `Empty();                                     // xinetd specific widgets
-    boolean input_failed = false;                                        // for all required widgets filled check
-    symbol  user_choice  = `back;                                        // for UserInput() loop
+    term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
+    term    xinetd_specific  = `Empty();                                     // xinetd specific widgets
+    boolean input_failed     = false;                                        // for all required widgets filled check
+    symbol  user_choice      = `back;                                        // for UserInput() loop
+    term    inetd_protocols  = `opt(`hstretch, `editable);
+    term    xinetd_protocols = `opt(`hstretch);
 
     // Check for local user list is created...
     if (local_users == nil) {
@@ -491,18 +503,18 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	    `HBox(
 		// service socket type
 		`HWeight(3,
-		    `ComboBox(`id(`type), `opt(`hstretch), _("&Type"),
+		    `ComboBox(`id(`type), `opt(`hstretch), _("T&ype"),
 			["stream", "dgram", "raw", "rdm", "seqpacket"])
 		),
 		// for protocol option - ediatble ComboBox
 		`HWeight(3,
-		    `ComboBox(`id(`protocol), `opt(`hstretch), _("&Protocol"),
-			["tcp", "udp", "rpc/tcp", "rpc/udp"])
+		    `ComboBox(`id(`protocol), (Inetd::configured_service == `inetd) ? inetd_protocols : xinetd_protocols,
+			_("&Protocol"), ["tcp", "udp", "rpc/tcp", "rpc/udp"])
 		),
 		// for flags (wait/nowait) - noneditable ComboBox
 		`HWeight(3,
 		    `ComboBox(`id(`flags), `opt(`hstretch), _("&Flags"),
-			["wait", "nowait"])
+			["nowait", "wait"])
 		),
 		// check for used service - if inetd, add max TextEntry
 		`HWeight((Inetd::configured_service == `inetd) ? 1 : 0,
@@ -517,7 +529,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		),
 		// Server arguments
 		`TextEntry(`id(`server), _("S&erver")),
-		`TextEntry(`id(`servargs), _("S&erver / Args")),
+		`TextEntry(`id(`servargs), _("Server argumen&ts")),
 		// Comment above the service line in inetd.conf
 		`MultiLineEdit(`id(`comment), _("Co&mment"))
 	    )
@@ -559,7 +571,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
     UI::ChangeWidget(`id(`user),      `Value, lookup(line, "user",        ""));
     string group = lookup(line, "group", "");
     if (group == "") {
-        UI::ChangeWidget(`id(`group), `Value, _("--NONE--"));
+        UI::ChangeWidget(`id(`group), `Value, _("--default--"));
     }
     else {
         UI::ChangeWidget(`id(`group), `Value, group);
@@ -594,6 +606,11 @@ Please enter valid values.
 "));
 	    input_failed = true;
 	    }
+	    else if ((UI::QueryWidget(`id(`server), `Value) != "internal") &&
+		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
+		UI::MessagePopup(_("The user --default-- is reserved only for server internal."));
+		input_failed = true;
+	    }
 	    // YES (input is OK) --- so save settings!
 	    else {
 		input_failed = false;
@@ -615,7 +632,11 @@ Please enter valid values.
 		line = add(line, "protocol",    UI::QueryWidget(`id(`protocol),    `Value));
 		line = add(line, "flags",       UI::QueryWidget(`id(`flags),       `Value));
 		line = add(line, "user",        UI::QueryWidget(`id(`user),        `Value));
-		line = add(line, "group",       UI::QueryWidget(`id(`group),       `Value));
+		group = UI::QueryWidget(`id(`group), `Value);
+		if (group == _("--default--")) {
+		    group = "";
+		}
+		line = add(line, "group",       group);
 		line = add(line, "server",      UI::QueryWidget(`id(`server),      `Value));
 		line = add(line, "server_args", UI::QueryWidget(`id(`servargs),    `Value));
 		line = add(line, "comment",     UI::QueryWidget(`id(`comment),     `Value));

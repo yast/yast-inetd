@@ -111,6 +111,13 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		if (rpc_ver != "") {
 		    service = service + "/" + rpc_ver;
 		}
+		string user_group = lookup(line, "group", "");
+		if (user_group == "") {
+		    user_group = lookup(line, "user", "");
+		}
+		else {
+		    user_group = lookup(line, "user", "") + "." + user_group;
+		}
 		// create line for table structure
 		term entry = `item(`id(lookup(line, "iid", "0")),
 		    status_text,
@@ -118,7 +125,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		    lookup(line, "socket_type", ""),
 		    lookup(line, "protocol", ""),
 		    wait_text,
-		    lookup(line, "user", ""),
+		    user_group,
 		    lookup(line, "server", ""),
 		    lookup(line, "server_args", ""));
 		// add line to table structure
@@ -138,6 +145,9 @@ global define CreateLocalUsersList() ``{
     list(map) passwd   = SCR::Read(.etc.passwd);
     list(string) users = maplist(map entry, passwd, ``(entry["username"]:""));
     users              = sort(filter(string u, users, ``(u != "+")));
+    if(Inetd::configured_service == `xinetd) {
+	users = add(users, _("--default--"));
+    }
     return users;
 }
 
@@ -151,7 +161,7 @@ global define CreateLocalGroupsList() ``{
     list(string) groups = maplist(map entry, group, ``(entry["groupname"]:""));
     groups              = sort(filter(string u, groups, ``(u != "+")));
     // group entry in inetd_conf can be also empty
-    groups              = add(groups, _("--NONE--"));
+    groups              = add(groups, _("--default--"));
     return groups;
 }
 

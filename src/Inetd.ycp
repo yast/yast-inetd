@@ -12,6 +12,50 @@
 
 {
 
+    /**
+     * New SCR interface:
+     * A service map looks like this:
+     * $[
+     *   "service": string	// * different from equally named field above
+     *   "rpc_version": string
+     *   "socket_type": string
+     *   "protocol": string
+     *   "wait": boolean
+     *   "max": integer		// inetd only
+     *   "user": string		// *
+     *   "group": string
+     *   "server": string
+     *   "server_args": string
+     *   "comment": string	// possibly multiline, without #
+     ** bookkeeping fields:
+     *   "iid": string		// internal id, use as table `id
+     *      Iid is necessary because there may be multiple variants
+     *      of the same service.
+     *   "changed": boolean	// when writing, unchanged services are ignored
+     *                          //   new services (created) must be set as changed
+     *                          //   see changeLine() and addLine() for more details
+     *   "deleted": boolean	// when deleting, this is set to TRUE and changed
+     *                          // must be set too (see deleteLine())
+     * ]
+     * When handling existing maps, take care to preserve any other fields
+     * that may be present!
+     *
+     * path netd = .whatever.inetd or .whatever.xinetd;
+     *
+     * SCR::Read (netd + .services) -> list of service maps
+     *   There should be a warning if inetd and xinetd are both installed
+//     * SCR::Read (netd + .services + service_name) -> service map (or empty)
+//     * SCR::Read (netd + .services + service_name + field) -> (any) field
+     * SCR::Write (netd, nil) -> boolean
+     *   Commits changes performed by other writes (see below) to disk
+     * // Hm, maybe we should check that vaid fields are passed?
+     * SCR::Write (netd + .services, list of service maps) -> true
+     * SCR::Write (netd + .services + service_name, service map) -> true
+     * SCR::Write (netd + .services + service_name + field, any) -> true
+     *   This last one should be useful for autoyast - changing just
+     *   the "enabled" field.
+     */
+
 module "Inetd";
 textdomain "inetd";
 
@@ -331,6 +375,7 @@ global define deleteLine(any line_number) ``{
     map current_line = select(filter(`line, netd_conf,
 	``(lookup(line, "iid", "0") == line_number)), 0, $[]);
     // set "deleted" flag to true
+    current_line = add(current_line, "changed", true);
     current_line = add(current_line, "deleted", true);
     netd_conf    = maplist(`line, netd_conf, ``{
 	if (lookup(line, "iid", "0") == line_number) {
@@ -349,6 +394,7 @@ global define deleteLine(any line_number) ``{
  */
 global define void addLine(map new_line) ``{
     // add
+    new_line  = add(new_line, "changed", true);
     netd_conf = add(netd_conf, new_line);
     return;
 }
