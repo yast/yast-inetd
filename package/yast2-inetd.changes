@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jul 04 21:31:21 CEST 2002 - arvin@suse.de
+
+- moved non binary files to /usr/share/YaST2
+
+-------------------------------------------------------------------
 Mon Jul  1 18:29:44 CEST 2002 - msvec@suse.cz
 
 - added minimal testsuite
@@ -36,17 +41,17 @@ Mon Jan 21 15:39:22 EST 2002 - nashif@suse.de
 -------------------------------------------------------------------
 Thu Sep  6 18:47:43 CEST 2001 - jbuch@suse.de
 
-- Read -> SCR::Read(..) 
+- Read -> SCR::Read(..)
 
 -------------------------------------------------------------------
 Mon Apr 30 10:21:51 CEST 2001 - jbuch@suse.de
 
-- fixed bug with return nil to list | void 
+- fixed bug with return nil to list | void
 
 -------------------------------------------------------------------
 Tue Apr 24 07:16:21 CEST 2001 - jbuch@suse.de
 
-- define -> global define 
+- define -> global define
 
 -------------------------------------------------------------------
 Tue Apr 17 17:20:41 CEST 2001 - kkaempf@suse.de
@@ -57,7 +62,7 @@ Tue Apr 17 17:20:41 CEST 2001 - kkaempf@suse.de
 -------------------------------------------------------------------
 Thu Jan 18 15:09:51 CET 2001 - mike@suse.de
 
-- fix: now translates properly 
+- fix: now translates properly
 
 -------------------------------------------------------------------
 Wed Dec 13 18:56:38 CET 2000 - mike@suse.de
@@ -93,12 +98,12 @@ Thu Jun 29 14:28:39 CEST 2000 - kkaempf@suse.de
 -------------------------------------------------------------------
 Thu Jun 29 17:43:37 MEST 2000 - gs@suse.de
 
-- fixes in comments 
+- fixes in comments
 
 -------------------------------------------------------------------
 Tue Jun 27 13:57:47 MEST 2000 - gs@suse.de
 
-- bugfix writing /etc/rc.config 
+- bugfix writing /etc/rc.config
 
 -------------------------------------------------------------------
 Mon Jun 26 11:51:42 CEST 2000 - kkaempf@suse.de
