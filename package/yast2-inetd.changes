@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Tue Jul 22 14:31:46 CEST 2003 - mvidner@suse.cz
+
+- Autoinstalation:
+ * improved service matching
+ * export only changed fields from the UI
+- Can enable/disable all services at once (phadraba).
+- When a package is installed, the used button does not have
+  to be pressed again.
+- If we have an includedir (for xinetd we do), create new services
+  in their own files there (#26999).
+- Using Label and Popup.
+- 2.8.1
+
+-------------------------------------------------------------------
 Fri Mar 14 17:42:15 CET 2003 - mvidner@suse.de
 
 - Autoinstallation fixes (phadraba, #25317).
