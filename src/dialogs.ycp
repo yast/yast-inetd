@@ -232,7 +232,7 @@ global define symbol WhatToConfigureDialog() ``{
 	    `HBox(
 		`HSpacing(2),
 		/* Traslators: If both services (Inetd and Xinetd) are installed, this messagebox is displayed.
-		               This is text above radio-buttons... */
+			       This is text above radio-buttons... */
 		`Label(_("Select the service to configure.")),
 		`HSpacing(2)
 	    ),
@@ -345,7 +345,7 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	// Add requested package into list...
 	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
-	                The package name is stored in %1. This is MessagePopup. */
+			The package name is stored in %1. This is MessagePopup. */
 	if(UI::ContinueCancelPopup(sformat(_("Package %1 will be installed during the write process."),
 	    select(package_name, 0, "")))) {
 	    string package = select(package_name, 0, "");
@@ -479,7 +479,7 @@ global define symbol InetdDialog () ``{
 	    `Left(`Label(_("Currently Available Services"))),
 	    `HBox(
 		/* Translators: Table Header: The "Ch" label is short of "Changed". Please, make the
-		                translation as short as possible. */
+				translation as short as possible. */
 		`Table(`id(`table), `opt(`notify),
 		//`opt(`keepSorting),
 		`header(`Center(_("Ch")), `Center(_("Status")),
@@ -595,7 +595,7 @@ global define symbol InetdDialog () ``{
 	    UI::SetFocus(`id(`stop));
 	ret = UI::UserInput();
 
-        if((ret == `editable) || (ret == `stop)) {
+	if((ret == `editable) || (ret == `stop)) {
 	    boolean new_state = UI::QueryWidget(`id(`editable), `Value);
 	    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
 	    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
@@ -834,13 +834,13 @@ global define symbol InetdDialog () ``{
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-        else if(ret == `next || ret == `back) {
-            break;
-        }
-        else {
-            y2error("unexpected retcode: %1", ret);
-            continue;
-        }
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
 	/*if(!((ret == `next) || (ret == `back) || (ret == `abort))) {
 	    Inetd::modified = true;
 	}*/
@@ -967,7 +967,7 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
      * inetd has special widget max - we must check it
      */
     if (Inetd::configured_service == `inetd) {
-        any max_value = lookup(line, "max", "0");
+	any max_value = lookup(line, "max", "0");
 	if (max_value == "") {
 	    max_value = "0";
 	}
@@ -986,11 +986,11 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
     UI::ChangeWidget(`id(`user),      `Value, lookup(line, "user",        ""));
     string group = lookup(line, "group", "");
     if (group == "") {
-        /* Translators: Please BE CAREFUL! This text is often used in code! This Translation must be the same. */
+	/* Translators: Please BE CAREFUL! This text is often used in code! This Translation must be the same. */
 	UI::ChangeWidget(`id(`group), `Value, _("--default--"));
     }
     else {
-        UI::ChangeWidget(`id(`group), `Value, group);
+	UI::ChangeWidget(`id(`group), `Value, group);
     }
     UI::ChangeWidget(`id(`server),    `Value, lookup(line, "server",      ""));
     UI::ChangeWidget(`id(`servargs),  `Value, lookup(line, "server_args", ""));
