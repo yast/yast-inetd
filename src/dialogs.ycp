@@ -100,6 +100,11 @@ define symbol PackageDialog() ``{
     // at least one package is required. If no found, user is prompt for install it (them)
     if((Inetd::inetd_installed != 0) && (Inetd::xinetd_installed != 0)) {
 	UI::OpenDialog(contents);
+
+	// Inetd is dropped and there's no time to clean this up
+	// So simply disable its checkbox
+	UI::ChangeWidget (`id (`inetd), `Enabled, false);
+
 	any ret = UI::UserInput();
 	if (ret == `cancel)	// window-close button
 	{
