@@ -1,0 +1,34 @@
+//
+{
+    integer old = WFM::SCRGetDefault ();
+
+    integer h = WFM::SCROpen ("ag_netd", false);
+    if (h < 1)
+    {
+	return;
+    }
+    WFM::SCRSetDefault (h);
+    SCR::Netd (WFM::Args (0));
+
+    list s = SCR::Read (.services);
+    map ns = $[
+	// no iid
+	"changed": true,
+	"comment": " Dys is mai servis",
+	"enabled": true,
+	"service": "finger",
+	"socket_type": "stream",
+	"protocol": "tcp",
+	"wait": false,
+	"user": "nobody",
+	"server": "/usr/sbin/tcpd",
+	"server_args": "in.fingerd -w",
+	];
+    s = add (s, ns);
+    boolean r = SCR::Write (.services, s);
+
+    WFM::SCRClose (h);
+    WFM::SCRSetDefault (old);
+
+    return r;
+}
