@@ -93,9 +93,9 @@ else if (func == "Read") {
     // #45463, `both did not (ever?) work
     Inetd::netd_service = `xinetd;
     Inetd::configured_service = `xinetd;
-    Progress::off();
+    boolean po = Progress::set(false);
     ret = Inetd::Read();
-    Progress::on();
+    Progress::set(po);
     Inetd::xinetd_status = Service::Status ("xinetd");
     Inetd::netd_status = Inetd::xinetd_status;
     Inetd::netd_conf = Inetd::xinetd_conf;
@@ -138,10 +138,10 @@ else if (func == "SetModified") {
  */
 else if (func == "Write") {
 	import "Progress";
-	Progress::off();
+	boolean po = Progress::set(false);
     Inetd::write_only = true;
     ret = Inetd::Write();
-	Progress::on();
+	Progress::set(po);
 }
 /**
  * Import settings

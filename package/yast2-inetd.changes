@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 25 09:17:46 CET 2005 - mlazar@suse.cz
+
+- Progress::on()/off() replaced with Progress::set() 
+
+-------------------------------------------------------------------
 Mon Jan 24 10:40:58 CET 2005 - mlazar@suse.cz
 
 - added minimal command line mode support
