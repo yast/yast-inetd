@@ -17,116 +17,129 @@ textdomain "inetd";
 global map HELPS = $[
 
     /* installed packages (inetd and xinetd) */
-    "packages" : _("<p><b><big>Searching for installed packages</big></b><br>
-Please wait for a while...<br>
-If no packages will be found, you will be asked for installing them.</p>") +
+    "packages" : _("<p><b><big>Searching for Installed Packages</big></b><br>
+Please wait...<br>
+If the needed packages are not found, you will be asked to install them.</p>
+") +
 
-    _("<p><b><big>Aborting the initialization:</big></b><br>
-Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
+    _("<p><b><big>Aborting the Initialization Process:</big></b><br>
+Safely abort the configuration utility by pressing <b>Abort</b> now.</p>
+"),
 
     /* Same as above - but in autoinstallation mode */
-    "packages-auto" : _("<p><b><big>Service packages</big></b><br>
-Please select, which service packages you want to install.</p>"),
+    "packages-auto" : _("<p><b><big>Service Packages</big></b><br>
+Select which service packages to install.</p>
+"),
 
     /* Used by PackageDialog() and AutoPackageDialog(). This is text above checkboxes in Dialog. */
-    "install_query" : _("inetd or xinetd packages was not found.
-Do you want to install them now?"),
+    "install_query" : _("inetd or xinetd packages were not found.
+Install them now?
+"),
 
     /* ErrorPopup */
-    "no_install" : _("No packages was selected. Configuration aborted."),
+    "no_install" : _("No packages selected. Configuration aborted."),
 
     /* Not used! */
-    "install_packages" : _("Selected packages will be installed"),
+    "install_packages" : _("Selected packages will be installed."),
 
     /* Read dialog help 1/2 */
-    "read" : _("<p><b><big>Initializing inetd configuration</big></b><br>
-Please wait for a while...<br></p>") +
+    "read" : _("<p><b><big>Initializing inetd Configuration</big></b><br>
+Please wait...<br></p>
+") +
 
     /* Read dialog help 2/2 */
-    _("<p><b><big>Aborting the initialization:</big></b><br>
-Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
+    _("<p><b><big>Aborting the Initialization Process:</big></b><br>
+Safely abort the configuration utility by pressing <b>Abort</b> now.</p>
+"),
 
     /* HelpText for WhatToConfigureDialog() */
     "service_selection" : _("<p><b><big>Both services (inetd and xinetd) are installed.</big></b>
-Please select, which service you want to configure...<br></p>") +
+Select which service to configure.<br></p>
+") +
 
-    _("<p><b><big>Aborting the initialization:</big></b><br>
-Safely abort the configuration utility by pressing the <b>Cancel</b> now.</p>"),
+    _("<p><b><big>Aborting the Initialization Process:</big></b><br>
+Safely abort the configuration utility by pressing <b>Cancel</b> now.</p>
+"),
 
     /* Write dialog help 1/2 */
-    "write" : _("<p><b><big>Saving inetd configuration</big></b><br>
-Please wait for a while...<br></p>") +
+    "write" : _("<p><b><big>Saving inetd Configuration</big></b><br>
+Please wait...<br></p>
+") +
 
     /* Write dialog help 2/2 */
-_("<p><b><big>Aborting the saving:</big></b><br>
-You can abort the saving by pressing the <b>Abort</b> button.
-An additional dialog will inform you whether it is safe to do so or not.
-</p>"),
+_("<p><b><big>Aborting the Save Process:</big></b><br>
+Abort saving by pressing <b>Abort</b>.
+An additional dialog will inform you whether it is safe to do so.
+</p>
+"),
 
     /* Summary dialog help 1/3 */
-    "summary" : _("<p><b><big>Inetd configuration</big></b><br>
-Configure inetd here.<br></p>") +
+    "summary" : _("<p><b><big>Inetd Configuration</big></b><br>
+Configure inetd here.<br></p>
+") +
 
     /* Summary dialog help 2/3 */
-    _("<p><b><big>Adding a inetd:</big></b><br>
+    _("<p><b><big>Adding an inetd:</big></b><br>
 Choose inetd from the list of the detected inetds.
 If your inetd was not autodetected, use <b>Other (not detected)</b>.
-Then press <b>Configure</b>.</p>") +
+Then press <b>Configure</b>.</p>
+") +
 
     /* Summary dialog help 3/3 */
-    _("<p><b><big>Editing or deleting:</big></b><br>
+    _("<p><b><big>Editing or Deleting:</big></b><br>
 If you press <b>Edit</b>, an additional dialog in which to change
-the configuration opens.</p>"),
+the configuration opens.</p>
+"),
 
     /* Ovreview dialog help 1/3 */
-    "overview" : _("<p><b><big>Inetd configuration overview</big></b><br>
-Obtain an overview about installed inetds. Additionally
-edit their configuration.<br></p>") +
+    "overview" : _("<p><b><big>Inetd Configuration Overview</big></b><br>
+Obtain an overview of installed inetds. Additionally,
+edit their configuration.<br></p>
+") +
 
     /* Ovreview dialog help 2/3 */
-_("<p><b><big>Adding a inetd:</big></b><br>
-Press <b>Add</b> to configure a inetd.</p>") +
+_("<p><b><big>Adding an inetd:</big></b><br>
+Press <b>Add</b> to configure an inetd.</p>
+") +
 
     /* Ovreview dialog help 3/3 */
-_("<p><b><big>Editing or deleting:</big></b><br>
-Choose a inetd to change or remove.
-Then press <b>Edit</b> or <b>Delete</b> as desired.</p>"),
+_("<p><b><big>Editing or Deleting:</big></b><br>
+Choose an inetd to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+"),
 
     /* Configure1 dialog help 1/2 */
-    "c1" : _("<p><b><big>Network services configuration</big></b><br>
-Click the <b>Enable</b> to enable network services managed by super-server
-(inetd or xinetd - it depends on what you have installed) configuration.
-If you want to stop super-server, please click the <b>Disable</b>.</p>") +
+    "c1" : _("<p><b><big>Network Services Configuration</big></b><br>
+Click <b>Enable</b> to enable network services managed by a super-server
+(inetd or xinetd -- it depends on what you have installed) configuration.
+To stop the super-server, click <b>Disable</b>.</p>
+") +
 "<p><br></p>" +
-    _("<p><b><big>Configuration service status:</big></b><br>
-All services marked with <b>X</b> in column <b>Ch</b> was edited
-and will be changed in system configuration.</p>") +
+    _("<p><b><big>Configuration Service Status:</big></b><br>
+All services marked with <b>X</b> in column <b>Ch</b> were edited
+and will be changed in system configuration.</p>
+") +
     _("<p><b><big>Services status:</big></b><br>
 All services marked with <b>---</b> are inactive (locked),
 All services marked with <b>On</b> are active (unlocked).
 All services marked with <b>NI</b> are not installed and can't be configured.</p>") +
-    _("<p><b><big>Changing services status:</big></b><br>
-Select the service you want to enable (disable) and press <b>Toggle status (On/Off)</b>.</p>") +
-    _("<p><b><big>Editting services:</big></b><br>
-Select the service you want to edit and press <b>Edit</b>.</p>") +
-    _("<p><b><big>Deleting services:</big></b><br>
-Select the service you want to delete and press <b>Delete</b>.</p>") +
-_("<p><b><big>Adding new entry:</big></b>
-Click <b>Create</b> and fill the form.</p>") +
+    _("<p><b><big>Changing Service Status:</big></b><br>
+Select the service to enable or disable and press <b>Toggle status (On or Off)</b>.</p>
+") +
+    _("<p><b><big>Editing Services:</big></b><br>
+Select the service to edit and press <b>Edit</b>.</p>
+") +
+    _("<p><b><big>Deleting Services:</big></b><br>
+Select the service to delete and press <b>Delete</b>.</p>
+") +
+_("<p><b><big>Adding a New Entry:</big></b>
+Click <b>Create</b> and complete the form.</p>
+") +
 "<p><br></p>" +
-    _("<p><b><big>Aborting the configuration:</big></b>
-You can abort the configuration by pressing the <b>Abort</b> button.
-If you do so, all your changes will be lost and original configuration will be untouched...</p>"),
-
-    /* Configure2 dialog help 1/2 */
-    "c2" : _("<p><b><big>Configure, part two</big></b><br>
-Please press the <b>Next</b> button.
-<br></p>") +
-
-    /* Configure2 dialog help 2/2 */
-_("<p><b><big>Selecting something:</big></b><br>
-It is not possible, you must code it first :-)
-</p>"),
+    _("<p><b><big>Aborting Configuration:</big></b>
+Abort the configuration by pressing the <b>Abort</b> button.
+If you do so, all your changes will be lost and the original configuration will remain untouched.</p>
+"),
 
 ];
 
@@ -137,7 +150,7 @@ It is not possible, you must code it first :-)
     global define string EditCreateHelp () ``{
 
 	return _("
-<p>To create a valid entry (service) for super-server,
+<p>To create a valid entry (service) for the super-server,
 enter</p>
 ")+
 
@@ -157,7 +170,7 @@ _("<p>This is a short description. For details, see <b>info inetd.conf</b>
 or <b>info xinetd.conf</b>.</p>
 ")+
 
-_("<p>Enter a valid service name into <b>service</b> field.
+_("<p>Enter a valid service name into the <b>service</b> field.
 </p>
 ")+
 
@@ -179,15 +192,17 @@ seconds. This option is inetd specific.
 </p>")+
 
 _("<p>The server will be run with the permissions of the user selected in
-the <b>user</b> combobox. This is useful to make services run with permissions
+<b>User</b>. This is useful to make services run with permissions
 less than root.
-</p>")+
+</p>
+")+
 
-_("<p>In <b>server</b>, enter the path name of the program to
-be executed by super-server when a request reaches its socket.
-Parameters for this program you can specify in <b>Server arguments</b>.
+_("<p>In <b>Server</b>, enter the path name of the program to
+be executed by the super-server when a request reaches its socket.
+Parameters for this program can be specified in <b>Server arguments</b>.
 
-</p>");
+</p>
+");
 
     }
 
