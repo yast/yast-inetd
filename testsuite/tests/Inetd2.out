@@ -13,13 +13,13 @@ Dump	  inetd is installed and stopped
 Dump	
 Write	.etc.inetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
 Read	.init.scripts.exists "inetd" true
+Execute	.target.bash "/etc/init.d/inetd start" $["TERM":"raw"] 0
+Read	.init.scripts.exists "inetd" true
 Read	.init.scripts.exists "inetd" true
 Read	.init.scripts.exists "inetd" true
 Read	.init.scripts.runlevel "inetd" $["inetd":$["start":[], "stop":[]], "xinetd":$["start":[], "stop":[]]]
 Read	.init.scripts.comment "inetd" $["inetd":$[], "xinetd":$[]]
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/inetd" $["exit":0, "stderr":"", "stdout":""]
-Read	.init.scripts.exists "inetd" true
-Execute	.target.bash "/etc/init.d/inetd start" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	  ---
