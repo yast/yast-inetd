@@ -164,14 +164,15 @@ global define boolean struct_match_sparse (map a, map b, list fields) ``{
 }
 
 /**
- * Determine, if service package is installed. This function requires full configuration
+ * Determine, if service package is installed.
+ * This function requires full configuration
  * (like Inetd::netd_conf) and standalone map with service.
  * Linear complexity (in the working config)
  * @param netd_conf Full configuration
- * @param which service to determine, a member of default_conf
+ * @param s a @ref service
  * @return match found
  */
-global define symbol isServiceMatchPresent (list netd_conf, map s) ``{
+global define boolean isServiceMatchPresent (list netd_conf, map s) ``{
     map match = find (map i, netd_conf, ``(
 			  struct_match (i, s, ["script", "service",
 					       "protocol", "server"])
