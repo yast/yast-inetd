@@ -48,7 +48,6 @@ y2debug("param=%1", param);
  * return string
  */
 if(func == "Summary") {
-    Inetd::Import(param);
     ret = Inetd::Summary();
     //ret = select(Inetd::Summary(), 0 , "");
 }
