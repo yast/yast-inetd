@@ -22,6 +22,8 @@ Packager:     @MAINTAINER@
 Summary:      YaST2 Modules for installation
 Version:      @VERSION@
 Source0:      @RPMNAME@-@VERSION@.tar.gz
+Provides:     y2c_inet
+Obsoletes:    y2c_inet y2c_inet
 
 %description
 -
