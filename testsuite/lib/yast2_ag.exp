@@ -29,7 +29,7 @@ proc diff_it { kind exp act base_name} {
       puts "\nThe diff follows...\n"
       puts [exec sh -c "diff -u $exp $act || true"]
       puts ""
-      puts "Wrong kind for $base_name"
+      puts "Wrong $kind for $base_name"
       puts "See the diff above."
     }
     return -1
@@ -85,7 +85,7 @@ proc run_case { run ag } {
 
   # check return code - ???
   if {$result != ""} {
-    warning "Compilation of $run results in '$result'"
+    warning "Running $run outputs '$result'"
     return -1
   }
 
