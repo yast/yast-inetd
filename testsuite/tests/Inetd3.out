@@ -1,88 +1,28 @@
 Dump	
-Dump	xinetd is stopped and will be started
-Dump	
-Dump	
 Dump	Read  --- read all services
 Dump	
-Read	.etc.inetd_conf.services nil
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
+Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	Write --- write xinetd
-Dump	  xinetd is installed and stopped
-Dump	
-Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Read	.init.scripts.exists "xinetd" true
-Execute	.target.bash "/etc/init.d/xinetd start" $["TERM":"raw"] 0
-Read	.init.scripts.exists "xinetd" true
-Read	.init.scripts.exists "xinetd" true
-Read	.init.scripts.exists "xinetd" true
-Read	.init.scripts.runlevel "xinetd" $["inetd":$["start":[], "stop":[]], "xinetd":$["start":[], "stop":[]]]
-Read	.init.scripts.comment "xinetd" $["inetd":$[], "xinetd":$[]]
-Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/xinetd" $["exit":0, "stderr":"", "stdout":""]
-Return	true
-Dump	
-Dump	  ---
-Dump	
-Dump	
-Dump	xinetd is running and will be reconfigured
-Dump	
-Dump	
-Dump	Read  --- read all services
-Dump	
-Read	.etc.inetd_conf.services nil
-Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Return	true
-Dump	
-Dump	Write --- write xinetd
-Dump	  xinetd is installed and running
-Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
 Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	  ---
 Dump	
-Dump	
-Dump	xinetd is stopped and will be unchanged
-Dump	
-Dump	
-Dump	Read  --- read all services
-Dump	
-Read	.etc.inetd_conf.services nil
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
+Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	Write --- write xinetd
-Dump	  xinetd is installed and stopped
-Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Return	true
-Dump	
-Dump	  ---
-Dump	
-Dump	
-Dump	xinetd is running and will be stopped
-Dump	
-Dump	
-Dump	Read  --- read all services
-Dump	
-Read	.etc.inetd_conf.services nil
-Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Return	true
-Dump	
-Dump	Write --- write xinetd
-Dump	  xinetd is installed and running
-Dump	
-Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Read	.init.scripts.exists "xinetd" true
-Execute	.target.bash "/etc/init.d/xinetd stop" $["TERM":"raw"] 0
-Read	.init.scripts.exists "xinetd" true
-Read	.init.scripts.exists "xinetd" true
-Read	.init.scripts.exists "xinetd" true
-Read	.init.scripts.runlevel "xinetd" $["inetd":$["start":[], "stop":[]], "xinetd":$["start":["3", "5"], "stop":["3", "5"]]]
-Read	.init.scripts.comment "xinetd" $["inetd":$[], "xinetd":$[]]
-Execute	.target.bash_output "/sbin/insserv -r /etc/init.d/xinetd" $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	  ---

@@ -54,11 +54,9 @@ map READ = $[
 	"scripts" : $[
 	    "exists" : true,
             "runlevel": $[
-                "inetd":  service_on,
                 "xinetd": service_on,
             ],
             "comment": $[
-                "inetd":  $[],
                 "xinetd": $[],
             ],
 	]
@@ -67,18 +65,11 @@ map READ = $[
         "installed": true,
     ],
     "etc" : $[
-	"inetd_conf" : $[
-	    "services" : [ s ],
-	    ],
         "xinetd_conf": $[
             "services":  [ s ],
             ],
 	],
 ];
-
-map READ2 = $[];
-READ2 = (map) eval(READ);
-READ2["init", "scripts", "runlevel", "inetd"]  = service_off;
 
 map READ3 = $[];
 READ3 = (map) eval(READ);
@@ -106,87 +97,17 @@ map EXECUTE = $[
 DUMP("\nAll services are running and inetd will be used\n");
 DUMP("\nRead  --- read all services\n");
 
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
 TEST(``(Inetd::Read()),  [READ, WRITE, EXECUTE], nil);
 
 // filled by InetdDialog()
-Inetd::inetd_status     = 0;
-Inetd::xinetd_status    = 0;
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 0;
+Inetd::netd_status     = 0;
 
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::inetd_conf;
-Inetd::configured_service = `inetd;
-Inetd::netd_status        = Inetd::inetd_status;
-
-DUMP("\nWrite --- write inetd");
-DUMP("  inetd and xinetd are installed and running\n");
+DUMP("\nWrite --- write services");
 TEST(``(Inetd::Write()), [READ, WRITE, EXECUTE], nil);
 
 DUMP("\n  ---\n");
 
-/*
- * All services are installed (inetd, xinetd)
- * All services are running
- * User will save and use xinetd
- */
-DUMP("\nAll services are running and xinetd will be used\n");
-DUMP("\nRead  --- read all services\n");
 
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
-TEST(``(Inetd::Read()),  [READ, WRITE, EXECUTE], nil);
-
-// filled by InetdDialog()
-Inetd::inetd_status     = 0;
-Inetd::xinetd_status    = 0;
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::xinetd_conf;
-Inetd::configured_service = `xinetd;
-Inetd::netd_status        = Inetd::xinetd_status;
-
-DUMP("\nWrite --- write xinetd");
-DUMP("  inetd and xinetd are installed and running\n");
-TEST(``(Inetd::Write()), [READ, WRITE, EXECUTE], nil);
-
-DUMP("\n  ---\n");
-
-/*
- * All services are installed (inetd, xinetd)
- * xinetd is running
- * User will save and use inetd
- */
-DUMP("\nxinetd is running and inetd will be used\n");
-DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
-TEST(``(Inetd::Read()),  [READ2, WRITE, EXECUTE], nil);
-
-// filled by InetdDialog()
-Inetd::inetd_status     = 3; // unused
-Inetd::xinetd_status    = 0;
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::inetd_conf;
-Inetd::configured_service = `inetd;
-Inetd::netd_status        = 0; // start this (inetd) service
-
-DUMP("\nWrite --- write inetd");
-DUMP("  inetd and xinetd are installed and only xinetd is running\n");
-TEST(``(Inetd::Write()), [READ2, WRITE, EXECUTE], nil);
-
-DUMP("\n  ---\n");
 
 /*
  * All services are installed (inetd, xinetd)
@@ -196,21 +117,10 @@ DUMP("\n  ---\n");
 DUMP("\ninetd is running and xinetd will be used\n");
 DUMP("\nRead  --- read all services\n");
 
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
 TEST(``(Inetd::Read()),  [READ3, WRITE, EXECUTE], nil);
 
 // filled by InetdDialog()
-Inetd::inetd_status     = 0;
-Inetd::xinetd_status    = 3; // unused
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::xinetd_conf;
-Inetd::configured_service = `xinetd;
-Inetd::netd_status        = 0; // start this (xinetd) service
+Inetd::netd_status     = 3;
 
 DUMP("\nWrite --- write xinetd");
 DUMP("  inetd and xinetd are installed and only inetd is running\n");
