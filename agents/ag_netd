@@ -6,43 +6,146 @@
 
 use ycp;
 use strict;
-use Errno qw(ENOENT);
 
 my $debug = defined ($ARGV[0]) && $ARGV[0] eq "-d";
 print STDERR "DEBUG\n" if $debug;
 
 my @services;
+# used for a warning about unsupported options
+my $message = "";
 
-my $filename;
+# makes a hash (keyed by file names) of hashes (keyed by line numbers)
+# of changed services
+sub get_changed (@)
+{
+    my %ch = ();
+    foreach my $s (@_)
+    {
+	next if (!$s->{changed});
+	$s->{iid} =~ m:(\d+)(\/.*):;
+	my ($line, $file) = ($1, $2);
+	$ch{$file}->{$line} = $s;
+    }
+    return %ch;
+}
 
+package ycp;
 sub to_bool ($)
 {
     my $b = shift;
     return $b? \ "true" : \ "false";
 }
 
-sub parse_file ()
-{
-    @services = ();
-    my $debugmax = 0;
+
+package linefile;
+# a handle, a name and line number
 
-    if (!open (FILE, $filename))
+sub new ($$)
+{
+    my $class = shift;
+    my ($name, $mode) = @_;
+    my $f = { "name" => $name,
+	      "lineno" => 0,
+	      "fh" => new IO::File ($name, $mode) };
+    return bless ($f, $class);
+}
+
+
+package netd;
+# base of inetd and xinetd
+use ycp;
+
+sub parse_file ($)
+{
+    my $class = shift;
+    print STDERR "$class\n" if $debug;
+    my $filename = shift;
+
+    use Errno qw(ENOENT);
+
+    my $file = new linefile ($filename, "r");
+    if (! $file->{fh})
     {
-	return 1 if ($! == ENOENT); # ok if it is not there
-	y2error ("$filename: $!");
+#	return 1 if ($! == ENOENT); # ok if it is not there
+	y2error ("$file->{name}: $!");
 	return 0;
     }
 
-    my $lineno = 0;
-    my $comment = "";
-    while (<FILE>)
+    while (1)
     {
-	++$lineno;
+	my $service = $class->parse_service ($file);
+	last if !defined ($service);
+	if ($service->{is_defaults})
+	{
+	    if ($service->{enabled} || $service->{disabled})
+	    {
+		# TODO rework, must be translated!
+		$message = "Enabling and disabling services\n"
+		    . "in the \"defaults\" section is ignored.";
+	    }
+	}
+	else
+	{
+	    push (@services, $service);
+	}
+	print STDERR "tick\n" if $debug;
+    }
+
+    $file->{fh}->close;
+    return 1;
+}
+
+sub include_dir ($)
+{
+    my $class = shift;
+    print STDERR "$class\n" if $debug;
+    my $dirname = shift;
+    use IO::Dir;
+    my $dir = new IO::Dir ($dirname);
+    my @files;
+    if (defined $dir)
+    {
+	while (defined ($_ = $dir->read ()))
+	{
+	    push (@files, $_) unless m/^\./ || m/~$/;
+	}
+	$dir->close ();
+    }
+
+    foreach (sort @files)
+    {
+	$class->parse_file ("$dirname/$_");
+    }
+}
+
+
+package inetd;
+@inetd::ISA = qw(netd);
+use IO;
+use ycp;
+
+# parses the next service, returns it or undef on EOF
+# does not attempt to read the next service!
+sub parse_service ($)
+{
+    my $class = shift;
+    print STDERR "$class\n" if $debug;
+
+    my $file = shift;
+
+    my $service = undef;
+    my $comment = "";
+    my $reclineno = 0; # line at which a record (including comment) starts
+    while (defined ($_ = $file->{fh}->getline))
+    {
+	++$file->{lineno};
 	chomp;
+	next if /^$/;
+	$reclineno ||= $file->{lineno};
+
 	# Try parsing also commented out lines
 	my $enabled = 1;
 	# TODO
-	# empty lines?
 	# spaces before #
 
 	if (s/^#//)
@@ -72,7 +175,7 @@ sub parse_file ()
 	    next;
 	}
 	# the second variable of these pairs can be undef
-	my ($service, $rpc_version) = split (/\//, $service_ver);
+	my ($service_name, $rpc_version) = split (/\//, $service_ver);
 	$rpc_version ||= "";
 	my ($wait, $max) = split (/\./, $wait_max);
 	$max ||= 0;
@@ -80,39 +183,238 @@ sub parse_file ()
 	$group ||= "";
 
 	# convert to booleans
-	$enabled = to_bool ($enabled);
-	$wait = to_bool ($wait eq "wait");
+	$enabled = ycp::to_bool ($enabled);
+	$wait = ycp::to_bool ($wait eq "wait");
 
-	push (@services, {
-			  "iid" => "$lineno$filename",
-			  "enabled" => $enabled,
-			  "comment" => $comment,
-			  "service" => $service,
-			  "rpc_version" => $rpc_version,
-			  "socket_type" => $socket_type,
-			  "protocol" => $protocol,
-			  "wait" => $wait,
-			  "max" => $max,
-			  "user" => $user,
-			  "group" => $group,
-			  "server" => $server,
-			  "server_args" => join (" ", @server_args),
-			 });
-	$comment = "";
-	# TODO
-	# ...
-#	last if ($debug && $debugmax++ > 9);
+	$service =
+	{
+	 "iid" => "$reclineno$file->{name}",
+
+	 "enabled" => $enabled,
+	 "comment" => $comment,
+	 "service" => $service_name,
+	 "rpc_version" => $rpc_version,
+	 "socket_type" => $socket_type,
+	 "protocol" => $protocol,
+	 "wait" => $wait,
+	 "max" => $max,
+	 "user" => $user,
+	 "group" => $group,
+	 "server" => $server,
+	 "server_args" => join (" ", @server_args),
+	};
+	last;
     }
-
-    close (FILE);
-    return 1;
+    return $service;
 }
 
 sub write_file ()
 {
-    die "TODO";
+    my $class = shift;
+
+    # TODO
+
+    my %changed_services = get_changed (@services);
+    while (my ($filename, $lines) = each %changed_services)
+    {
+	# TODO guard against changed files
+	my $ofilename = "$filename.tmp";
+	my $if = new linefile ($filename, "r");
+	my $OF = new IO::File (">$ofilename");
+
+	# copy the file, replacing services at specified lines by
+	# changed ones
+	my @linenos = sort keys %{$lines};
+
+
+	# Be careful here not to read the line that starts the changed service
+	# because then we would have to "unget" it in both implementations
+	# of parse_service.
+	# Therefore we don't use the traditional "while(<>) {...}" loop.
+	# $lineno is still the line number of the contents of $_
+	$if->{lineno} = 0;
+	do
+	{
+	    if (defined ($linenos[0]) && $if->{lineno}+1 == $linenos[0])
+	    {
+		# got there
+		my $service = $lines->{shift @linenos};
+		# this writes the new data,
+		# "replace" copies the unknown data
+		$class->write_service ($OF, $service); #TODO if not deleted
+		$class->parse_service ($if); #discard the old data
+		# ...
+	    }
+	    else
+	    {
+		print $OF $_ unless $if->{lineno} == 0;
+	    }
+	    ++$if->{lineno};
+	}
+	while (defined ($_ = $if->{fh}->getline))
+    }
+    # TODO mv $ofilename $filename
+    return 1;
 }
 
+
+package xinetd;
+@xinetd::ISA = qw(netd);
+use ycp;
+
+sub parse_service ($)
+{
+    my $class = shift;
+    print STDERR "$class\n" if $debug;
+
+    my $file = shift;
+    my $service = undef;
+    my $comment = "";
+    my $reclineno = 0; # line at which a record (including comment) starts
+    my $state = "init"; # "brace", "inside"
+    my $in_defaults = 0;
+    my $unparsed = "";
+    while (defined ($_ = $file->{fh}->getline))
+    {
+	++$file->{lineno};
+	chomp;
+	next if /^$/;
+	$reclineno ||= $file->{lineno};
+
+	# TODO separate these commented-out attributes
+	# so that they don't show up in the normal comment
+	if (s/^\s*#//)
+	{
+	    $comment .= "$_\n";
+	}
+	else
+	{
+	    if ($state eq "init")
+	    {
+		if (/^\s*include\s+(\S+)/)
+		{
+		    $class->parse_file ($1);
+		}
+		elsif (/^\s*includedir\s+(\S+)/)
+		{
+		    $class->include_dir ($1);
+		}
+		elsif (/^\s*service\s+(\S+)/)
+		{
+		    $service =
+		    {
+		     "service" => $1,
+		     "iid" => "$reclineno$file->{name}",
+		     # default values:
+		     "enabled" => ycp::to_bool (1),
+		     "rpc_version" => "",
+		     "socket_type" => "MISSING", # mandatory
+		     "protocol" => "",
+		     "wait" => ycp::to_bool (0), # mandatory
+		     "user" => "",
+		     "group" => "",
+		     "server" => "",
+		     "server_args" => "",
+		    };
+		    $state = "brace";
+		    $in_defaults = 0;
+		}
+		elsif (/^\s*defaults\s*$/)
+		{
+		    $service =
+		    {
+		     "is_defaults" => 1,
+		    };
+		    $state = "brace";
+		    $in_defaults = 1;
+		}
+		else
+		{
+		    y2error ("Expecting \"service\" at".
+			     "$file->{name}:$file->{lineno}");
+		}
+	    }
+	    elsif ($state eq "brace")
+	    {
+		if (/^\s*\{\s*$/)
+		{
+		    $state = "inside";
+		}
+		else
+		{
+		    y2error ("An opening brace ({) should follow a ".
+			     "\"service $service->{service}\" line. Seen $_.");
+		    # continue.
+		}
+	    }
+	    elsif ($state eq "inside")
+	    {
+		if (/^\s*\}\s*$/)
+		{
+		    # wrap up
+		    $service->{comment} = $comment;
+		    $service->{unparsed} = $unparsed;
+		    last;
+		}
+		elsif (m{^\s*(\S+)\s*=\s*(.*?)\s*$})
+		{
+		    my ($attribute, $value) = ($1, $2);
+		    if ($in_defaults)
+		    {
+			if ($attribute =~ m{enabled|disabled})
+			{
+			    $service->{$attribute} .= "$value ";
+			}
+			else
+			{
+			    $unparsed .= "$_\n";
+			}
+		    }
+		    else
+		    {
+			if ($attribute eq "disable")
+			{
+			    $service->{enabled} = ycp::to_bool($value eq "no");
+			}
+			elsif ($attribute =~ m{rpc_version|
+				        socket_type|
+				        protocol|
+				        wait| # bool
+				        user|
+				        group|
+				        sever|
+				        server_args
+				       }x)
+			{
+			    if ($attribute eq "wait")
+			    {
+				$value = ycp::to_bool ($value eq "yes");
+			    }
+			    $service->{$attribute} = $value;
+			}
+			else
+			{
+			    $unparsed .= "$_\n";
+			}
+		    }
+		}
+		else
+		{
+		    $unparsed .= "$_\n";
+		}
+	    }
+	    else
+	    {
+		y2internal ("Unknown state $state.");
+		$state = "inside"; # recover from the error
+	    }
+	}
+    }
+    return $service;
+}
+
+
+package main;
 #
 # MAIN cycle
 #
@@ -126,18 +428,21 @@ ycp::Return (undef);
 print "\n";
 
 my ($symbol, $fn, undef) = ycp::ParseTerm ($_);
-if ($symbol ne "Netd")
+my $netd;
+if ($symbol =~ "Netd|Inetd|Xinetd")
+{
+    $netd = ($symbol eq "Xinetd")? "xinetd": "inetd";
+    $fn ||= "/etc/$netd.conf";
+}
+else
 {
     y2error ("The first command must be the configuration.(Seen '$_')");
     exit;
 }
-else
-{
-    $filename = $fn || "/etc/inetd.conf";
-}
 
-# if reading fails, defaulting to no exports
-parse_file ();
+# if reading fails, defaulting to no services
+@services = ();
+$netd->parse_file ($fn);
 
 while ( <STDIN> )
 {
@@ -147,7 +452,7 @@ while ( <STDIN> )
     {
 	if ($path eq ".")
 	{
-	    ycp::Return (["services"]);
+	    ycp::Return (["message", "services"]);
 	}
 	elsif ($path eq ".services")
 	{
@@ -166,14 +471,14 @@ while ( <STDIN> )
 	if ($path eq ".services" && ref ($argument) eq "ARRAY")
 	{
 	    @services = @{$argument};
-	    $result = write_file ();
+	    $result = $netd->write_file ();
 	}
 	else
 	{
 	    y2error ("Wrong path $path or argument: ", ref ($argument));
 	    $result = 0;
 	}
-	ycp::Return (to_bool ($result));
+	ycp::Return (ycp::to_bool ($result));
     }
 
     elsif ($command eq "Read")
@@ -181,6 +486,11 @@ while ( <STDIN> )
 	if ($path eq ".services")
 	{
 	    ycp::Return (\@services);
+	}
+	elsif ($path eq ".message")
+	{
+	    ycp::Return ($message);
+	    $message = "";
 	}
 	else
 	{
