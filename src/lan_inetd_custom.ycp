@@ -1092,6 +1092,10 @@ on the button edit you can change parameters of this service
 		_debug ("WHOLLLLLLEb", ret );
 	    }
 
+	    if ( ret == `back )
+	    {
+		 UI(`ChangeWidget(`id(`next), `Label,  _("&Next") ) );
+	    }
 
 	    if ( ret != `back )
 	    {
