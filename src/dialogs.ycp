@@ -15,8 +15,10 @@ import "Inetd";
 
 import "Require";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+//include "ui/common_popups.ycp";
+import "Popup";
+//include "ui/common_messages.ycp";
+import "Label";
 
 include "inetd/helps.ycp";
 include "inetd/routines.ycp";
@@ -73,8 +75,8 @@ global define symbol PackageDialog() ``{
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),
-		`PushButton(`id(`back), CancelButtonLabel())
+		`PushButton(`id(`next), `opt(`default), Label::OKButton()),
+		`PushButton(`id(`back), Label::CancelButton())
 		//`HSpacing(2)
 	    ),
 	    `VSpacing(0.5)
@@ -178,8 +180,8 @@ global define symbol PackageAutoDialog() ``{
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),
-		`PushButton(`id(`back), CancelButtonLabel())
+		`PushButton(`id(`next), `opt(`default), Label::OKButton()),
+		`PushButton(`id(`back), Label::CancelButton())
 		//`HSpacing(2)
 	    ),
 	    `VSpacing(0.5)
@@ -249,8 +251,8 @@ global define symbol WhatToConfigureDialog() ``{
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),
-		`PushButton(`id(`back), CancelButtonLabel())
+		`PushButton(`id(`next), `opt(`default), Label::OKButton()),
+		`PushButton(`id(`back), Label::CancelButton())
 	    ),
 	    `VSpacing(0.5)
 	);
@@ -480,7 +482,9 @@ global define symbol InetdDialog () ``{
 	    `HBox(
 		/* Translators: Table Header: The "Ch" label is short of "Changed". Please, make the
 		                translation as short as possible. */
-		`Table(`id(`table), `opt(`keepSorting), `header(`Center(_("Ch")), `Center(_("Status")),
+		`Table(`id(`table), `opt(`notify),
+		//`opt(`keepSorting),
+		`header(`Center(_("Ch")), `Center(_("Status")),
 		    _("Service"), _("Type "), `Center(_("Protocol")), _("Flags"),
 		    _("User"), _("Server"), _("Server / Args")), table_data)
 	    ),
@@ -550,7 +554,7 @@ global define symbol InetdDialog () ``{
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     Wizard::ReplaceBackButton(`Empty());
 
@@ -576,6 +580,7 @@ global define symbol InetdDialog () ``{
 
 //    // Generate default configuration
 //    SCR::Write(.target.ycp, "/default_conf.ycp", Inetd::xinetd_conf);
+
     // main loop
     while(true) {
 
@@ -950,8 +955,8 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
 				title,
 				contents,
 				EditCreateHelp(),
-				CancelButtonLabel(),
-				AcceptButtonLabel()
+				Label::CancelButton(),
+				Label::AcceptButton()
 				);
 
     Wizard::SetScreenShotName("inetd-6-servicedetails");

@@ -13,8 +13,11 @@ textdomain "inetd";
 
 import "Wizard";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+//include "ui/common_popups.ycp";
+import "Popup";
+//include "ui/common_messages.ycp";
+import "Label";
+
 include "wizard/sequencer.ycp";
 
 include "inetd/complex.ycp";
@@ -59,7 +62,7 @@ global define symbol InetdSequence() ``{
     Wizard::CreateDialog();
     Wizard::SetScreenShotName("inetd-1-start");
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     any ret = WizardSequencer(aliases, sequence);
 
@@ -79,7 +82,7 @@ global define symbol InetdAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     Inetd::xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
     any ret = InetdDialog ();
