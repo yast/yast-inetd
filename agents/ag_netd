@@ -7,27 +7,43 @@
 use ycp;
 use strict;
 
-my $debug = defined ($ARGV[0]) && $ARGV[0] eq "-d";
-print STDERR "DEBUG\n" if $debug;
+my $debug = defined ($ARGV[0]) && $ARGV[0] =~ "^-.*d";
+#use Exporter;
+#@::ISA     = qw(Exporter);
+#@::EXPORT  = qw(DEBUG);
+
+sub DEBUG
+{
+    print STDERR @_ if $debug;
+}
+#print STDERR "DEBUG\n" if $debug;
+DEBUG "DEBUG\n";
+
+# Testsuite hack:
+# Automake invokes dejagnu with an absolute srcdir :(
+# This will replace the current directory in file names by "./"
+my $strip = defined ($ARGV[0]) && $ARGV[0] =~ "^-.*s";
+my $pwd;
+if ($strip)
+{
+    DEBUG "STRIP\n";
+    # must use symlinks like make does
+    # pwd alone calls /bin/pwd, we want the bash builtin
+    $pwd = `bash -c pwd -L`;
+    chomp $pwd;
+    DEBUG "PWD: '$pwd'\n";
+}
+sub strip_pwd ($)
+{
+    DEBUG "STRIP0: $_[0]\n";
+    $_[0] =~ s{^$pwd}{./}o if $strip;
+    DEBUG "STRIP1: $_[0]\n";
+    return $_[0];
+}
 
 my @services;
 # used for a warning about unsupported options
 my $message = "";
-
-# makes a hash (keyed by file names) of hashes (keyed by line numbers)
-# of changed services
-sub get_changed (@)
-{
-    my %ch = ();
-    foreach my $s (@_)
-    {
-	next if (!$s->{changed});
-	$s->{iid} =~ m:(\d+)(\/.*):;
-	my ($line, $file) = ($1, $2);
-	$ch{$file}->{$line} = $s;
-    }
-    return %ch;
-}
 
 package ycp;
 sub to_bool ($)
@@ -55,11 +71,26 @@ package netd;
 # base of inetd and xinetd
 use ycp;
 
+# makes a hash (keyed by file names) of hashes (keyed by line numbers)
+# of changed services
+sub get_changed (@)
+{
+    my %ch = ();
+    foreach my $s (@_)
+    {
+	next if (!$s->{changed});
+	$s->{iid} =~ m/(\d+):(.*)/;
+	my ($line, $file) = ($1, $2);
+	$ch{$file}->{$line} = $s;
+    }
+    return %ch;
+}
+
 sub parse_file ($)
 {
     my $class = shift;
-    print STDERR "$class\n" if $debug;
-    my $filename = shift;
+    ::DEBUG ("$class\n");
+    my $filename = ::strip_pwd (shift);
 
     use Errno qw(ENOENT);
 
@@ -88,7 +119,7 @@ sub parse_file ($)
 	{
 	    push (@services, $service);
 	}
-	print STDERR "tick\n" if $debug;
+#	::DEBUG ("tick\n");
     }
 
     $file->{fh}->close;
@@ -98,7 +129,7 @@ sub parse_file ($)
 sub include_dir ($)
 {
     my $class = shift;
-    print STDERR "$class\n" if $debug;
+    ::DEBUG ("$class\n");
     my $dirname = shift;
     use IO::Dir;
     my $dir = new IO::Dir ($dirname);
@@ -118,6 +149,56 @@ sub include_dir ($)
     }
 }
 
+sub write_file ()
+{
+    my $class = shift;
+
+    # TODO
+
+    my %changed_services = get_changed (@services);
+    while (my ($filename, $lines) = each %changed_services)
+    {
+	# TODO guard against changed files
+	my $ofilename = "$filename.tmp";
+	my $if = new linefile ($filename, "r");
+	my $OF = new IO::File (">$ofilename");
+
+	# copy the file, replacing services at specified lines by
+	# changed ones
+	my @linenos = sort keys %{$lines};
+
+
+	# Be careful here not to read the line that starts the changed service
+	# because then we would have to "unget" it in both implementations
+	# of parse_service.
+	# Therefore we don't use the traditional "while(<>) {...}" loop.
+	# $lineno is still the line number of the contents of $_
+	$if->{lineno} = 0;
+	do
+	{
+	    if (defined ($linenos[0]) && $if->{lineno}+1 == $linenos[0])
+	    {
+		# got there
+		my $service = $lines->{shift @linenos};
+		# this writes the new data,
+		# "replace" copies the unknown data
+		$class->write_service ($OF, $service)
+		    unless $service->{deleted};
+		$class->parse_service ($if); #discard the old data
+		# ...
+	    }
+	    else
+	    {
+		print $OF $_ unless $if->{lineno} == 0;
+	    }
+	    ++$if->{lineno};
+	}
+	while (defined ($_ = $if->{fh}->getline))
+    }
+    # TODO mv $ofilename $filename
+    return 1;
+}
+
 
 package inetd;
 @inetd::ISA = qw(netd);
@@ -129,7 +210,7 @@ use ycp;
 sub parse_service ($)
 {
     my $class = shift;
-    print STDERR "$class\n" if $debug;
+    ::DEBUG ("$class\n");
 
     my $file = shift;
 
@@ -178,7 +259,7 @@ sub parse_service ($)
 	my ($service_name, $rpc_version) = split (/\//, $service_ver);
 	$rpc_version ||= "";
 	my ($wait, $max) = split (/\./, $wait_max);
-	$max ||= 0;
+	$max ||= "";
 	my ($user, $group) = split (/[.:]/, $user_group);
 	$group ||= "";
 
@@ -188,7 +269,7 @@ sub parse_service ($)
 
 	$service =
 	{
-	 "iid" => "$reclineno$file->{name}",
+	 "iid" => "$reclineno:$file->{name}",
 
 	 "enabled" => $enabled,
 	 "comment" => $comment,
@@ -208,53 +289,42 @@ sub parse_service ($)
     return $service;
 }
 
-sub write_file ()
+sub write_service ($$)
 {
     my $class = shift;
+    ::DEBUG ("$class\n");
 
-    # TODO
+    my $f = shift;
+    my $s = shift;
 
-    my %changed_services = get_changed (@services);
-    while (my ($filename, $lines) = each %changed_services)
+    foreach (split (/\n/, $s->{comment}))
     {
-	# TODO guard against changed files
-	my $ofilename = "$filename.tmp";
-	my $if = new linefile ($filename, "r");
-	my $OF = new IO::File (">$ofilename");
-
-	# copy the file, replacing services at specified lines by
-	# changed ones
-	my @linenos = sort keys %{$lines};
-
-
-	# Be careful here not to read the line that starts the changed service
-	# because then we would have to "unget" it in both implementations
-	# of parse_service.
-	# Therefore we don't use the traditional "while(<>) {...}" loop.
-	# $lineno is still the line number of the contents of $_
-	$if->{lineno} = 0;
-	do
-	{
-	    if (defined ($linenos[0]) && $if->{lineno}+1 == $linenos[0])
-	    {
-		# got there
-		my $service = $lines->{shift @linenos};
-		# this writes the new data,
-		# "replace" copies the unknown data
-		$class->write_service ($OF, $service); #TODO if not deleted
-		$class->parse_service ($if); #discard the old data
-		# ...
-	    }
-	    else
-	    {
-		print $OF $_ unless $if->{lineno} == 0;
-	    }
-	    ++$if->{lineno};
-	}
-	while (defined ($_ = $if->{fh}->getline))
+	print $f "#$_\n";
     }
-    # TODO mv $ofilename $filename
-    return 1;
+
+    if (! $s->{enabled})
+    {
+	print $f "# ";
+    }
+
+    print $f $s->{service};
+    print $f $s->{rpc_version} if $s->{rpc_version};
+    print $f " ";
+
+    print $f $s->{socket_type}. " ";
+    print $f $s->{protocol}. " ";
+
+    print $f ($s->{wait}? "wait":"nowait");
+    print $f $s->{max} if $s->{max};
+    print $f " ";
+
+    print $f $s->{user};
+    print $f $s->{group} if $s->{group};
+    print $f " ";
+
+    print $f $s->{server};
+    print $f " ". $s->{server_args} if $s->{server_args};
+    print $f "\n";
 }
 
 
@@ -265,7 +335,7 @@ use ycp;
 sub parse_service ($)
 {
     my $class = shift;
-    print STDERR "$class\n" if $debug;
+    ::DEBUG ("$class\n");
 
     my $file = shift;
     my $service = undef;
@@ -304,7 +374,7 @@ sub parse_service ($)
 		    $service =
 		    {
 		     "service" => $1,
-		     "iid" => "$reclineno$file->{name}",
+		     "iid" => "$reclineno:$file->{name}",
 		     # default values:
 		     "enabled" => ycp::to_bool (1),
 		     "rpc_version" => "",
@@ -377,13 +447,13 @@ sub parse_service ($)
 			    $service->{enabled} = ycp::to_bool($value eq "no");
 			}
 			elsif ($attribute =~ m{rpc_version|
-				        socket_type|
-				        protocol|
-				        wait| # bool
-				        user|
-				        group|
-				        sever|
-				        server_args
+					socket_type|
+					protocol|
+					wait| # bool
+					user|
+					group|
+					sever|
+					server_args
 				       }x)
 			{
 			    if ($attribute eq "wait")
@@ -411,6 +481,45 @@ sub parse_service ($)
 	}
     }
     return $service;
+}
+
+sub write_service ($$)
+{
+    my $class = shift;
+    ::DEBUG ("$class\n");
+
+    my $f = shift;
+    my $s = shift;
+
+    foreach (split (/\n/, $s->{comment}))
+    {
+	print $f "#$_\n";
+    }
+
+    print $f "service $s->{service}\n";
+    print $f "{\n";
+
+    if (! $s->{enabled})
+    {
+	print $f "\tdisabled = yes\n";
+    }
+    if ($s->{rpc_version})
+    {
+	$s->{type} .= " RPC" if ($s->{type} !~ /RPC/);
+	print $f "\trpc_version = $s->{rpc_version}\n"
+    }
+    print $f "\tsocket_type = $s->{socket_type}\n";
+    print $f "\tprotocol = $s->{protocol}\n" if $s->{protocol};
+    print $f "\twait = ". ($s->{wait}? "yes":"no") ."\n";
+
+    print $f "\tuser = $s->{user}\n" if $s->{user};
+    print $f "\tgroup = $s->{group}\n" if $s->{group};
+    print $f "\tserver = $s->{server}\n" if $s->{server};
+    print $f "\tserver_args = $s->{server_args}\n" if $s->{server_args};
+
+    print $f "\ttype = $s->{type}\n" if $s->{type};
+    print $f $s->{unparsed};
+    print $f "}\n";
 }
 
 
