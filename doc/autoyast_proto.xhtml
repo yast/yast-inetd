@@ -6,7 +6,7 @@
 <!-- $Id$ -->
 <meta name="generator"
 content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
-<title>(x)inetd module in Autoyast in SuSE Linux 8.2</title>
+<title>(x)inetd module in Autoyast in SuSE Linux 9.0</title>
 
 <style type="text/css">
 /*<![CDATA[*/
@@ -19,14 +19,14 @@ content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
 </style>
 </head>
 <body>
-<h1>(x)inetd module in Autoyast in SuSE Linux 8.2</h1>
+<h1>(x)inetd module in Autoyast in SuSE Linux 9.0</h1>
 
 <p>Martin Vidner &lt;mvidner@suse.cz&gt; and
 Petr Hadraba &lt;phadraba@suse.cz&gt;.</p>
 
 <p>This document describes the format of the inetd/xinetd part of the Autoyast
 profile. It focuses on creating the profile without using the GUI Configuration
-Management System and recommends usage to avoid known bugs.</p>
+Management System.</p>
 
 <h2>Source structures (XML) description</h2>
 
@@ -41,14 +41,17 @@ Management System and recommends usage to avoid known bugs.</p>
     <netd_status config:type="integer">0</netd_status>
     <netd_conf config:type="list">
       <listentry>
-	<iid>inst</iid>
+	<script>imap</script>
+	<service>pop3</service>
 	<enabled config:type="boolean">true</enabled>
-	<service>tftp</service>
-	<protocol>udp</protocol>
-	<server>/usr/sbin/in.tftpd</server>
       </listentry>
-      <listentry>...</listentry>
+      <listentry>
+	<server>in.ftpd</server>
+	<server_args>-A</server_args>
+	<enabled config:type="boolean">true</enabled>
+      </listentry>
       ...
+      <listentry>...</listentry>
     </netd_conf>
   </inetd>
   ...
@@ -450,6 +453,28 @@ vsftpd, that's a bug.)
 <h4>Adding a service</h4>
 
 <p>Works like <a href="#add_srv">adding a service for xinetd</a>.</p>
+
+<h3>Compatibility with previous versions</h3>
+
+<h4>SL 8.2</h4>
+
+<h4>SLES 8, SL 8.1</h4>
+
+<p>Sorry, not compatible, bug 28067.</p>
+<p>For YaST2 developers, when we add the compatibility: Inetd only, extremely
+simple:</p>
+<pre>$[
+  "start_inetd": true,			// if false, inetd.conf not modified
+  "inetd_services": [
+    $[
+      "service_name": "foo",
+      "service_status": "enable",	// or "disable", string! 
+    ],
+    //...
+  ],
+]
+</pre>
+
 </body>
 </html>
 
