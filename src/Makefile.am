@@ -7,8 +7,7 @@ yncludedir = @yncludedir@/inetd
 client_DATA =			\
 	inetd.ycp		\
 	inetd_auto.ycp	        \
-	inetd_proposal.ycp	\
-	inetd_write.ycp
+	inetd_proposal.ycp
 
 ydata_DATA =                     \
 	all-services.ycp

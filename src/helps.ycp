@@ -99,7 +99,7 @@ and will be changed in system configuration.</p>") +
 All services marked with <b>---</b> are inactive (locked),
 All services marked with <b>On</b> are active (unlocked).</p>") +
     _("<p><b><big>Changing services status:</big></b><br>
-Select the service you want to enable (disable) and press <b>Toggle status On/Off</b>.</p>") +
+Select the service you want to enable (disable) and press <b>Toggle status (On/Off)</b>.</p>") +
     _("<p><b><big>Editting services:</big></b><br>
 Select the service you want to edit and press <b>Edit</b>.</p>") +
     _("<p><b><big>Deleting services:</big></b><br>
@@ -150,7 +150,7 @@ _("<p>This is a short description. For details, see <b>info inetd.conf</b>
 or <b>info xinetd.conf</b>.</p>
 ")+
 
-_("<p>Enter a valid service name in <b>service name</b>.
+_("<p>Enter a valid service name into <b>service</b> field.
 </p>
 ")+
 
@@ -176,8 +176,9 @@ the <b>user</b> combobox. This is useful to make services run with permissions
 less than root.
 </p>")+
 
-_("<p>In <b>server program</b>, enter the path name of the program to
-be executed by inetd when a request reaches its socket.
+_("<p>In <b>server</b>, enter the path name of the program to
+be executed by super-server when a request reaches its socket.
+Parameters for this program you can specify in <b>Server arguments</b>.
 
 </p>");
 

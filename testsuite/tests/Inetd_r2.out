@@ -1,0 +1,14 @@
+Dump	
+Dump	New package installed
+Dump	
+Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["changed":true, "comment":"new service", "enabled":true, "iid":"whatever:new", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
+Dump	
+Dump	---
+Dump	
+Dump	
+Dump	No mackages was installed --- configuration is the same
+Dump	
+Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"whatever:new", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
+Dump	
+Dump	---
+Dump	
