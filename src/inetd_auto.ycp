@@ -89,8 +89,11 @@ else if (func == "Export") {
  * return boolean
  */
 else if (func == "Write") {
+	import "Progress";
+	Progress::off();
     Inetd::write_only = true;
     ret = Inetd::Write();
+	Progress::on();
 }
 /**
  * Import settings
