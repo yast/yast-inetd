@@ -22,6 +22,15 @@ function extract() {
 	| cpio -idvm --no-absolute-filenames "./$2" "$2"
 }
 
+# $1: file name
+function add_header() {
+    mv "$1" "$1"~
+    cat - "$1"~ <<'EOF' > "$1"
+// Author: Martin Vidner <mvidner@suse.cz>
+// $Id$
+EOF
+}
+
 extract inetd  etc/inetd.conf
 extract xinetd etc/xinetd.conf
 
@@ -34,6 +43,12 @@ sort $SX-pkgs | while read pkg; do
     extract $pkg "$DIR/*"
 done
 
-#proceed in YCP:
-/sbin/yast2 $SX_create.ycp
+# use the current agent
+ln -snf ../agents servers_non_y2
 
+#proceed in YCP:
+Y2DIR=. /sbin/yast2 ${SX}_create.ycp
+
+# appease check_ycp
+add_header ${SX}_inetd.ycp
+add_header ${SX}_xinetd.ycp
