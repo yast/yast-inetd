@@ -35,7 +35,6 @@
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // read START_INETD from rc.config
     string start_inetd = SCR(`Read(.rc.system.START_INETD));
-    _debug("START_INET: ", start_inetd );
     
     // if( start_inetd == "no"  ) inetd_status = `off; //default is `off not needed
 
@@ -173,17 +172,14 @@ configuration for your needs in the next step.
 		
 		if ( inetd_status == `off )
 		{  
-		    _debug( "Writing START_INETD no" );
 		    SCR(`Write(.rc.system.START_INETD, "no"));
 
 		    SCR(`Execute(.target.bash, "/etc/init.d/inetd stop"));
 		}
 		else
 		{
-		    _debug( "Writing START_INETD yes" );
 		    SCR(`Write(.rc.system.START_INETD, "yes"));
 		    
-		    _debug( "Shell restart inetd" );
 		    if ( inetd_status == `on_default)
 		    {
 			SCR(`Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" ));  

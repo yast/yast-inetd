@@ -535,7 +535,6 @@ _("<p>---</p>");
 	  ``{
 	      // not tested yet!
 	      string send_line = "";
-	      _debug( "WriteLine: ", send_line );
 	      SCR(`Execute(.target.bash, "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" ));
 	      SCR(`Execute(.target.bash, "/bin/rm /etc/inetd.conf " ));  // if i have not the permission to move
 
@@ -577,11 +576,9 @@ _("<p>---</p>");
 			   send_line = "/bin/echo \"# "+lookup( line, "comment", "")+ "\" >>/etc/inetd.conf";
 		       }
 		
-		       _debug( "WriteLine: ", send_line );
 		       SCR(`Execute(.target.bash,  send_line ));
 		   });
 
-	      _debug( "WWWWWWWWWWWWWWWWWWWVVVVVVV" );
 	  };
 
     
@@ -627,7 +624,6 @@ _("<p>---</p>");
 //	    }
 //     });
 //
-//     _debug( "WWWWWWWWWWWWWWWWWWWVVVVVVV", scr_write_input );
 //
 //    SCR(`Write(.etc.inetd.conf, scr_write_input));
 //    };
@@ -695,7 +691,6 @@ _("<p>---</p>");
 //    if ( !test_mode  )
 //    {
 //	  scr_output = SCR(`Read(.etc.inetd.conf_read));
-//	  _debug( "WWWWWWWWWWWWWWWWWWW", scr_output );
 //    }
 
 
@@ -809,7 +804,6 @@ on the button edit you can change parameters of this service
       
      // todo debug raus!!
      // map curr_line = lookup( inetd_conf, 400 );
-     // _debug( "DDSSAA",  curr_line );
      // curr_line     = add( curr_line, `status, `active );
      // inetd_conf    = add( inetd_conf, 400, curr_line );
 
@@ -855,7 +849,6 @@ on the button edit you can change parameters of this service
 		
 	    return_val  = UI(`EditOrCreateServiceDlg( _("Create a new service entry"), current_line, "", "" ));
 
-	    _debug( "JJJJJJJJ", return_val, w_id );
 		
              // check Cancel (== nil) 
 	    if ( return_val != nil )
@@ -871,7 +864,6 @@ on the button edit you can change parameters of this service
 		if ( new_comment != "" )
 		{
 		    // B.1
-		    _debug( "B1", new_comment, w_id );
 		    map new_line = $[ `status:`comment, "comment":new_comment ];
 		    new_line     = add( new_line, "line_number", w_id);
 		    inetd_conf   = addLine( inetd_conf, new_line, w_id-1);
@@ -1027,7 +1019,6 @@ on the button edit you can change parameters of this service
 		// edit line and comment
 		return_val  = UI(`EditOrCreateServiceDlg( _("Edit a service entry"), current_line, editable_comment, previous_comment ));
 
-		_debug( "JJJJJJJJ", return_val, w_id );
 		
 		// check Cancel (== nil) 
 		if ( return_val != nil )
@@ -1052,7 +1043,6 @@ on the button edit you can change parameters of this service
    		   {
    		       if ( new_comment != "" )
    		       {
-             		   _debug( "A111", new_comment );
    			   // A.1
    			   comment_line = add( comment_line, "comment", new_comment );
    			   inetd_conf       = changeLine( inetd_conf, comment_line, w_id-1);
@@ -1060,7 +1050,6 @@ on the button edit you can change parameters of this service
    		       else
    		       {
    			   // A.2
-             		   _debug( "A222", return_val );
    			   inetd_conf   = deleteLine( inetd_conf, w_id-1);
    		       }
    		   }
@@ -1069,7 +1058,6 @@ on the button edit you can change parameters of this service
    		       if ( new_comment != "" )
    		       {
    			   // B.1
-             		   _debug( "B1", new_comment, w_id );
    			   map new_line = $[ `status:`comment, "comment":new_comment ];
    			   new_line     = add( new_line, "line_number", w_id);
    			   inetd_conf   = addLine( inetd_conf, new_line, w_id-1);
@@ -1096,7 +1084,6 @@ on the button edit you can change parameters of this service
 
 	if (ret == `next || ret == `language || ret == `back)
 	{
-	    _debug ("WHOLLLLLLE", ret );
 
 	    if ( ret == `next )
 	    {
