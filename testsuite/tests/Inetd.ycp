@@ -25,8 +25,8 @@ map READ = $[
 	    "exists" : true,
 	]
     ],
-    "test" : $[
-	"netd" : $[
+    "etc" : $[
+	"inetd_conf" : $[
 	    "services" : [ s ],
 	    ],
 	],
@@ -34,6 +34,6 @@ map READ = $[
 
 DUMP("Read");
 Inetd::netd_service = `inetd;
-TEST(``(Inetd::Read(nil)), [READ], nil);
+TEST(``(Inetd::Read()), [READ], nil);
 
 }
