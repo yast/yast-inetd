@@ -23,7 +23,7 @@
 textdomain "inetd";
 
 y2milestone("----------------------------------------");
-y2milestone("Inetd auto started");
+y2milestone("Xinetd auto started");
 
 import "Inetd";
 import "Service";
@@ -158,7 +158,7 @@ else {
 }
 
 y2debug("ret=%1", ret);
-y2milestone("Inetd auto finished");
+y2milestone("Xinetd auto finished");
 y2milestone("----------------------------------------");
 
 return ret;

@@ -47,7 +47,7 @@ One or both of these are required for running a superserver.
     "install_packages" : _("Selected packages will be installed."),
 
     /* Read dialog help 1/2 */
-    "read" : _("<p><b><big>Initializing inetd Configuration</big></b><br>
+    "read" : _("<p><b><big>Initializing xinetd Configuration</big></b><br>
 Please wait...<br></p>
 ") +
 
@@ -66,7 +66,7 @@ Safely abort the configuration utility by pressing <b>Cancel</b> now.</p>
 "),
 
     /* Write dialog help 1/2 */
-    "write" : _("<p><b><big>Saving inetd Configuration</big></b><br>
+    "write" : _("<p><b><big>Saving xinetd Configuration</big></b><br>
 Please wait...<br></p>
 ") +
 
@@ -80,8 +80,7 @@ An additional dialog will inform you whether it is safe to do so.
     /* Configure1 dialog help 1/2 */
     "c1" : _("<p><b><big>Network Services Configuration</big></b><br>
 Click <b>Enable</b> to enable network services managed by a super-server
-(inetd or xinetd -- it depends on what you have installed) configuration.
-To stop the super-server, click <b>Disable</b>.</p>
+configuration. To stop the super-server, click <b>Disable</b>.</p>
 ") +
 "<p><br></p>" +
     _("<p><b><big>Configuration Service Status:</big></b><br>
@@ -135,8 +134,7 @@ _("<ul>
 <li>server program arguments
 </ul>")+
 
-_("<p>This is a short description. For details, see <b>info inetd.conf</b>
-or <b>info xinetd.conf</b>.</p>
+_("<p>This is a short description. For details, see <b>info xinetd.conf</b>.</p>
 ")+
 
 _("<p>Enter a valid service name into the <b>service</b> field.

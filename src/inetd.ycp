@@ -19,7 +19,7 @@ textdomain "inetd";
 
 /* The main () */
 y2milestone ("----------------------------------------");
-y2milestone ("Inetd module started");
+y2milestone ("Xinetd module started");
 
 include "inetd/wizards.ycp";
 
@@ -43,7 +43,7 @@ else ret = InetdSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */
-y2milestone("Inetd module finished");
+y2milestone("Xinetd module finished");
 y2milestone("----------------------------------------");
 return ret;
 
