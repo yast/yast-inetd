@@ -41,6 +41,7 @@ sub strip_pwd ($)
 
 my @services;
 # where new services are added
+my $dir_with_includes = "";
 my $base_file = "";
 # used for a warning about unsupported options
 my $message = "";
@@ -88,10 +89,29 @@ sub get_changed (@)
 	else
 	{
 	    y2debug "new $s->{service}";
-	    push (@{$ch{$base_file}->{-1}}, $s);
+	    # Bug 26999: if we have encountered an "includedir",
+	    # create the new services there. The file name is
+	    # the "script" or "service" field.
+	    my $fname = filename_for_new_service ($s);
+	    push (@{$ch{$fname}->{-1}}, $s);
 	}
     }
     return %ch;
+}
+
+sub filename_for_new_service ($)
+{
+    my $s = shift;
+    if ($dir_with_includes)
+    {
+	my $script = $s->{script} || $s->{service};
+	return $dir_with_includes ."/".$script;
+    }
+    else
+    {
+	# no includes, use the main file
+	return $base_file;
+    }
 }
 
 sub parse_file ($)
@@ -139,6 +159,7 @@ sub include_dir ($)
     my $class = shift;
     ::DEBUG ("$class\n");
     my $dirname = shift;
+    $dir_with_includes = $dirname; # for creating new services
     use IO::Dir;
     my $dir = new IO::Dir ($dirname);
     my @files;
@@ -170,6 +191,8 @@ sub write_file ()
     {
 	# TODO guard against changed files
 	my $ofilename = "$filename.tmp";
+	# if we are creating a new file, $if->{fh} will be undef,
+	# which is taken care of below
 	my $if = new linefile ($filename, "r");
 	my $OF = new IO::File (">$ofilename");
 
@@ -204,7 +227,16 @@ sub write_file ()
 	    }
 	    else
 	    {
-		$_ = $if->{fh}->getline;
+		# read a line, allowing for a non-existent file
+		if ($if->{fh})
+		{
+		    $_ = $if->{fh}->getline;
+		}
+		else
+		{
+		    $_ = undef;
+		}
+
 		if (!defined $_)
 		{
 		    # On eof, the branch with parse_service will not be taken
