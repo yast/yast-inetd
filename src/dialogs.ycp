@@ -399,18 +399,24 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     if (service_info == nil) {
 	return ret;
     }
+    
     // Now, the package doesn't exists. We must tell user, the package is required...
     // But, the fisrt, we must extract requested package name
     list package_name = GetProvidedPackage(service_info);
+    
+    // if Autoinstallation mode --- we do not want to install packages yet...
     if (Inetd::auto_mode) {
+	// Add requested package into list...
 	Inetd::required_packages = add(Inetd::required_packages, package_name);
 	UI::MessagePopup(sformat(_("Package %1 will be installed during write process."),
 	    select(package_name, 0, "")));
 	ret = `auto;
 	return ret;
     }
+    // we are in normal mode :-)))
     else {
 	include "require.ycp";
+	// if installation failes
 	if (!InstallAndRemove(package_name, [], sformat(_("Package %1 will be installed"),
 	    select(package_name, 0, "")))) {
 	//if (true) {
@@ -419,9 +425,13 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    ret = `none;
 	    return ret;
 	}
+	// installation successful
 	else {
 	    y2milestone("Rereading xinetd configuration");
+	    list old_conf = Inetd::netd_conf;
+	    // Reread configuration!
 	    Inetd::netd_conf = SCR::Read(.etc.xinetd_conf.services);
+	    Inetd::netd_conf = Inetd::mergeAfterInstall(Inetd::netd_conf, old_conf);
 	    ret = `next;
 	    return ret;
 	}

@@ -220,29 +220,33 @@ global define boolean Read() ``{
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
-    foreach(`oldline, old_conf, ``{
-	if(find(oldline["iid"]:"", "inst") != -1) { // found new package entry
-	    foreach(`newline, netd_conf, ``{
-		if(newline["service"]:"" == oldline["service"]:"!") { // check for selected service
-		    if(newline["protocol"]:"" == oldline["protocol"]:"!") {
-			if(find(newline["server"]:"", oldline["server"]:"!") != -1) { // change status
-			    if(oldline["enabled"]:false == true) {
-				newline = add(newline, "enabled", true);
-				newline = add(newline, "changed", true);
-				netd_conf = add(netd_conf, newline);
-			    }
-			    else {
-				newline = add(newline, "enabled", false);
-				newline = add(newline, "changed", true);
-				netd_conf = add(netd_conf, newline);
-			    }
-			}
-		    }
+    
+    map new_entry = nil;
+    old_conf = maplist(`old_line, old_conf, ``{
+	new_entry = nil;
+	// find all new lines for installed packages...
+	if(find(old_line["iid"]:"", "inst") != -1) { // iid is beginning with "inst"
+	    // find this line in new (installed) configuration
+	    foreach(`new_line, netd_conf, ``{
+		// service, protocol and server must be the same...
+		if((new_line["service"]:"" == old_line["service"]:"!") && // service
+		    (new_line["protocol"]:"" == old_line["protocol"]:"!") && // protocol
+		    (find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
+		    new_line  = add(new_line, "enabled", old_line["enabled"]:true);
+                    new_line  = add(new_line, "changed", true);
+		    new_entry = new_line;
 		}
+		// else
 	    });
 	}
+	//y2error("%1", new_entry);
+	if(new_entry == nil)
+	    new_entry = old_line;
+	//else
+	    //return new_entry;
+	return new_entry;
     });
-    return netd_conf;
+    return old_conf;
 }
 
 /**
