@@ -34,6 +34,11 @@ for INC in ${IN%.in}.*.d.in; do
     cp $INC tmp/idir/${INC2%%.*}
 done
 
+# ugly hack to direct logging to stderr even from the agent
+# while ycp.pm is unchanged
+export HOME=/tmp
+ln -snf /dev/stderr $HOME/.y2log
+
 # run it, to $OUT_TMP
 Y=/usr/lib/YaST2/bin/y2base
 Y2DIR="$AGDIR" $Y -l - 2>&1 >"$OUT_TMP" "$YCP" '("'"$IN.test"'")' testsuite \
