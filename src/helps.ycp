@@ -107,7 +107,7 @@ _("<p>---</p>");
 _("<P><B><BIG>Detecting installed services</BIG></B><BR>
 Both services (inetd and xinetd) was found in your system. Please choose which you want to configure.
 <P><I>Note: </I>xinetd service is default for SuSE Linux</P>
-<BR></P>") +
+") +
 	    // For translators: inet read dialog help, part 2 of 2
 _("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
 You can safely abort the configuration utility by pressing the <B>Abort</B>
