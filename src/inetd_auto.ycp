@@ -29,36 +29,65 @@ import "Inetd";
 include "inetd/wizards.ycp";
 include "inetd/dialogs.ycp";
 
-list args = WFM::Args();
-if(size(args) <= 0) {
-    y2error("Did not get the settings, probably some mistake...");
+/* The settings are in the second argument */
+string func  = WFM::Args(0);
+map    param = WFM::Args(1);
+
+/**
+ * Create a summary
+ * return string
+ */
+if(func == "Summary") {
+    Inetd::Import(param);
+    return ( Inetd::Summary());
+}
+/**
+ * Reset configuration
+ * return map or list
+ */
+else if (func == "Reset") {
+    Inetd::Import($[]);
+    return ($[]);
+}
+/**
+ * Change configuration
+ * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
+ */
+else if (func == "Change") {
+    symbol ret = PackageAutoDialog();
+    if(ret == `back) {
+	return ret;
+    }
+    Inetd::Import(param);
+
+    ret = InetdAutoSequence();
+    
+    if(ret == `next) return Inetd::Export();
+    
+    return ret;
+}
+/**
+ * Return configuration data
+ * return map or list
+ */
+else if (func == "Result") {
+    return(Inetd::Export());
+}
+/**
+ * Write configuration data
+ * return boolean
+ */
+else if (func == "Write") {
+    Inetd::write_only = true;
+    return(Inetd::Write());
+}
+
+
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
     return false;
 }
-if(!is(WFM::Args(0), map)) {
-    y2error("Bad argument for inetd_auto: %1", WFM::Args(0));
-    return false;
-}
-
-/* The settings are in the first argument */
-map settings = select(args, 0, $[]);
-y2milestone("Imported: (%1)", settings);
-
-symbol ret = PackageAutoDialog();
-y2debug("ret=%1", ret);
-if(ret == `back) {
-    return $[];
-}
-
-Inetd::Import(settings);
-
-ret = InetdAutoSequence();
-y2debug("ret=%1", ret);
-
-y2milestone("Inetd auto finished");
-y2milestone("----------------------------------------");
-
-if(ret == `next) return Inetd::Export();
-return $[];
 
 /* EOF */
 }
