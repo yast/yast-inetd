@@ -511,6 +511,20 @@ sub parse_service ($)
     return $service;
 }
 
+sub write_item ($$$;$)
+{
+    my ($f, $s, $attribute, $value) = @_;
+    $value ||= $s->{$attribute};
+    # there's #define FIELD_WIDTH 15 in itox.c
+    printf $f "\t%-15s = %s\n", $attribute, $value;
+}
+
+sub write_opt_item ($$$)
+{
+    my ($f, $s, $attribute) = @_;
+    write_item ($f, $s, $attribute) if $s->{$attribute};
+}
+
 sub write_service ($$)
 {
     my $class = shift;
@@ -534,23 +548,23 @@ sub write_service ($$)
 
     if (! $s->{enabled})
     {
-	print $f "\tdisabled = yes\n";
+	write_item $f, $s, "disabled", "yes";
     }
     if ($s->{rpc_version})
     {
 	$s->{type} .= " RPC" if ($s->{type} !~ /RPC/);
-	print $f "\trpc_version = $s->{rpc_version}\n"
+	write_item $f, $s, "rpc_version";
     }
-    print $f "\tsocket_type = $s->{socket_type}\n";
-    print $f "\tprotocol = $s->{protocol}\n" if $s->{protocol};
-    print $f "\twait = ". ($s->{wait}? "yes":"no") ."\n";
+    write_item     $f, $s, "socket_type";
+    write_opt_item $f, $s, "protocol";
+    write_item     $f, $s, "wait", ($s->{wait}? "yes":"no");
 
-    print $f "\tuser = $s->{user}\n" if $s->{user};
-    print $f "\tgroup = $s->{group}\n" if $s->{group};
-    print $f "\tserver = $s->{server}\n" if $s->{server};
-    print $f "\tserver_args = $s->{server_args}\n" if $s->{server_args};
+    write_opt_item $f, $s, "user";
+    write_opt_item $f, $s, "group";
+    write_opt_item $f, $s, "server";
+    write_opt_item $f, $s, "server_args";
 
-    print $f "\ttype = $s->{type}\n" if $s->{type};
+    write_opt_item $f, $s, "type";
     print $f $s->{unparsed} || "";
     print $f "}\n";
 }
