@@ -6,25 +6,31 @@
 <!-- $Id$ -->
 <meta name="generator"
 content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
-<title>Source structures description</title>
+<title>(x)inetd module in Autoyast in SuSE Linux 8.2</title>
 
 <style type="text/css">
 /*<![CDATA[*/
  table.c7 {text-align: left;}
  span.c6 {font-style: italic;}
  span.c5 {font-family: monospace;}
- td.c4 {vertical-align: top;}
  td.c3 {vertical-align: top; text-align: center; white-space: nowrap;}
- td.c2 {vertical-align: top; text-align: center;}
- td.c1 {vertical-align: top;}
  span.c1 {font-weight: bold;}
   /*]]>*/
 </style>
 </head>
 <body>
-<h1>YaST2 inetd module in autoyast environment</h1>
+<h1>(x)inetd module in Autoyast in SuSE Linux 8.2</h1>
+
+<p>Martin Vidner &lt;mvidner@suse.cz&gt; and
+Petr Hadraba &lt;phadraba@suse.cz&gt;.</p>
+
+<p>This document describes the format of the inetd/xinetd part of the Autoyast
+profile. It focuses on creating the profile without using the GUI Configuration
+Management System and recommends usage to avoid known bugs.</p>
 
 <h2>Source structures (XML) description</h2>
+
+<p>First, an example:</p>
 
 <pre><![CDATA[
 <profile>
@@ -35,19 +41,11 @@ content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
     <netd_status config:type="integer">0</netd_status>
     <netd_conf config:type="list">
       <listentry>
-	<changed config:type="boolean">true</changed>
-	<created config:type="boolean">true</created>
+	<iid>inst</iid>
 	<enabled config:type="boolean">true</enabled>
-
-	<iid>inst2</iid>
-
+	<service>tftp</service>
 	<protocol>udp</protocol>
-	<server>amandad (amanda)</server>
-	<service>amanda</service>
-	<socket_type>stream</socket_type>
-	<unparsed>&#9;only_from       = 127.0.0.1&#10;</unparsed>
-	<user>root</user>
-	<wait config:type="boolean">false</wait>
+	<server>/usr/sbin/in.tftpd</server>
       </listentry>
       <listentry>...</listentry>
       ...
@@ -59,12 +57,9 @@ content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
 ]]>
 </pre>
 
-<p>Whole configuration is a list with the following entries:<br />
-</p>
 
 <p>Legend for the tables:</p>
 <dl>
-<!-- one of (dd dt) -->
 <dt>O</dt>
 <dd>Optional</dd>
 <dt>M</dt>
@@ -81,70 +76,70 @@ already specified in an existing configuration.</dd>
 <table cellpadding="2" cellspacing="2" border="1" class="c7">
 <tbody>
 <tr>
-<td class="c2"><span class="c1">tag</span><br />
+<td class="c3"><span class="c1">tag</span><br />
 </td>
 <td class="c3"><span class="c1">data type</span><br />
 </td>
-<td class="c1">inetd<br />
+<td class="c3"><span class="c1">inetd</span><br />
 </td>
-<td class="c1">xinetd<br />
+<td class="c3"><span class="c1">xinetd</span><br />
 </td>
-<td class="c2"><span class="c1">description</span><br />
+<td class="c3"><span class="c1">description</span><br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">last_created<br />
+<td class="c1">last_created<br />
 </td>
-<td class="c4">integer</td>
+<td class="c1">integer</td>
 <td class="c1">O<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">Used internally by the UI. <br />(Contains last unique number for new iid generator
+<td class="c1">Used internally by the UI. <br />(Contains last unique number for new iid generator
 (for manually added or installed from rpm).)<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">netd_service<br />
+<td class="c1">netd_service<br />
 </td>
-<td class="c4">symbol<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">symbol<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">Contains `inetd' if inetd will be configured, or
-`xinetd' for xinetd.<br />
+<td class="c1">M<br />
+</td>
+<td class="c1">Contains <tt>inetd</tt> if inetd will be configured, or
+<tt>xinetd</tt> for xinetd.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">netd_status<br />
+<td class="c1">netd_status<br />
 </td>
-<td class="c4">integer<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">integer<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">The value 0 means the server ((x)inetd) will be
+<td class="c1">M<br />
+</td>
+<td class="c1">The value 0 means the server ((x)inetd) will be
 started, any other value means the server will be stopped and
 disabled.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">netd_conf<br />
+<td class="c1">netd_conf<br />
 </td>
-<td class="c4">list<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">list<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">A list of &lt;listentry&gt; elements, whose items are described
+<td class="c1">M<br />
+</td>
+<td class="c1">A list of &lt;listentry&gt; elements, whose items are described
 in the following table.
 </td>
 </tr>
@@ -154,158 +149,150 @@ in the following table.
 
 <p></p>
 
-<table cellpadding="2" cellspacing="2" border="1" class="c7">
+<table id="netd_conf_item" cellpadding="2" cellspacing="2" border="1" class="c7">
 <tbody>
 <tr>
-<td class="c2"><span class="c1">tag</span><br />
+<td class="c3"><span class="c1">tag</span><br />
 </td>
 <td class="c3"><span class="c1">data type</span><br />
 </td>
-<td class="c1">inetd<br />
+<td class="c3"><span class="c1">inetd</span><br />
 </td>
-<td class="c1">xinetd<br />
+<td class="c3"><span class="c1">xinetd</span><br />
 </td>
-<td class="c2"><span class="c1">description</span><br />
+<td class="c3"><span class="c1">description</span><br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">changed<br />
+<td class="c1">changed<br />
 </td>
-<td class="c4">boolean</td>
+<td class="c1">boolean</td>
 <td class="c1">M<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">This should be set to <tt>true</tt>, otherwise the
+<td class="c1">This should be set to <tt>true</tt>, otherwise the
 rest of the service info will be ignored. (In some cases it is not
 necessary, but it is too complex to explain.)</td>
 </tr>
 
 <tr>
-<td class="c4">comment<br />
+<td class="c1">comment<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">O<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">Comment preceeding the service description. Can have
+<td class="c1">O<br />
+</td>
+<td class="c1">Comment preceeding the service description. Can have
 multiple lines, initial hashes (#) will be added.</td>
 </tr>
 
 <tr>
-<td class="c4">created<br />
+<td class="c1">created<br />
 </td>
-<td class="c4">boolean<br />
-</td>
-<td class="c1">O<br />
+<td class="c1">boolean<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">Obsolete, ignored.</td>
+<td class="c1">O<br />
+</td>
+<td class="c1">Obsolete, ignored.</td>
 </tr>
 
 <tr>
-<td class="c4">enabled<br />
+<td class="c1">enabled<br />
 </td>
-<td class="c4">boolean<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">boolean<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">If <span class="c5">true</span>, service will be
+<td class="c1">M<br />
+</td>
+<td class="c1">If <span class="c5">true</span>, service will be
 activated.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">group<br />
+<td class="c1">group<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">O<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">See inetd (xinetd) man pages.<br />
+<td class="c1">O<br />
+</td>
+<td class="c1">See inetd (xinetd) man pages.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">iid<br />
+<td class="c1">iid<br />
 </td>
-<td class="c4">string<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">!<br />
 </td>
 <td class="c1">!<br />
 </td>
-<td class="c4">"Internal identifier." See below<br />
-<br />
-For currently installed service contains something like path to
-(x)inetd configuration file.<br />
-If service is added manually, this property contains the word `new'
-followed by unique number (last stored in last_created tag).<br />
-If service is installed from distribution rpm, this property
-contains the word `inst' followed by unique number too with the
-same rules.<br />
+<td class="c1">"Internal identifier." See <a href="#xinetd">below</a>.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">max<br />
+<td class="c1">max<br />
 </td>
-<td class="c4">string<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">O<br />
 </td>
 <td class="c1">N/A<br />
 </td>
-<td class="c4">See inetd man pages.<br />
+<td class="c1">See inetd man pages.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">protocol<br />
+<td class="c1">protocol<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">Service protocol specification (See inetd (xinetd)
+<td class="c1">M<br />
+</td>
+<td class="c1">Service protocol specification (See inetd (xinetd)
 man pages for more details.)<br />
 Part of the (service,protocol,server) triple that identifies a
 service.</td>
 </tr>
 
 <tr>
-<td class="c4">rpc_version<br />
+<td class="c1">rpc_version<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">O<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">See inetd (xinetd) man pages.<br />
-For xinetd, type = RPC is automatically added.</td>
+<td class="c1">O<br />
+</td>
+<td class="c1">See inetd (xinetd) man pages.<br />
+For xinetd, <tt>type = RPC</tt> is automatically added.</td>
 </tr>
 
 <tr>
-<td class="c4">server<br />
+<td class="c1">server<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">Contains full path to service program.<br />
+<td class="c1">M<br />
+</td>
+<td class="c1">Contains full path to service program.<br />
 If service is beeing installed, this property contains only server
 program filename (without path!) and (rpm-)package name in rounded
 brackets.<br />
@@ -314,91 +301,96 @@ service.</td>
 </tr>
 
 <tr>
-<td class="c4">server_args<br />
+<td class="c1">server_args<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">O<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">See inetd (xinetd) man pages.<br />
+<td class="c1">O<br />
+</td>
+<td class="c1">See inetd (xinetd) man pages.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">service<br />
+<td class="c1">service<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">M<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c4">Service name.<br />
+<td class="c1">M<br />
+</td>
+<td class="c1">Service name.<br />
 Part of the (service,protocol,server) triple that identifies a
 service.</td>
 </tr>
 
 <tr>
-<td class="c4">socket_type<br />
+<td class="c1">socket_type<br />
 </td>
-<td class="c4">string<br />
-</td>
-<td class="c1">m<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">m<br />
 </td>
-<td class="c4">See inetd (xinetd) man pages.<br />
+<td class="c1">m<br />
+</td>
+<td class="c1">See inetd (xinetd) man pages.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c4">unparsed<br />
+<td class="c1">unparsed<br />
 </td>
-<td class="c4">string<br />
+<td class="c1">string<br />
 </td>
 <td class="c1">N/A<br />
 </td>
 <td class="c1">O<br />
 </td>
-<td class="c4">Text to be placed into the service block verbatim. Must be
-terminated by a newline. Useful for special features of xinetd.</td>
-</tr>
-
-<tr>
-<td class="c4">user<br />
-</td>
-<td class="c4">string<br />
-</td>
-<td class="c1">m<br />
-</td>
-<td class="c1">m<br />
-</td>
-<td class="c4">See inetd (xinetd) man pages.<br />
+<td class="c1">Text to be placed into the service block verbatim. Must be
+terminated by a newline. Useful for special features of xinetd.<br />
+Eg. <pre
+><![CDATA[<unparsed>&#9;only_from       = 192.168.0.0/16&#10;</unparsed>]]></pre>
 </td>
 </tr>
 
 <tr>
-<td class="c4">wait<br />
+<td class="c1">user<br />
 </td>
-<td class="c4">boolean<br />
+<td class="c1">string<br />
+</td>
+<td class="c1">m<br />
+</td>
+<td class="c1">m<br />
+</td>
+<td class="c1">See inetd (xinetd) man pages.<br />
+</td>
+</tr>
+
+<tr>
+<td class="c1">wait<br />
+</td>
+<td class="c1">boolean<br />
 </td>
 <td class="c1">m<br />
 </td>
 <td class="c1">m<br />
 </td>
-<td class="c4">See inetd (xinetd) man pages.<br />
+<td class="c1">See inetd (xinetd) man pages.<br />
 </td>
 </tr>
 
 </tbody>
 </table>
 
-<h3>Xinetd</h3>
+<h3 id="xinetd">Xinetd</h3>
 
-<p>To simply enable or disable a service which has a config file
-in /etc/xinetd.d:</p>
+<h4>Enabling an existing service</h4>
+
+<p>If a RPM package includes a xinetd config file placed in /etc/xinetd.d, the
+service can be enabled (or disabled) in this way:</p>
 <pre
 >  iid: inst
   enabled: true or false
@@ -411,38 +403,31 @@ Service, protocol and server must match:
 (More precisely, the first word of the profile's server field must be contained
 in the config file's server field. That's how the profiles created by the
 Autoyast Configuration Management System work.)
-Other fields in the profile, such as user, are discarded.
-(todo try this with an internal one too)
+Other fields in the profile, such as user, are <b>discarded</b>.
 </p>
+
+<h4 id="add_srv"
+>Adding a new service or changing parameters of an existing one</h4>
+
 <p>
-Changing other parameters of a service works only by adding another copy of the
+Due to a bug,
+changing other parameters of a service works only by adding another copy of the
 service configuration (which is OK because by default the already present
-configuratin is disabled). It is added to the main configuration file, not to
-xinetd.d.
+configuratin is disabled). Don't be confused by the fact that it is added to
+the main configuration file, not to xinetd.d.
 </p>
 <pre
 >  iid: new
   changed: true
-  enabled:
+  enabled: true or false
 
- plus these corresponding to the keywords in xinetd.conf:
-  service
-  (rpc_version)
-  socket_type
-  (protocol)
-  wait
-  user
-  (group)
-  server
-  (server_args)
-  (type)
- and optionally
-  (comment)
-  (comment_inside)
-  (unparsed)
+  plus other fields as described in the <a href="#netd_conf_item"
+>table above</a>.
 </pre>
 
 <h3>Inetd</h3>
+
+<h4>Enabling or changing an existing service</h4>
 
 <p>
 Changing a service that is in the default inetd.conf file (except VNC related
@@ -455,13 +440,16 @@ ones, that's a bug).
   server: ...
 </pre>
 <p>
+Service, protocol and server must match.
 Server must be with full path and will be /usr/sbin/tcpd for most services.
 (That also means that enabling ftp in this way will enable both in.ftpd an
 vsftpd, that's a bug.)
-Other fields can be specified.
+<a href="#netd_conf_item">Other fields</a> can be specified.
 </p>
 
+<h4>Adding a service</h4>
 
+<p>Works like <a href="#add_srv">adding a service for xinetd</a>.</p>
 </body>
 </html>
 
