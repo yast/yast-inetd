@@ -80,7 +80,7 @@ Configure inetd here.<br></p>
 
     /* Summary dialog help 2/3 */
     _("<p><b><big>Adding an inetd:</big></b><br>
-Choose inetd from the list of the detected inetds.
+Select an inetd from the list of the detected inetds.
 If your inetd was not autodetected, use <b>Other (not detected)</b>.
 Then press <b>Configure</b>.</p>
 ") +
@@ -119,10 +119,10 @@ To stop the super-server, click <b>Disable</b>.</p>
 All services marked with <b>X</b> in column <b>Ch</b> were edited
 and will be changed in system configuration.</p>
 ") +
-    _("<p><b><big>Services status:</big></b><br>
-All services marked with <b>---</b> are inactive (locked),
+    _("<p><b><big>Services Status:</big></b><br>
+All services marked with <b>---</b> are inactive (locked).
 All services marked with <b>On</b> are active (unlocked).
-All services marked with <b>NI</b> are not installed and can't be configured.</p>") +
+All services marked with <b>NI</b> are not installed and cannot be configured.</p>") +
     _("<p><b><big>Changing Service Status:</big></b><br>
 Select the service to enable or disable and press <b>Toggle status (On or Off)</b>.</p>
 ") +
