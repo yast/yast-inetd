@@ -16,30 +16,6 @@ textdomain "inetd";
  */
 map HELPS = $[
 
-    /* installed packages (inetd and xinetd) */
-    "packages" : _("<p><b><big>Searching for Installed Packages</big></b><br>
-Please wait...<br>
-If the needed packages are not found, you will be asked to install them.</p>
-") +
-
-    _("<p><b><big>Aborting the Initialization Process:</big></b><br>
-Safely abort the configuration utility by pressing <b>Abort</b> now.</p>
-"),
-
-    /* Same as above - but in autoinstallation mode */
-    "packages-auto" : _("<p><b><big>Service Packages</big></b><br>
-Select which service packages to install.</p>
-"),
-
-    /* Used by PackageDialog() and AutoPackageDialog(). This is text above checkboxes in Dialog. */
-    "install_query" : _("inetd or xinetd packages were not found.
-Install them now?
-"),
-
-    "install_auto_query" : _("Select the main package to install.
-One or both of these are required for running a superserver.
-"),
-
     /* Popup::Error */
     "no_install" : _("No packages selected. Configuration aborted."),
 
@@ -54,15 +30,6 @@ Please wait...<br></p>
     /* Read dialog help 2/2 */
     _("<p><b><big>Aborting the Initialization Process:</big></b><br>
 Safely abort the configuration utility by pressing <b>Abort</b> now.</p>
-"),
-
-    /* HelpText for WhatToConfigureDialog() */
-    "service_selection" : _("<p><b><big>Both services (inetd and xinetd) are installed.</big></b>
-Select which service to configure.<br></p>
-") +
-
-    _("<p><b><big>Aborting the Initialization Process:</big></b><br>
-Safely abort the configuration utility by pressing <b>Cancel</b> now.</p>
 "),
 
     /* Write dialog help 1/2 */

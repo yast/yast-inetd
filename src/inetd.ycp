@@ -3,6 +3,7 @@
  * Package:	Configuration of inetd
  * Summary:	Main file
  * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
  *
  * $Id$
  *

@@ -3,6 +3,7 @@
  * Package:	Configuration of inetd
  * Summary:	Client for autoinstallation
  * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
  *
  * $Id$
  *
@@ -27,6 +28,7 @@ y2milestone("Xinetd auto started");
 
 import "Inetd";
 import "Service";
+
 include "inetd/wizards.ycp";
 include "inetd/dialogs.ycp";
 
@@ -75,14 +77,7 @@ else if (func == "Reset") {
 else if (func == "Change") {
     // we do not want to install RPMs in autoinstallation mode...
     Inetd::auto_mode = true;
-
 //    Inetd::Import(param);
-
-    ret = PackageAutoDialog();
-    if(ret == `back) {
-	return ret;
-    }
-
     ret = InetdAutoSequence();
 }
 /**
@@ -90,15 +85,10 @@ else if (func == "Change") {
  * return map or list
  */
 else if (func == "Read") {
-    // #45463, `both did not (ever?) work
-    Inetd::netd_service = `xinetd;
-    Inetd::configured_service = `xinetd;
     boolean po = Progress::set(false);
     ret = Inetd::Read();
     Progress::set(po);
-    Inetd::xinetd_status = Service::Status ("xinetd");
-    Inetd::netd_status = Inetd::xinetd_status;
-    Inetd::netd_conf = Inetd::xinetd_conf;
+    Inetd::netd_status = Service::Status ("xinetd");
     Inetd::netd_conf = maplist (map<string,any> s, Inetd::netd_conf, {
 	return add (s, "changed", true);
     });

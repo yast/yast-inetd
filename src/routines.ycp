@@ -3,6 +3,7 @@
  * Package:	Configuration of inetd
  * Summary:	Miscelanous functions for configuration of inetd.
  * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
  *
  * $Id$
  */
@@ -14,7 +15,6 @@ textdomain "inetd";
 import "Inetd";
 import "Progress";
 import "Service";
-import "Directory";
 import "Popup";
 import "Package";
 import "UsersCache";
@@ -23,38 +23,6 @@ import "String";
 define term ServiceToTableItem (map service, integer ni_index);
 define boolean ServicesMatch (map<string, any> a, map<string, any> b);
 define boolean IsInstalled (string rpm);
-
-/**
- * Return rpm -q status for inetd package
- * @return rpm -q exit code
- */
-define integer GetInetdInstalled() ``{
-    return (integer) SCR::Execute(.target.bash, "/bin/rpm -q inetd 2>&1 > /dev/null", []);
-}
-
-/**
- * Return rpm -q status for xinetd package
- * @return rpm -q exit code
- */
-define integer GetXinetdInstalled() ``{
-    return (integer) SCR::Execute(.target.bash, "/bin/rpm -q xinetd 2>&1 > /dev/null", []);
-}
-
-/**
- * Return status of inetd service
- * @return Service::Status() result
- */
-define integer GetInetdStatus() ``{
-    return Service::Status("inetd");
-}
-
-/**
- * Return status of xinetd service
- * @return Service::Status() result
- */
-define integer GetXinetdStatus() ``{
-    return Service::Status("xinetd");
-}
 
 /**
  * Check for pending Abort press
@@ -169,19 +137,6 @@ define boolean isServiceMatchPresent (list<map <string, any> > netd_conf, map<st
 }
 
 /**
- * Encapsulates the mess of supporting two netds and loading the
- * defaults on the fly.
- * Needs Inetd::configured_service.
- * @return Inetd::default_conf_(x)inetd["netd_conf"]
- */
-define list<map <string, any> > GetDefaults () ``{
-    Inetd::EnsureDefaultConfLoaded ();
-    return Inetd::configured_service == `inetd?
-	(Inetd::default_conf_inetd["netd_conf"]:[]):
-	(Inetd::default_conf_xinetd["netd_conf"]:[]);
-}
-
-/**
  * This function merges real xinetd configuration (read by agent) and
  * available services packages generated for SuSE distribution
  * This function is automaticaly calld by CreateTableData() if Inetd::configured_service
@@ -198,7 +153,7 @@ define list<map <string, any> > GetDefaults () ``{
 define list<term> AddNotInstalled (list<map <string, any> > netd_conf, list<term> table_data) ``{
     //y2milestone("in function mergeXinetdConfs()");
 
-    list<map <string, any> > defaults = GetDefaults ();
+    list<map <string, any> > defaults = Inetd::default_conf;
 
     integer index = 0;
     foreach(map<string, any> line, defaults, ``{
@@ -305,10 +260,8 @@ define list<term> CreateTableData(list<map <string, any> > netd_conf) ``{
     // ... not yet
     // because in the system data, we do not have the "package" field
 
-    if (Inetd::configured_service == `xinetd)
-    {
-	table_input = AddNotInstalled (netd_conf, table_input);
-    }
+    table_input = AddNotInstalled (netd_conf, table_input);
+
     // table_input = find out which are installed
     // but that would require a better data model.
     // let's try doing with the current one.
@@ -329,9 +282,7 @@ define list<string> CreateLocalUsersList() ``{
     users = sort(users);
     y2debug("users: %1", users);
 
-    if(Inetd::configured_service == `xinetd) {
-	users = add(users, _("--default--"));
-    }
+    users = add(users, _("--default--"));
     return users;
 }
 
