@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jan  8 17:02:05 CET 2003 - phadraba@suse.de
+
+- Autoinstallation of inetd/xinetd is implemented
+
+-------------------------------------------------------------------
 Thu Dec 19 14:18:24 CET 2002 - phadraba@suse.de
 
 - Updated source code to default YaST2 module skeleton
