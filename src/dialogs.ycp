@@ -3,6 +3,7 @@
  * Package:	Configuration of inetd
  * Summary:	Dialogs definitions
  * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
  *
  * $Id$
  */
@@ -57,198 +58,6 @@ map index_to_iid          = $[];
  */
 list<term> table_data           = [];
 
-/**
- * Detect installed packages.
- * Ask user for packages to install (inetd, xinetd, both)
- * @return `back for abort, `next for continue
- */
-define symbol PackageDialog() ``{
-
-    term contents =
-	`VBox(
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(2),
-		`Left(`Label(HELPS["install_query"]:"")),
-		`HSpacing(2)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(6),
-		`VBox(
-		    /* Translators: This is messagebox for choosing super-server packages to be installed (if needed). */
-		    `Left(`CheckBox(`id(`inetd),  _("Install &inetd"))),
-		    `Left(`CheckBox(`id(`xinetd), _("Install &xinetd"), true))
-		)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`PushButton(`id(`next), `opt(`default), Label::OKButton()),
-		`PushButton(`id(`back), Label::CancelButton())
-		//`HSpacing(2)
-	    ),
-	    `VSpacing(0.5)
-	);
-
-    Wizard::RestoreHelp(HELPS["packages"]:"");
-    Wizard::SetScreenShotName("inetd-2-packagecheck");
-
-    // Check for installed packages
-    Inetd::inetd_installed  = GetInetdInstalled();
-    Inetd::xinetd_installed = GetXinetdInstalled();
-
-    // at least one package is required. If no found, user is prompt for install it (them)
-    if((Inetd::inetd_installed != 0) && (Inetd::xinetd_installed != 0)) {
-	UI::OpenDialog(contents);
-
-	// Inetd is dropped and there's no time to clean this up
-	// So simply disable its checkbox
-	UI::ChangeWidget (`id (`inetd), `Enabled, false);
-
-	any ret = UI::UserInput();
-	if (ret == `cancel)	// window-close button
-	{
-	    ret = `back;
-	}
-	boolean install_inetd  = (boolean) UI::QueryWidget(`id(`inetd),  `Value);
-	boolean install_xinetd = (boolean) UI::QueryWidget(`id(`xinetd), `Value);
-	UI::CloseDialog();
-	Wizard::RestoreScreenShotName();
-	// user press Cancel
-	if(ret == `back) {
-	    return (symbol) ret;
-	}
-	// User will continue
-	else {
-	    // Determine user selection
-	    list<string> packages = [];
-	    if(install_inetd) {
-		packages = add(packages, "inetd");
-	    }
-	    if(install_xinetd) {
-		packages = add(packages, "xinetd");
-	    }
-	    if(size(packages) > 0) {
-		Package::DoInstallAndRemove (packages, []);
-		IsInstalledClearCache ();
-	    }
-	    // Check for installed packages
-	    Inetd::inetd_installed  = GetInetdInstalled();
-	    Inetd::xinetd_installed = GetXinetdInstalled();
-	    // if error ocured, show error and exit.
-	    if((Inetd::inetd_installed != 0) && (Inetd::xinetd_installed != 0)) {
-		Popup::Error(HELPS["no_install"]:"");
-		return `back;
-	    }
-	}
-    }
-
-    // fillup global variables and obtain services status
-
-    // booth services are installed
-    if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
-	Inetd::netd_service  = `both;
-	Inetd::inetd_status  = GetInetdStatus();
-	Inetd::xinetd_status = GetXinetdStatus();
-    }
-    // only inetd is installed
-    else if(Inetd::inetd_installed == 0) {
-	Inetd::netd_service = `inetd;
-	Inetd::inetd_status = GetInetdStatus();
-	Inetd::netd_status  = Inetd::inetd_status;
-    }
-    // only xinetd is installed
-    else if(Inetd::xinetd_installed == 0) {
-	Inetd::netd_service  = `xinetd;
-	Inetd::xinetd_status = GetXinetdStatus();
-	Inetd::netd_status   = Inetd::xinetd_status;
-    }
-    // none is installed
-    else {
-	Inetd::netd_service = `none;
-    }
-
-    return `next;
-}
-
-/**
- * Ask user for packages to install (inetd, xinetd, both)
- * in autoyast mode.
- * Now that inetd is dropped, don't display anything and select xinetd
- * @return `next for continue
- */
-define symbol PackageAutoDialog() ``{
-    if(Inetd::netd_service == `none) {
-	    Package::DoInstallAndRemove (["xinetd"], []);
-	    IsInstalledClearCache ();
-	    Inetd::netd_service     = `xinetd;
-	    Inetd::xinetd_installed = 0;
-    }
-    return `next;
-}
-
-/**
- * Ask user which service wants to configure (if booth installed)
- * @return returns `back for abort and `next for continue
- */
-define symbol WhatToConfigureDialog() ``{
-
-    term contents =
-	`VBox(
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(2),
-		/* Traslators: If both services (Inetd and Xinetd) are installed, this messagebox is displayed.
-			       This is text above radio-buttons... */
-		`Label(_("Select the service to configure.")),
-		`HSpacing(2)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(6),
-		`RadioButtonGroup(`id(`selection),
-		    `VBox(
-			/* Translators: Radio-buttons in messagebox */
-			`Left(`RadioButton(`id(`inetd),  _("&inetd"), false)),
-			`Left(`RadioButton(`id(`xinetd), _("&xinetd"), true))
-		    )
-		)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`PushButton(`id(`next), `opt(`default), Label::OKButton()),
-		`PushButton(`id(`back), Label::CancelButton())
-	    ),
-	    `VSpacing(0.5)
-	);
-
-    Wizard::RestoreHelp(HELPS["service_selection"]:"");
-    Wizard::SetScreenShotName("inetd-4-servicechoice");
-
-    UI::OpenDialog(contents);
-
-    any ret = UI::UserInput();
-    if (ret == `cancel)		// window-close button
-    {
-	ret = `back;
-    }
-
-    // Check for selected service
-    if(UI::QueryWidget(`id(`inetd), `Value) == true) { // inetd
-	Inetd::configured_service = `inetd;
-	Inetd::netd_status        = Inetd::inetd_status;
-    }
-    else {                                             // xinetd
-	Inetd::configured_service = `xinetd;
-	Inetd::netd_status        = Inetd::xinetd_status;
-    }
-    // close
-    UI::CloseDialog();
-
-    // and exit
-    Wizard::RestoreScreenShotName();
-    return (symbol) ret;
-}
 
 /**
  * This function regenerates index_to_iid and iid_to_index maps
@@ -288,7 +97,7 @@ define list<string> GetProvidedPackage(term service_info) ``{
 	// is it a problem?
 	];
 
-    foreach(map<string, any> default_s, GetDefaults (), ``{
+    foreach(map<string, any> default_s, Inetd::default_conf, ``{
 	if (ServicesMatch (default_s, table_s))
 	{
 	    packages = add (packages, default_s["package"]:"");
@@ -407,10 +216,8 @@ define string CheckInstallable (string id) ``{
     else
     {
 	// ids of NotInstalled table items start with NI
-	if (Inetd::configured_service != `xinetd || find (id, "NI") != 0)
-	{
+//	if (Inetd::configured_service != `xinetd || find (id, "NI") != 0)
 	    return nil;
-	}
     }
     return id;
 }
@@ -507,35 +314,8 @@ define symbol InetdDialog () ``{
 
     any ret = nil;
 
-    // Check for both services installed. Only one can run in real-time
-    if(Inetd::netd_service == `both) {
-	// ask user
-	ret = WhatToConfigureDialog();
-	if(ret != `next) {
-	    return (symbol) ret;
-	}
-    }
-    else {
-	Inetd::configured_service = Inetd::netd_service;
-    }
-    if(Inetd::auto_mode) {
-	Inetd::netd_service = Inetd::configured_service;
-    }
-
-    // load configuration of selected service (ore installed service --- if only one)
-    if (Inetd::netd_conf == nil || Inetd::netd_conf == [])
-    {
-	if(Inetd::configured_service == `inetd) {
-	    Inetd::netd_conf = Inetd::inetd_conf;
-	}
-	else {
-	    Inetd::netd_conf = Inetd::xinetd_conf;
-	}
-    }
-
     /* Inetd configure dialog caption */
-    /* Translators: Main caption. %1 handles current super-server name (inetd, xinetd) in rounded brackets. */
-    string caption = sformat(_("Network Services Configuration %1"), Inetd::configured_service == `inetd ? "(inetd)" : "(xinetd)");
+    string caption = _("Network Services Configuration (xinetd)");
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
@@ -562,9 +342,6 @@ define symbol InetdDialog () ``{
     table_data = CreateTableData(Inetd::netd_conf);
     indexTable();
     UI::ChangeWidget(`id(`table),         `Items,   table_data);
-
-//    // Generate default configuration
-//    SCR::Write(.target.ycp, "/default_conf.ycp", Inetd::xinetd_conf);
 
     // main loop
     while(true) {
@@ -851,12 +628,8 @@ Internet super-server will be disabled."));
 define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 
     /* Translators: Special widget for inetd */
-    term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
-    term    xinetd_specific  = `Empty();                                     // xinetd specific widgets
     boolean input_failed     = false;                                        // for all required widgets filled check
     any     user_choice      = `back;                                        // for UserInput() loop
-    term    inetd_protocols  = `opt(`hstretch, `editable);
-    term    xinetd_protocols = `opt(`hstretch);
 
     // Check for local user list is created...
     if (local_users == nil) {
@@ -894,7 +667,7 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 		`HSpacing(1),
 		// for protocol option - ediatble ComboBox
 		`HWeight(3,
-		    `ComboBox(`id(`protocol), (Inetd::configured_service == `inetd) ? inetd_protocols : xinetd_protocols,
+		    `ComboBox(`id(`protocol), `opt(`hstretch),
 			_("&Protocol"), ["tcp", "udp", "rpc/tcp", "rpc/udp"])
 		),
 		`HSpacing(1),
@@ -904,9 +677,7 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 			["nowait", "wait"])
 		),
 		// check for used service - if inetd, add max TextEntry
-		`HWeight((Inetd::configured_service == `inetd) ? 1 : 0,
-		    (Inetd::configured_service == `inetd) ? inetd_specific : xinetd_specific
-		)
+		`HWeight(0, `Empty())
 	    ),
 	    `VBox(
 		// user and group ComboBoxes
@@ -942,13 +713,6 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
      *
      * inetd has special widget max - we must check it
      */
-    if (Inetd::configured_service == `inetd) {
-	any max_value = line["max"]:"0";
-	if (max_value == "") {
-	    max_value = "0";
-	}
-	UI::ChangeWidget(`id(`max), `Value, tointeger(max_value));
-    }
     UI::ChangeWidget(`id(`service),     `Value, line["service"]:"");
     UI::ChangeWidget(`id(`rpc_version), `Value, line["rpc_version"]:"");
     UI::ChangeWidget(`id(`type),        `Value, line["socket_type"]:"");
@@ -989,26 +753,17 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 	    //   Service and Server must be filled
 	    // Xinetd specific:
 	    //   Service must be filled.
-	    if(((Inetd::configured_service == `inetd) &&
-		((UI::QueryWidget(`id(`service), `Value) == "") ||
-		//(UI::QueryWidget(`id(`user),    `Value) == "") ||
-		(UI::QueryWidget(`id(`server),  `Value) == ""))) ||
-
-		((Inetd::configured_service == `xinetd) &&
-		((UI::QueryWidget(`id(`service), `Value) == "")))) {
-		//(UI::QueryWidget(`id(`user),     `Value) == "")))) {
-		Popup::Message((Inetd::configured_service == `inetd) ?
+	    if (UI::QueryWidget(`id(`service), `Value) == "")
+	    {
+		Popup::Message(
 		    /* Translators: Popup::Message */
-		    _("Service or Server is empty.
-Enter valid values.
-") :
 		    _("Service is empty.
 Enter valid values.
 "));
-	    input_failed = true;
-	    }
-	    else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
-		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
+		input_failed = true;
+	    } else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
+		(UI::QueryWidget(`id(`user), `Value) == _("--default--")))
+	    {
 		/* Translators: sformat-ed() 3 strings */
 		Popup::Message(sformat(_("The user %1 is reserved for internal server processes only."), _("--default--")));
 		input_failed = true;
@@ -1042,9 +797,6 @@ Enter valid values.
 		line = add(line, "server",      UI::QueryWidget(`id(`server),      `Value));
 		line = add(line, "server_args", UI::QueryWidget(`id(`servargs),    `Value));
 		line = add(line, "comment",     UI::QueryWidget(`id(`comment),     `Value));
-		if (Inetd::configured_service == `inetd) {
-		    line = add(line, "max", UI::QueryWidget(`id(`max), `Value));
-		}
 	    }
 	}
     } until (((user_choice == `next) && (input_failed == false)) || (user_choice == `back));

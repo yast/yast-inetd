@@ -3,6 +3,7 @@
  * Package:	Configuration of inetd
  * Summary:	Wizards definitions
  * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
  *
  * $Id$
  */
@@ -11,13 +12,12 @@
 
 textdomain "inetd";
 
-import "Inetd";
-import "Directory";
 import "Wizard";
-import "Popup";
 import "Label";
 import "Sequencer";
 import "Confirm";
+import "Package";
+import "PackageSystem";
 
 include "inetd/complex.ycp";
 include "inetd/dialogs.ycp";
@@ -35,18 +35,13 @@ define symbol InetdSequence() ``{
     }
 
     map aliases = $[
-	"packages"	: [ ``( PackageDialog() ), true ],
 	"read"		: [ ``( ReadDialog() ), true ],
 	"main"		:   ``( InetdDialog() ),
 	"write"		: [ ``( WriteDialog() ), true ]
     ];
 
     map sequence = $[
-	"ws_start" : "packages",
-	"packages" : $[
-	    `abort	: `abort,
-	    `next	: "read"
-	],
+	"ws_start" : "read",
 	"read" : $[
 	    `abort	: `abort,
 	    `next	: "main"
@@ -63,12 +58,16 @@ define symbol InetdSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("inetd");
+
+    symbol ret = `abort;
     
-    any ret = Sequencer::Run (aliases, sequence);
+    if (PackageSystem::CheckAndInstallPackagesInteractive(["xinetd"]))
+        ret = Sequencer::Run (aliases, sequence);
 
     UI::CloseDialog();
     Wizard::RestoreScreenShotName();
-    return (symbol) ret;
+    
+    return ret;
 }
 
 /**
@@ -84,6 +83,8 @@ define symbol InetdAutoSequence() ``{
     Wizard::SetDesktopIcon("inetd");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
+
+    Package::DoInstall(["xinetd"]);
 
     symbol ret = InetdDialog ();
 

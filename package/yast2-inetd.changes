@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 25 14:00:36 CET 2005 - mlazar@suse.cz
+
+- removed inetd support
+
+-------------------------------------------------------------------
 Tue Jan 25 09:17:46 CET 2005 - mlazar@suse.cz
 
 - Progress::on()/off() replaced with Progress::set() 

@@ -3,6 +3,7 @@
  * Package:	Configuration of inetd
  * Summary:	Data for configuration of inetd, input and output functions.
  * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
  *
  * $Id$
  *
@@ -82,25 +83,8 @@ import "String";
 typedef map<string, any> service_t;
 typedef list<service_t> services_t;
 
-global define void EnsureDefaultConfLoaded ();
 global define services_t mergeAfterInstall(services_t system_c, services_t user_c);
 global define services_t MergeAyProfile (services_t target, services_t changes);
-
-/**
- * What service is in configuration process?
- * Same values as netd_service except `both
- */
-global symbol configured_service = `none;
-
-/**
- * Default configuration for inetd (all services in the distro)
- */
-global map<string, any> default_conf_inetd = nil;
-
-/**
- * Default configuration for xinetd (all services in the distro)
- */
-global map<string, any> default_conf_xinetd = nil;
 
 /**
  * Abort function
@@ -109,6 +93,11 @@ global map<string, any> default_conf_xinetd = nil;
 global block<boolean> AbortFunction = nil;
 
 global define boolean Modified();
+
+/**
+ * Holds default configuration for xinetd.
+ */
+global services_t default_conf = [];
 
 include "inetd/routines.ycp";
 
@@ -162,30 +151,6 @@ global define boolean Modified() ``{
 };
 
 /**
- * hold informations about installed services (rpm -q exit code).
- * 0 means installed, anything else means no or error
- * <br>
- * inetd_installed  contains info about inetd
- */
-global integer inetd_installed   = -1;
-
-/**
- * xinetd_installed contains info about xinetd
- */
-global integer xinetd_installed  = -1;
-
-/**
- * What service is ready for configuration?
- * <br> `none   means no available --- this is for AutoInstallation
- * <br> `both   means the selection dialog will be displayed (only one service can run)
- * <br> `inetd  inetd will be configured
- * <br> `xinetd xinetd will be configured
- * <br> in autoinst used in the sense of configured_service???
- * @see configured_service
- */
-global symbol netd_service       = `none;
-
-/**
  * <pre>
  * These variable holds inetd configuration.
  * This is list of maps. Each map has the following structure:
@@ -207,41 +172,11 @@ global symbol netd_service       = `none;
  *  ]
  * </pre>
  */
-global list<map <string, any> > inetd_conf           = [];
-
-/**
- * This variable holds xinetd configuration.
- * The structure is the same as inetd_conf.
- */
-global list<map <string, any> > xinetd_conf          = [];
-
-/**
- * Holds configuration of selected service (service in configuration process).
- * The name of this service is stored in configured_service.
- * Structure of this variable is the same as inetd_conf or xinetd_conf.
- */
 global list<map <string, any> > netd_conf            = [];
 
 /**
- * Holds default configuration for currently edited superserver.
- */
-global map <string, any> default_conf          = $[];
-
-/**
- * Is inetd (or xinetd) running?
+ * Is xinetd running?
  * These variables contains return values from Service::Status() calls.
- */
-global integer inetd_status      = -1;
-
-/**
- * This contains return value of following call:
- * <br>  Service::Status("xinetd");
- */
-global integer xinetd_status     = -1;
-
-/**
- * Status of edited service (see WhatToConfigureDialog() in dialogs.ycp)
- * Values are the same as (x)inetd_status.
  */
 global integer netd_status       = -1;
 
@@ -249,28 +184,6 @@ global integer netd_status       = -1;
  * This variable is used for new iid "generator"
  */
 global integer last_created      = 0;
-
-/**
- * Read default_conf_{inetd,xinetd}, if not already done
- */
-global define void EnsureDefaultConfLoaded () ``{
-     if (default_conf_inetd == nil)
-     {
-	 default_conf_inetd = $[
-	     "netd_conf": SCR::Read (.target.ycp, Directory::datadir + "/default_conf_inetd.ycp"),
-	     "netd_service": `inetd,
-	     "netd_status": -1,
-	     ];
-     }
-     if (default_conf_xinetd == nil)
-     {
-	 default_conf_xinetd = $[
-	     "netd_conf": SCR::Read (.target.ycp, Directory::datadir + "/default_conf_xinetd.ycp"),
-	     "netd_service": `xinetd,
-	     "netd_status": -1,
-	     ];
-     }
- }
 
 /**
  * Read all inetd settings
@@ -282,9 +195,6 @@ global define boolean Read() ``{
     string caption = _("Initializing inetd Configuration");
 
     integer steps = 1;
-
-    integer sl = 0;
-    sleep(sl);
 
     Progress::New( caption, " ", steps, [
 	    _("Read the Configuration"),
@@ -299,25 +209,15 @@ global define boolean Read() ``{
     // read database
     if(Abort()) return false;
 
-    if(netd_service == `none)
-	return false;
+    netd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
+    
+    // Read default_conf
+    default_conf = (services_t)SCR::Read (.target.ycp, Directory::datadir + "/default_conf_xinetd.ycp");
 
-    if(netd_service == `both) {
-	inetd_conf  = (list<map <string, any> >) SCR::Read(.etc.inetd_conf.services);
-	xinetd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
-    }
-    else if(netd_service == `inetd) {
-	inetd_conf = (list<map <string, any> >) SCR::Read(.etc.inetd_conf.services);
-    }
-    else if(netd_service == `xinetd) {
-	xinetd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
-    }
-
-    sleep(sl);
+    netd_status = Service::Status("xinetd");
 
     if(Abort()) return false;
     ProgressNextStage(_("Finished"));
-    sleep(sl);
 
     if(Abort()) return false;
     modified = false;
@@ -380,9 +280,6 @@ global define boolean Write() ``{
 
     integer steps = 1;
 
-    integer sl = 0;
-    sleep(sl);
-
     Progress::New(caption, " ", steps, [
 	    _("Write the settings"),
 	], [
@@ -396,67 +293,43 @@ global define boolean Write() ``{
     // write settings
     if(Abort()) return false;
 
-    string current_name = (configured_service == `inetd)? "inetd": "xinetd";
-    string other_name = (configured_service == `inetd)? "xinetd": "inetd";
-    boolean other_installed = (configured_service == `inetd)?
-	(xinetd_installed == 0): (inetd_installed == 0);
-    path current_path = (configured_service == `inetd)?
-	.etc.inetd_conf.services: .etc.xinetd_conf.services;
-    boolean current_running = (configured_service == `inetd)?
-	(inetd_status == 0): (xinetd_status == 0);
-
     if (write_only) {
-	// disable the other service
-	Service::Disable (other_name);
 	// enable/disable the current service
-	Service::Adjust (current_name, (netd_status == 0)? "enable": "disable");
+	Service::Adjust ("xinetd", (netd_status == 0)? "enable": "disable");
 	// YUCK, looks like autoinst part, should be done in inetd_auto.ycp
-	if (configured_service == `xinetd) {
-	    services_t new_conf = [];
-	    new_conf  = (services_t) SCR::Read(.etc.xinetd_conf.services);
-	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
-	}
-	SCR::Write(current_path, netd_conf);
+	services_t new_conf = [];
+	new_conf  = (services_t) SCR::Read(.etc.xinetd_conf.services);
+	netd_conf = mergeAfterInstall(new_conf, netd_conf);
+	SCR::Write(.etc.xinetd_conf.services, netd_conf);
     }
     else {
 
-	if (other_installed)
-	{
-	    y2milestone("%1 installed --- stopping and disabling service", other_name);
-	    if (!write_only)
-		Service::Stop (other_name);
-	    Service::Disable (other_name);
-	}
-	else {
-	    y2milestone("%1 not installed --- nothing done", other_name);
-	}
-
-	SCR::Write(current_path, netd_conf);
+	SCR::Write(.etc.xinetd_conf.services, netd_conf);
 
 	if (netd_status != 0) { // want to stop
-	    if (current_running) { // was running --- stop
-		y2milestone("%1 was running --- stoping and disabling service", current_name);
+	    if (netd_status==0) { // was running --- stop
+		y2milestone("%1 was running --- stoping and disabling service", "xinetd");
 		if (!write_only)
-		    Service::Stop (current_name);
-		Service::Disable (current_name);
+		    Service::Stop ("xinetd");
+		Service::Disable ("xinetd");
 	    } // else --- leave stopped
 	    else {
-		y2milestone("%1 was stopped --- leaving unchanged", current_name);
+		y2milestone("%1 was stopped --- leaving unchanged", "xinetd");
 	    }
 	}
 	else { // want to start
 	    // current is running - only reload
-	    if (current_running) {
-		y2milestone("%1 was running --- calling force-reload", current_name);
+	    if (netd_status==0) {
+		y2milestone("%1 was running --- calling force-reload", "xinetd");
 		if (!write_only)
-		    Service::RunInitScript(current_name, "force-reload");
+		    Service::RunInitScript("xinetd", "force-reload");
 	    }
 	    // if stopped - enable and start
 	    else {
-		y2milestone("%1 was stopped --- enabling and starting service", current_name);
+		y2milestone("%1 was stopped --- enabling and starting service", "xinetd");
 		if (!write_only)
-		    Service::Start (current_name);
-		Service::Enable (current_name);
+		    Service::Start ("xinetd");
+		Service::Enable ("xionetd");
 	    }
 	}
     }
@@ -466,11 +339,9 @@ global define boolean Write() ``{
 
     // in future: catch errors
     if(false) Report::Error (_("Cannot write settings!"));
-    sleep(sl);
 
     if(Abort()) return false;
     ProgressNextStage(_("Finished"));
-    sleep(sl);
 
     if(Abort()) return false;
     Progress::Finish();
@@ -504,8 +375,7 @@ global define services_t mergeAfterInstall(services_t system_c, services_t user_
  * @see MergeAyProfile
  */
 global define services_t mergeWithDefaults(services_t changes) ``{
-    services_t target = default_conf["netd_conf"]:[];
-    return MergeAyProfile (target, changes);
+    return MergeAyProfile (default_conf, changes);
 }
 
 /**
@@ -589,88 +459,22 @@ global define services_t MergeAyProfile (services_t target, services_t changes) 
 }
 
 /**
- * Convert from SLES8 AI profile
- */
-define map ConvertSles8Profile (map settings) ``{
-    modified = true;		// must export in current format
-    boolean start = settings["start_inetd"]:false;
-    if (start)
-    {
-	typedef map<string, string> s8_t;
-	services_t services = maplist (
-	    s8_t service, (list<s8_t>) settings["inetd_services"]:[], ``(
-		$[
-		    "service": service["service_name"]:"?",
-		    "enabled": service["service_status"]:"?" == "enable",
-		    ]
-		));
-	return $[
-	    "netd_service": `inetd,
-	    "netd_status": 0,
-	    "netd_conf": services,
-	    ];
-    }
-    else
-    {
-	return $[
-	    "netd_service": `inetd,
-	    "netd_status": 1,
-	    "netd_conf": [],
-	    ];
-    }
-}
-
-/**
  * Get all inetd settings from the first parameter
  * (For use by autoinstallation.)
  * @param settings The YCP structure to be imported.
  * @return boolean True on success
  */
 global define boolean Import (map settings) ``{
-    EnsureDefaultConfLoaded ();
 
-    if (haskey (settings, "start_inetd") || haskey (settings, "inetd_services"))
-    {
-	settings = ConvertSles8Profile (settings);
-    }
+    // Read default_conf_xinetd, if not already done
+     default_conf = (services_t)SCR::Read (.target.ycp, Directory::datadir + "/default_conf_xinetd.ycp");
 
     //y2milestone("settings = %1", settings);
-    /*
-     * if map contains "netd_service", whole configuration is filled
-     * from this map.  if "netd_service" is not found, configuration is
-     * generated from default values stored if default_conf_*.ycp.
-     */
-    // service is inetd
-    if (settings["netd_service"]:`none == `inetd) {
-	netd_service  = `inetd;
-	default_conf  = default_conf_inetd;
-	inetd_conf    = mergeWithDefaults(settings["netd_conf"]:[]);
-	inetd_status  = 0;
-	netd_status   = settings["netd_status"]:-1;
-	netd_conf     = inetd_conf;
-    }
-    // service is xinetd
-    else if (settings["netd_service"]:`none == `xinetd) {
-	netd_service  = `xinetd;
-	default_conf  = default_conf_xinetd;
-	xinetd_conf   = mergeWithDefaults(settings["netd_conf"]:[]);
-	xinetd_status = 0;
-	netd_status   = settings["netd_status"]:-1;
-	netd_conf     = xinetd_conf;
-    }
-    // no service detected --- loading defaults
-    else if (settings["netd_service"]:`none == `none) {
-	netd_service  = `none;
-	inetd_conf    = default_conf_inetd["netd_conf"]:[];
-	xinetd_conf   = default_conf_xinetd["netd_conf"]:[];
-	inetd_status  = -1;
-	xinetd_status = -1;
-	netd_status   = -1;
-	netd_conf     = [];
-    }
+    netd_conf   = mergeWithDefaults(settings["netd_conf"]:[]);
+    netd_status   = settings["netd_status"]:-1;
+
     // common variables
     last_created       = settings["last_created"]:0;
-    configured_service = netd_service;
     //y2milestone("%1", netd_conf);
     return true;
 }
@@ -685,11 +489,7 @@ global define services_t getChanged(services_t config) ``{
     services_t changes  = [];
     map  def_line = $[];
 
-    EnsureDefaultConfLoaded ();
-    if(netd_service == `inetd)
-	defaults = default_conf_inetd["netd_conf"]:[];
-    else
-	defaults = default_conf_xinetd["netd_conf"]:[];
+    defaults = default_conf;
 
     // defaults not loaded --- get all services listed in config
     if(defaults == [])
@@ -777,7 +577,6 @@ global define map Export () ``{
 //    sleep(3000);
     map config = $[];
     config = add(config, "netd_conf",       getChanged(netd_conf));
-    config = add(config, "netd_service",    configured_service);
     config = add(config, "netd_status",     netd_status);
     config = add(config, "last_created",    last_created);
     y2milestone("%1", config);
@@ -821,8 +620,7 @@ global define string Summary() ``{
 	/*
 	 * Translators: Summary head, if something configured
 	 */
-	string head = sformat(_("Network services are managed via %1"),
-	    configured_service == `inetd ? "inetd" : "xinetd");
+	string head = sformat(_("Network services are managed via %1"), "xinetd");
 	S = Summary::AddHeader(S, head);
 	S = Summary::AddHeader(S, _("These services will be enabled"));
 	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
@@ -898,8 +696,6 @@ global define map AutoPackages() ``{
 global void DBG (string i) {
     y2internal ("%1", i);
     y2milestone ("  netd_conf: %1",   netd_conf);
-    y2milestone (" inetd_conf: %1",  inetd_conf);
-    y2milestone ("xinetd_conf: %1", xinetd_conf);
 }
 
 /* EOF */
