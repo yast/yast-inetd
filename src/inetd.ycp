@@ -17,6 +17,9 @@
 
 textdomain "inetd";
 
+import "CommandLine";
+
+
 /* The main () */
 y2milestone ("----------------------------------------");
 y2milestone ("Xinetd module started");
@@ -26,20 +29,25 @@ include "inetd/wizards.ycp";
 /* is this proposal or not? */
 boolean propose = false;
 list args = WFM::Args();
-if(size(args) > 0) {
-    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
-	y2milestone("Using PROPOSE mode");
-	propose = true;
-    }
-    else
-	y2error("Bad argument for inetd: %1", WFM::Args(0));
+if ( size(args)>0 && is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+    y2milestone("Using PROPOSE mode");
+    propose = true;
 }
+
+map mini = $[
+        // help text
+        "help"      : _("Configuration of Network Services (xinetd)"),
+        "id"        : "inetd",
+        // GUI handler (symbol())
+        "guihandler": InetdSequence,
+    ];
+
 
 /* main ui function */
 any ret = nil;
 
 if(propose) ret = InetdAutoSequence();
-else ret = InetdSequence();
+else ret = CommandLine::Run(mini); 
 y2debug("ret == %1", ret);
 
 /* Finish */
