@@ -1,0 +1,13 @@
+$Id$
+
+* Keeping an up to date service list
+
+The package contains a list of all services available in the
+distribution rpms and their configuration. It is stored in
+src/default_conf_{inetd,xinetd}.ycp. (An earlier version of this,
+all-services.ycp, is obsolete)
+
+It is necessary to keep the list up to date. It is done by running
+all-services.sh. It should be enough to do it later in the beta stage
+and then ask the packagers to notify you if there are changes after
+that.
