@@ -31,6 +31,8 @@ sort $SX-pkgs | while read pkg; do
     # It has a hack to print "$service,$port,$program" to fd3
     {
 	echo "Xinetd(\"./$SX.conf\")"
+	# now it is necessary to Read to parse the files
+	echo "Read(.services)"
 	# services-by-package
 	echo "Execute(.sbp)"
 	echo "result(nil)"
