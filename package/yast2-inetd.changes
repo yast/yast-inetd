@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Mar 12 15:47:56 CET 2004 - mvidner@suse.cz
+
+- updated the installable packages list
+- added wizard icons (jhumpol)
+- using Sequencer
+- re-enabled testsuite
+- 2.9.9
+
+-------------------------------------------------------------------
 Wed Mar 10 12:38:40 CET 2004 - mvidner@suse.cz
 
 - disabled testsuite because of Wizard problems
