@@ -219,28 +219,39 @@ global define symbol InetdDialog () ``{
     /* XXPkg configure1 dialog contents */
     term contents =
 	`VBox(
-	`Left(`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)),
+	    `VSpacing(1),
+	    `Left(
+		`RadioButtonGroup(
+		    `VBox(
+			`RadioButton(`id(`stop),     `opt(`notify), _("Super-server &off"), true),
+			`RadioButton(`id(`editable), `opt(`notify), _("&Super-server on"), false)
+		    )
+		)
+		//`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)
+	    ),
+	    `VSpacing(1),
 	      // Main dialog edit inetd.conf
-	      `HBox(
-		    //`Label("     "),
-		    `Table(`id(`table),`header( `Center(_("Status")),
-						_("Service"),
-						_("Type "),
-						`Center(_("Protocol")),
-						_("Flags"),
-						_("User"),
-						//_("Group"),
-						_("Server"),
-						_("Server / Args")),
-			   table_data)
-		    ),
-	      `HBox(
-		   `PushButton(`id(`create), _("&Create") ),
-		   `PushButton(`id(`delete), _("&Delete") ),
-		   `PushButton(`id(`edit),   _("&Edit") ),
-		   `PushButton(`id(`switch_active), _("&Activate or Deactivate") )
-		   )
-	      );
+	    `Left(`Label(_("Currently available services"))),
+	    `HBox(
+		`Table(`id(`table), `header(`Center(_("Ch")), `Center(_("Status")),
+		    _("Service"), _("Type "), `Center(_("Protocol")), _("Flags"),
+		    _("User"), _("Server"), _("Server / Args")), table_data)
+	    ),
+	    `HBox(
+		`Left(
+		    `HBox(
+			`PushButton(`id(`create), _("&Add...") ),
+			`PushButton(`id(`edit),   _("&Edit...") ),
+			`PushButton(`id(`delete), _("&Delete") )
+		    )
+		),
+		`VSpacing(),
+		`Right(
+		    `PushButton(`id(`switch_active), _("&Toggle status (On/Off)") )
+		)
+	    ),
+	    `VSpacing(2)
+	);
 
     any ret = nil;
 
@@ -274,6 +285,8 @@ global define symbol InetdDialog () ``{
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
 	    BackButtonLabel(), NextButtonLabel());
+    
+    Wizard::ReplaceBackButton(`Empty());
 
     boolean new_state = false;
 
@@ -281,7 +294,7 @@ global define symbol InetdDialog () ``{
 	new_state = true;
     }
     UI::ChangeWidget(`id(`editable),      `Value,   new_state);
-    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
+    //UI::ChangeWidget(`id(`table),         `Enabled, new_state);
     UI::ChangeWidget(`id(`create),        `Enabled, new_state);
     UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
     UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
@@ -305,9 +318,9 @@ global define symbol InetdDialog () ``{
 
 	ret = UI::UserInput();
 
-        if(ret == `editable) {
+        if((ret == `editable) || (ret == `stop)) {
 	    boolean new_state = UI::QueryWidget(`id(`editable), `Value);
-	    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
+	    //UI::ChangeWidget(`id(`table),         `Enabled, new_state);
 	    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
@@ -328,7 +341,7 @@ global define symbol InetdDialog () ``{
 		"user":"root", "group":"", "comment":"",
 		"iid":"new" + last_created, "created":true];
 	    // execute dialog
-	    return_val = EditOrCreateServiceDlg(_("Create a new service entry"), new_line);
+	    return_val = EditOrCreateServiceDlg(_("Add a new service entry"), new_line);
 	    // check Cancel
 	    if (return_val != nil) {
 		Inetd::addLine(return_val);
@@ -503,7 +516,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	    `HBox(
 		// service socket type
 		`HWeight(3,
-		    `ComboBox(`id(`type), `opt(`hstretch), _("T&ype"),
+		    `ComboBox(`id(`type), `opt(`hstretch), _("Socket T&ype"),
 			["stream", "dgram", "raw", "rdm", "seqpacket"])
 		),
 		// for protocol option - ediatble ComboBox

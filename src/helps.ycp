@@ -89,6 +89,9 @@ Click the <b>Enable super-server</b> checkbox to enable custom super-server
 (inetd or xinetd - it depends on what you have installed) configuration.
 If you want to stop super-server, please leave the checkbox unchecked.</p>") +
 "<p><br></p>" +
+    _("<p><b><big>Editation services status:</big></b><br>
+All services marked with <b>X</b> in column <b>Ch</b> was edited
+and will be changed in system configuration.</p>") +
     _("<p><b><big>Services status:</big></b><br>
 All services marked with <b>---</b> are inactive (locked),
 All services marked with <b>On</b> are active (unlocked).</p>") +
@@ -124,22 +127,24 @@ It is not possible, you must code it first :-)
     global define string EditCreateHelp () ``{
 
 	return _("
-<p>To create a valid entry (service) for inetd,
+<p>To create a valid entry (service) for super-server,
 enter</p>
 ")+
 
 _("<ul>
 <li>service name
+<li>RPC version (optional)
 <li>socket type
 <li>protocol
-<li>wait/nowait[.max]
-<li>user[.group]
+<li>wait/nowait
+<li>user
+<li>group
 <li>server program
 <li>server program arguments
 </ul>")+
 
-_("<p>This is a short description. For details, see <b>info inetd.conf</b>.
-</p>
+_("<p>This is a short description. For details, see <b>info inetd.conf</b>
+or <b>info xinetd.conf</b>.</p>
 ")+
 
 _("<p>Enter a valid service name in <b>service name</b>.
@@ -160,20 +165,18 @@ Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
 _("<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
 The optional <i>max</i> suffix specifies the maximum number of
 server instances that may be spawned from inetd within an interval of 60
-seconds.
+seconds. This option is inetd specific.
 </p>")+
 
-_("<p>The server will be run with the permissions of the user entered in
-the <b>user</b> field. This is useful to make services run with permissions
+_("<p>The server will be run with the permissions of the user selected in
+the <b>user</b> combobox. This is useful to make services run with permissions
 less than root.
 </p>")+
 
 _("<p>In <b>server program</b>, enter the path name of the program to
 be executed by inetd when a request reaches its socket.
 
-</p>
-")+
-_("<p>---</p>");
+</p>");
 
     }
 
