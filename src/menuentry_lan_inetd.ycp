@@ -28,7 +28,7 @@
    $[
      ////////////////////////////////////////////////////////////////////////////////
      // name of the entry, shon in curses menu and ycc                             //
-     `menuentry    : UI(_("Start/stop services (inetd)")),
+     `menuentry    : _("Start/stop services (inetd)"),
      
      ////////////////////////////////////////////////////////////////////////////////
      //leave blank,  experts only ;-)
@@ -40,19 +40,19 @@
    
      ////////////////////////////////////////////////////////////////////////////////
      // Icon used in y2contolcenter                                                //
-     `icon         : UI(_("inetd.png")),
+     `icon         : "inetd.png",
      
       ////////////////////////////////////////////////////////////////////////////////
       // explanation of yast2 menueentry in ncurses menu                            //                 
      `widget       : `RichText(
 						  // 
-						  UI(_("Launch this module to configure your network services."))
+						  _("Launch this module to configure your network services.")
 						     +
-						  UI(_("<p>You need to be logged in as <i>root</i> to do this.</p>"))),
+						  _("<p>You need to be logged in as <i>root</i> to do this.</p>")),
      
       ////////////////////////////////////////////////////////////////////////////////
       // explanation in YaST2 Control Center                                         //
-      `helptext     : UI(_("Configure your network services started via inetd.")),
+      `helptext     : _("Configure network services started via inetd"),
    
       ////////////////////////////////////////////////////////////////////////////////
       // leave nil, experts only ;-)
