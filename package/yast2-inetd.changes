@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jan 16 15:07:14 CET 2003 - mvidner@suse.de
+
+- Fixed disabling a xinetd service.
+- The agent can now re-read the files (eg. when a new one is installed).
+- Disregard line numbers in the agent testsuite.
+
+-------------------------------------------------------------------
 Fri Jan 10 14:45:15 CET 2003 - mvidner@suse.de
 
 - Prevent agent from returning strings as integers/booleans (~#21804).
