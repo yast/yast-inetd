@@ -700,11 +700,9 @@ global void DBG (string i) {
 
 /* LiMaL interface */
 
-typedef integer service_id_t;
-
-global list<service_id_t> GetServicesId(service_t mask)
+global list<string> GetServicesId(service_t mask)
 {
-    list<service_id_t> ids = [];
+    list<string> ids = [];
     integer i = 0;
     
     while(size(netd_conf) > i) {
@@ -716,42 +714,61 @@ global list<service_id_t> GetServicesId(service_t mask)
 	    });
 	}
 	if (fit)
-	    ids = add(ids, i);
+	    ids = add(ids, tostring(i));
 	i = i+1;
     };
     return ids;
 }
 
-global list<string> ServiceAttributes(service_id_t id)
+global list<string> ServiceAttributes(string id)
 {
-    return maplist(string attribute, any val, netd_conf[id]:$[], {return attribute;});
+    return maplist(string attribute, any val, netd_conf[tointeger(id)]:$[], {return attribute;});
 }
 
-global string ServiceGetStr(service_id_t id, string attribute, string default)
+global string ServiceGetStr(string id, string attribute, string default)
 {
-    if (haskey(netd_conf[id]:$[], attribute))
-	return (string)netd_conf[id, attribute]:nil;
+    if (haskey(netd_conf[tointeger(id)]:$[], attribute))
+	return (string)netd_conf[tointeger(id), attribute]:nil;
     return default;
 }
 
-global integer ServiceGetInt(service_id_t id, string attribute, integer default)
+global integer ServiceGetInt(string id, string attribute, integer default)
 {
-    if (haskey(netd_conf[id]:$[], attribute))
-	return (integer)netd_conf[id, attribute]:nil;
+    if (haskey(netd_conf[tointeger(id)]:$[], attribute))
+	return (integer)netd_conf[tointeger(id), attribute]:nil;
     return default;
 }
 
-global boolean ServiceGetTruth(service_id_t id, string attribute, boolean default)
+global boolean ServiceGetTruth(string id, string attribute, boolean default)
 {
-    if (haskey(netd_conf[id]:$[], attribute))
-	return (boolean)netd_conf[id, attribute]:nil;
+    if (haskey(netd_conf[tointeger(id)]:$[], attribute))
+	return (boolean)netd_conf[tointeger(id), attribute]:nil;
     return default;
 }
 
-global boolean ServiceEnabled(service_id_t id)
+global boolean ServiceEnabled(string id)
 {
     return ServiceGetTruth(id, "enabled", true);
 }
+
+global boolean ServiceDelete(string id)
+{
+    deleteLine(netd_conf[tointeger(id),"iid"]:"");
+    return true;
+}
+
+global boolean ServiceAdd(service_t service)
+{
+    addLine(service);
+    return true;
+}
+
+global boolean ServiceChange(string id, service_t service)
+{
+    changeLine(service, netd_conf[tointeger(id),"iid"]:"");
+    return true;
+}
+
 
 /* EOF */
 }
