@@ -1,0 +1,19 @@
+//
+{
+    integer old = WFM::SCRGetDefault ();
+
+    integer h = WFM::SCROpen ("ag_netd", false);
+    if (h < 1)
+    {
+	return;
+    }
+    WFM::SCRSetDefault (h);
+    SCR::Xinetd (WFM::Args (0));
+
+    list r = SCR::Read (.services);
+
+    WFM::SCRClose (h);
+    WFM::SCRSetDefault (old);
+
+    return r;
+}

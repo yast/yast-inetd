@@ -15,11 +15,20 @@ alias kick-debug-lines="fgrep -v ' <0> '"
 alias kick-empty-lines="grep -v '^$'"
 alias strip-constant-part="sed 's/^....-..-.. ..:..:.. [^)]*) //g'"
 
-#IN_FILE=${1%.*}".in"
 rm -f "$IN.test"
 cp "$IN" "$IN.test" 2> /dev/null
 AGDIR="`dirname $AG`"
 ln -snf . "$AGDIR/servers_non_y2"
+
+#multi
+shopt -s nullglob
+mkdir -p tmp/idir
+rm -f tmp/idir/*
+for INC in ${IN%.in}.*.d.in; do
+    INC2=${INC##*/}
+    INC2=${INC2#*.}
+    cp $INC tmp/idir/${INC2%%.*}
+done
 
 Y=/usr/lib/YaST2/bin/y2base
 Y2DIR="$AGDIR" $Y -l - 2>&1 >"$OUT_TMP" "$YCP" '("'"$IN.test"'")' testsuite \
@@ -29,6 +38,14 @@ Y2DIR="$AGDIR" $Y -l - 2>&1 >"$OUT_TMP" "$YCP" '("'"$IN.test"'")' testsuite \
     > "$ERR_TMP"
 
 cat "$IN.test" >> "$OUT_TMP" 2> /dev/null
+
+#multi
+for INC in ${IN%.in}.*.d.in; do
+    INC2=${INC##*/}
+    INC2=${INC2#*.}
+    diff -u ${INC%.in}.out tmp/idir/${INC2%%.*} #2>&1
+done
+
 exit 0
 
 
