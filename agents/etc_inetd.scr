@@ -1,4 +1,4 @@
-.test.netd
+.etc.inetd
 `ag_netd (
     Netd ("/etc/inetd.conf")
 )
