@@ -968,7 +968,7 @@ Enter valid values.
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
 		/* Translators: sformat-ed() 3 strings */
 		UI::MessagePopup(sformat("%1%2%3", _("The user "), _("--default--"),
-		    _(" is reserved only for server internal.")));
+		    _(" is reserved for internal services.")));
 		input_failed = true;
 	    }
 	    // YES (input is OK) --- so save settings!
