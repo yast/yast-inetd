@@ -222,6 +222,8 @@ sub write_file ()
 
 sub services_by_package ()
 {
+    my $class = shift;
+
     open (OUT, ">/dev/fd/3");
     foreach my $s (@services)
     {
@@ -626,7 +628,9 @@ while ( <STDIN> )
 	my $fn = shift @arguments || "/etc/$netd.conf";
 
 	$base_file = strip_pwd ($fn);
-	$netd->parse_file ($fn);
+
+	# parsing is done before Read (.services)
+	# so that we can re-read the config if a new package is installed
 	next;
     }
     # else it should be a regular command
@@ -685,6 +689,7 @@ while ( <STDIN> )
     {
 	if ($path eq ".services")
 	{
+	    $netd->parse_file ($base_file);
 	    ycp::Return (\@services, 1);
 	}
 	elsif ($path eq ".message")
