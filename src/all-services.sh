@@ -25,9 +25,10 @@ function extract() {
 # $1: file name
 function add_header() {
     mv "$1" "$1"~
-    cat - "$1"~ <<'EOF' > "$1"
+    # do not let CVS or bash expand the keyword
+    cat - "$1"~ <<EOF > "$1"
 // Author: Martin Vidner <mvidner@suse.cz>
-// $Id$
+// \$Id\$
 EOF
 }
 
@@ -46,7 +47,7 @@ done
 # use the current agent
 ln -snf ../agents servers_non_y2
 
-#proceed in YCP:
+echo Proceeding in YCP
 Y2DIR=. /sbin/yast2 ${SX}_create.ycp
 
 # appease check_ycp

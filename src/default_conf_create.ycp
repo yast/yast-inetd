@@ -23,14 +23,28 @@
 	];
 
     /**
+     * Log 2 strings and put a dot to stdout
+     * @param s1 s1
+     * @param s2 s2
+     */
+    global define void Progress (string s1, string s2) ``{
+	y2milestone ("%1: %2", s1, s2);
+	SCR::Write (.target.string, "/dev/stdout", ".");
+    }
+
+    /**
      * Shortcut for first element of splitstring
+     * @param whole a string
+     * @param delimiters where to split
+     * @return first element
      */
     global define any first_of_split (string whole, string delimiters) ``{
 	return select (splitstring (whole, delimiters), 0, "");
     }
 
     /**
-     *
+     * @param services default services list
+     * @return services list with "package" determined
      */
     global define list (map) DeterminePackages (list (map) services) ``{
 	return maplist (map service, services, ``{
@@ -58,7 +72,7 @@
 		package = first_of_split (package, " ");
 		package_cache[server] = package;
 	    }
-	    y2milestone ("%1: %2", server, package);
+	    Progress (server, package);
 
 	    return add (service, "package", package);
 	});
@@ -89,4 +103,6 @@
     // watch out, a single value, not an include
     SCR::Write (.target.ycp, "default_conf_inetd.ycp", dc_inetd);
     SCR::Write (.target.ycp, "default_conf_xinetd.ycp", dc_xinetd);
+
+    SCR::Write (.target.string, "/dev/stdout", "\n");
 }
