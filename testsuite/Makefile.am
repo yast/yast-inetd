@@ -21,8 +21,9 @@ all-local: $(testsuite_prepare)
 		run/runtest.sh $(RPMNAME).test/testsuite.exp
 	mkdir -p tmp
 
-clean-local: $(testsuite_prepare)
-	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) clean
+# Interferates with a agents testsuite.
+#clean-local: $(testsuite_prepare)
+#	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) clean
 
 check-local: $(testsuite_prepare)
 	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) check

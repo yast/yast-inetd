@@ -57,12 +57,14 @@ global define symbol InetdSequence() ``{
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
+    Wizard::SetScreenShotName("inetd-1-start");
     Wizard::SetContentsButtons(caption, contents, "",
 	    BackButtonLabel(), NextButtonLabel());
 
     any ret = WizardSequencer(aliases, sequence);
 
     UI::CloseDialog();
+    Wizard::RestoreScreenShotName();
     return ret;
 }
 

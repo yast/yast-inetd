@@ -36,8 +36,10 @@ global define boolean Modified() ``{
  */
 global define symbol ReadDialog() ``{
     Wizard::RestoreHelp(HELPS["read"]:"");
+    Wizard::SetScreenShotName("inetd-3-read");
     Inetd::AbortFunction = ``{ return PollAbort();};
     boolean ret = Inetd::Read();
+    Wizard::RestoreScreenShotName();
     return ret ? `next : `abort;
 }
 
@@ -47,8 +49,10 @@ global define symbol ReadDialog() ``{
  */
 global define symbol WriteDialog() ``{
     Wizard::RestoreHelp(HELPS["write"]:"");
+    Wizard::SetScreenShotName("inetd-7-write");
     Inetd::AbortFunction = ``{ return PollAbort();};
     boolean ret = Inetd::Write();
+    Wizard::RestoreScreenShotName();
     return ret ? `next : `abort;
 }
 

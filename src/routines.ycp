@@ -121,7 +121,9 @@ global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
 	    index = index + 1;
 	    term entry = `item(`id("NI" + index),
 		"",                  // Change entry
-		"NI",                // Status entry
+		/* Translators: This is used for status "Not Installed". Please, make the
+		                translation as short as possible. */
+		_("NI"),             // Status entry
 		line["service"]:"",  // Service
 		"",                  // Socket type
 		line["protocol"]:"", // Protocol
@@ -158,9 +160,11 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		string changed_text = (lookup(line, "changed", false) == false) ? "" : "X";
 		any status = lookup(line, "enabled", true);
 		if (status == true) {
+		    /* Translators: Service status: On = running, --- = stopped */
 		    status_text = _("On");
 		}
 		else {
+		    /* Translators: This string you can leave unchanged */
 		    status_text = _("---");
 		}
 		// determine wait mode (convert to string)
