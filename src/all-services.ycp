@@ -1,8 +1,11 @@
 // A mapping between all available services and rpm packages
 // Author: Martin Vidner <mvidner@suse.cz>
 // $Id$
-// Generated on Wed Feb 26 11:00:44 CET 2003
+// Generated on Mon Mar  3 13:38:45 CET 2003
 [
+$["package":"amanda", "service":"amanda", "protocol":"udp", "program":"amandad"],
+$["package":"amanda", "service":"amandaidx", "protocol":"tcp", "program":"amindexd"],
+$["package":"amanda", "service":"amidxtaped", "protocol":"tcp", "program":"amidxtaped"],
 $["package":"bootp-DD2", "service":"bootp", "protocol":"udp", "program":"bootpd"],
 $["package":"cups", "service":"printer", "protocol":"tcp", "program":"cups-lpd"],
 $["package":"fam-server", "service":"fam", "protocol":"tcp", "program":"fam"],
