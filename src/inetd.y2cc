@@ -35,9 +35,7 @@ SortKey =
 Textdomain = inetd 
 
 ; Autoinstall features
-Autoinst = 
+Autoinst = all
 
-; Resource in control file
-AutoinstResource = 
 
 ; vim:syntax=dosini

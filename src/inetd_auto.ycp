@@ -39,7 +39,7 @@ map    param = WFM::Args(1);
  */
 if(func == "Summary") {
     Inetd::Import(param);
-    return ( Inetd::Summary());
+    return ( select(Inetd::Summary(), 0 , ""));
 }
 /**
  * Reset configuration
