@@ -1,7 +1,7 @@
 Dump	
 Dump	CreateTableData()
 Dump	
-Dump	[`item (`id ("whatever"), "", "NI", "finger", "stream", "tcp", "nowait", "nobody", "/usr/sbin/tcpd", "in.fingerd -w")]
+Dump	[`item (`id ("whatever"), "", "On", "finger", "stream", "tcp", "nowait", "nobody", "/usr/sbin/tcpd", "in.fingerd -w")]
 Dump	
 Dump	  ---
 Dump	

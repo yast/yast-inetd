@@ -34,7 +34,7 @@ list NEW_CONF = [
     "server_args": "in.fingerd -w",
     ],
     $[
-    "iid": "whatever:new",
+    "iid": "new-whatever",
     "comment": "new service",
     "enabled": false,
     "service": "ns",
@@ -96,10 +96,8 @@ list NORMAL_OLD_CONF = [
 DUMP("\nDefault (full) configuration\n");
 DUMP(NEW_CONF);
 
-Inetd::auto_mode = false;
-
 DUMP("\nNew package installed in normal mode\n");
-DUMP(Inetd::mergeAfterInstall(NEW_CONF, NORMAL_OLD_CONF));
+DUMP(Inetd::MergeEditedWithSystem(NEW_CONF, NORMAL_OLD_CONF));
 DUMP("\n---\n");
 
 Inetd::auto_mode = true;

@@ -1,25 +1,25 @@
 Dump	
 Dump	Default (full) configuration
 Dump	
-Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"whatever:new", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
+Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"new-whatever", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
 Dump	
 Dump	New package installed in normal mode
 Dump	
-Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"whatever:new", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
+Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"new-whatever", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
 Dump	
 Dump	---
 Dump	
 Dump	
 Dump	New package installed in autoinstall mode
 Dump	
-Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["changed":true, "comment":"new service", "enabled":true, "iid":"whatever:new", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
+Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["changed":true, "comment":"new service", "enabled":true, "iid":"new-whatever", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
 Dump	
 Dump	---
 Dump	
 Dump	
 Dump	No packages was installed --- configuration is the same
 Dump	
-Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"whatever:new", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
+Dump	[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false], $["comment":"new service", "enabled":false, "iid":"new-whatever", "protocol":"tcp", "server":"/usr/sbin/newservice", "server_args":"none", "service":"ns", "socket_type":"stream", "user":"nobody", "wait":false]]
 Dump	
 Dump	---
 Dump	
