@@ -1,0 +1,7 @@
+(result (true))
+time dgram udp wait root internal
+# 
+# These are standard services.
+# 
+ftp stream tcp nowait root /usr/sbin/tcpd in.ftpd
+ftp stream tcp nowait root /usr/sbin/tcpd vsftpd

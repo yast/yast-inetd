@@ -1,0 +1,26 @@
+// #24379, changing consecutive services
+{
+    integer old = WFM::SCRGetDefault ();
+
+    integer h = WFM::SCROpen ("ag_netd", false);
+    if (h < 1)
+    {
+	return;
+    }
+    WFM::SCRSetDefault (h);
+    SCR::Netd (WFM::Args (0));
+
+    list s = SCR::Read (.services);
+    s[0, "enabled"] = true;
+    s[0, "changed"] = true;
+    s[1, "enabled"] = true;
+    s[1, "changed"] = true;
+    s[2, "enabled"] = true;
+    s[2, "changed"] = true;
+    boolean r = SCR::Write (.services, s);
+
+    WFM::SCRClose (h);
+    WFM::SCRSetDefault (old);
+
+    return r;
+}
