@@ -16,6 +16,7 @@ textdomain "inetd";
  */
 global map HELPS = $[
 
+    /* installed packages (inetd and xinetd) */
     "packages" : _("<p><b><big>Searching for installed packages</big></b><br>
 Please wait for a while...<br>
 If no packages will be found, you will be asked for installing them.</p>") +
@@ -23,14 +24,18 @@ If no packages will be found, you will be asked for installing them.</p>") +
     _("<p><b><big>Aborting the initialization:</big></b><br>
 Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
 
+    /* Same as above - but in autoinstallation mode */
     "packages-auto" : _("<p><b><big>Service packages</big></b><br>
 Please select, which service packages you want to install.</p>"),
 
+    /* Used by PackageDialog() and AutoPackageDialog(). This is text above checkboxes in Dialog. */
     "install_query" : _("inetd or xinetd packages was not found.
 Do you want to install them now?"),
 
+    /* ErrorPopup */
     "no_install" : _("No packages was selected. Configuration aborted."),
 
+    /* Not used! */
     "install_packages" : _("Selected packages will be installed"),
 
     /* Read dialog help 1/2 */
@@ -41,6 +46,7 @@ Please wait for a while...<br></p>") +
     _("<p><b><big>Aborting the initialization:</big></b><br>
 Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
 
+    /* HelpText for WhatToConfigureDialog() */
     "service_selection" : _("<p><b><big>Both services (inetd and xinetd) are installed.</big></b>
 Please select, which service you want to configure...<br></p>") +
 
@@ -97,7 +103,8 @@ All services marked with <b>X</b> in column <b>Ch</b> was edited
 and will be changed in system configuration.</p>") +
     _("<p><b><big>Services status:</big></b><br>
 All services marked with <b>---</b> are inactive (locked),
-All services marked with <b>On</b> are active (unlocked).</p>") +
+All services marked with <b>On</b> are active (unlocked).
+All services marked with <b>NI</b> are not installed and can't be configured.</p>") +
     _("<p><b><big>Changing services status:</big></b><br>
 Select the service you want to enable (disable) and press <b>Toggle status (On/Off)</b>.</p>") +
     _("<p><b><big>Editting services:</big></b><br>

@@ -55,20 +55,22 @@ global define symbol PackageDialog() ``{
 	    `HBox(
 		`HSpacing(6),
 		`VBox(
+		    /* Translators: This is messagebox for choosing super-server packages to be installed (if needed). */
 		    `Left(`CheckBox(`id(`inetd),  _("Install &inetd"))),
 		    `Left(`CheckBox(`id(`xinetd), _("Install &xinetd"), true))
 		)
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
-		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),
+		`PushButton(`id(`back), CancelButtonLabel())
 		//`HSpacing(2)
 	    ),
 	    `VSpacing(0.5)
 	);
 
     Wizard::RestoreHelp(HELPS["packages"]:"");
+    Wizard::SetScreenShotName("inetd-2-packagecheck");
 
     // Check for installed packages
     Inetd::inetd_installed  = GetInetdInstalled();
@@ -81,6 +83,7 @@ global define symbol PackageDialog() ``{
 	boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
 	boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
 	UI::CloseDialog();
+	Wizard::RestoreScreenShotName();
 	// user press Cancel
 	if(ret == `back) {
 	    return ret;
@@ -134,7 +137,7 @@ global define symbol PackageDialog() ``{
     else {
 	Inetd::netd_service = `none;
     }
-
+    
     return `next;
 }
 
@@ -157,14 +160,15 @@ global define symbol PackageAutoDialog() ``{
 	    `HBox(
 		`HSpacing(6),
 		`VBox(
+		    /* Translators: Like PackageDialog() (previous). This is also messagebox. */
 		    `Left(`CheckBox(`id(`inetd),  _("Install &inetd"))),
 		    `Left(`CheckBox(`id(`xinetd), _("Install &xinetd"), true))
 		)
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
-		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),
+		`PushButton(`id(`back), CancelButtonLabel())
 		//`HSpacing(2)
 	    ),
 	    `VSpacing(0.5)
@@ -264,13 +268,13 @@ global define symbol PackageAutoDialog() ``{
  */
 global define symbol WhatToConfigureDialog() ``{
 
-    string caption = _("What service do you want to configure?");
-
     term contents =
 	`VBox(
 	    `VSpacing(0.5),
 	    `HBox(
 		`HSpacing(2),
+		/* Traslators: If both services (Inetd and Xinetd) are installed, this messagebox is displayed.
+		               This is text above radio-buttons... */
 		`Label(_("Please select service you want to configure")),
 		`HSpacing(2)
 	    ),
@@ -279,6 +283,7 @@ global define symbol WhatToConfigureDialog() ``{
 		`HSpacing(6),
 		`RadioButtonGroup(`id(`selection),
 		    `VBox(
+			/* Translators: Radio-buttons in messagebox */
 			`Left(`RadioButton(`id(`inetd),  _("&inetd"), false)),
 			`Left(`RadioButton(`id(`xinetd), _("&xinetd"), true))
 		    )
@@ -286,13 +291,15 @@ global define symbol WhatToConfigureDialog() ``{
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
-		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),
+		`PushButton(`id(`back), CancelButtonLabel())
 	    ),
 	    `VSpacing(0.5)
 	);
 
     Wizard::RestoreHelp(HELPS["service_selection"]:"");
+    Wizard::SetScreenShotName("inetd-4-servicechoice");
+
     UI::OpenDialog(contents);
 
     any ret = UI::UserInput();
@@ -310,6 +317,7 @@ global define symbol WhatToConfigureDialog() ``{
     UI::CloseDialog();
 
     // and exit
+    Wizard::RestoreScreenShotName();
     return ret;
 }
 
@@ -408,6 +416,8 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     if (Inetd::auto_mode) {
 	// Add requested package into list...
 	Inetd::required_packages = add(Inetd::required_packages, package_name);
+	/* Translators: In autoinstallation mode:
+	                The package name is stored in %1. */
 	UI::MessagePopup(sformat(_("Package %1 will be installed during write process."),
 	    select(package_name, 0, "")));
 	ret = `auto;
@@ -417,9 +427,11 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     else {
 	include "require.ycp";
 	// if installation failes
+	/* Translators: The package name is stored in %1. */
 	if (!InstallAndRemove(package_name, [], sformat(_("Package %1 will be installed"),
 	    select(package_name, 0, "")))) {
 	//if (true) {
+	    /* Translators: The package name is stored in %1. */
 	    UI::MessagePopup(sformat(_("Package %1 was not installed. Service can't be edited."),
 		select(package_name, 0, "")));
 	    ret = `none;
@@ -474,6 +486,7 @@ global define symbol InetdDialog () ``{
 	    `Left(
 		`RadioButtonGroup(
 		    `VBox(
+			/* Translators: Initial and target state of xinetd (or inetd) */
 			`RadioButton(`id(`stop),     `opt(`notify), _("D&isable"), true),
 			`RadioButton(`id(`editable), `opt(`notify), _("Enab&le"), false)
 		    )
@@ -482,8 +495,11 @@ global define symbol InetdDialog () ``{
 	    ),
 	    `VSpacing(1),
 	      // Main dialog edit inetd.conf
+	    /* Translators: Name of table with services (echo, chargen, ...) */
 	    `Left(`Label(_("Currently available services"))),
 	    `HBox(
+		/* Translators: Table Header: The "Ch" label is short of "Changed". Please, make the
+		                translation as short as possible. */
 		`Table(`id(`table), `opt(`keepSorting), `header(`Center(_("Ch")), `Center(_("Status")),
 		    _("Service"), _("Type "), `Center(_("Protocol")), _("Flags"),
 		    _("User"), _("Server"), _("Server / Args")), table_data)
@@ -492,16 +508,20 @@ global define symbol InetdDialog () ``{
 		`Left(
 		    `HBox(
 			`HSpacing(1),
+			/* Translators: Add service */
 			`PushButton(`id(`create), `opt(`key_F3), _("&Add") ),
 			`HSpacing(1),
+			/* Translators: Edit service */
 			`PushButton(`id(`edit),   `opt(`key_F4), _("&Edit") ),
 			`HSpacing(1),
+			/* Translators: Delete service */
 			`PushButton(`id(`delete), `opt(`key_F5), _("&Delete") )
 		    )
 		),
 		`VSpacing(),
 		`Right(
 		    `HBox(
+			/* Translators: Change service status */
 			`PushButton(`id(`switch_active), _("&Toggle status (On/Off)")),
 			`HSpacing(1))
 		)
@@ -532,21 +552,16 @@ global define symbol InetdDialog () ``{
     }
 
     /* Inetd configure dialog caption */
-    string caption = _("Network services configuration");
-    if(Inetd::configured_service == `inetd) {
-	caption = caption + " (inetd)";
-    }
-    else {
-	caption = caption + " (xinetd)";
-    }
-    // next line is disabled --- y2base crashes with SIGSEGV
-    //string caption = _("Internet super-server configuration") + (Inetd::configured_service == `inetd) ? " (inetd)" : " (xinetd)";
+    /* Translators: Main caption. %1 handles current super-server name (inetd, xinetd) in rounded brackets. */
+    string caption = sformat(_("Network services configuration %1"), Inetd::configured_service == `inetd ? "(inetd)" : "(xinetd)");
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
 	    BackButtonLabel(), NextButtonLabel());
 
     Wizard::ReplaceBackButton(`Empty());
+    
+    Wizard::SetScreenShotName("inetd-5-maindialog");
 
     boolean new_state = false;
 
@@ -608,6 +623,7 @@ global define symbol InetdDialog () ``{
 		"user":"root", "group":"", "comment":"",
 		"iid":"new" + last_created, "created":true];
 	    // execute dialog
+	    /* Translators: Caption for EditOrCreateServiceDlg() */
 	    return_val = EditOrCreateServiceDlg(_("Add a new service entry"), new_line);
 	    // check Cancel
 	    if (return_val != nil) {
@@ -635,6 +651,7 @@ global define symbol InetdDialog () ``{
 	    // one line must be selected
 	    if (selected_item != nil) {
 		if (GetSelectedService(selected_item) != nil) {
+		    /* Translators: ErrorPopup */
 		    UI::ErrorPopup(_("Can't delete non-installed service."));
 		}
 		else {
@@ -651,6 +668,7 @@ global define symbol InetdDialog () ``{
 		}
 	    }
 	    else {
+		/* Translators: MessagePopup */
 		UI::MessagePopup(_("To delete a service, select one in the main dialog"));
 		need_reindex = false;
 		need_rebuild = false;
@@ -688,6 +706,7 @@ global define symbol InetdDialog () ``{
 		}
 	    }
 	    else { // No line is selcted:
+		/* Translators: MessagePopup */
 		UI::MessagePopup(_("To activate or deactivate a service, select one in the main dialog") );
 		need_reindex = false;
 		need_rebuild = false;
@@ -705,6 +724,7 @@ global define symbol InetdDialog () ``{
 		    ``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
 		any result = InstallProvidedPackage(GetSelectedService(selected_item));
 		if (result == `next) {
+		    /* Translators: Caption fo EditOrCreateServiceDlg() */
 		    any return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
 		    // check for changes
 		    if (return_val != nil) {
@@ -732,6 +752,7 @@ global define symbol InetdDialog () ``{
 		}
 	    }
 	    else {
+		/* Translators: MessagePopup */
 		UI::MessagePopup(_("To edit a service, select one in the main dialog") );
 		need_reindex = false;
 		need_rebuild = false;
@@ -765,11 +786,13 @@ global define symbol InetdDialog () ``{
     if(ret == `next) {
 	if(IsAnyServiceEnabled(Inetd::netd_conf) == `no) {
 	    Inetd::netd_status = -1;
+	    /* Translators: WarningPopup */
 	    UI::WarningPopup(_("All services are marked as disabled (locked).
 Internet super-server will be disabled."));
 	}
     }
 
+    Wizard::RestoreScreenShotName();
     return ret;
 }
 
@@ -781,6 +804,7 @@ Internet super-server will be disabled."));
  */
 global define EditOrCreateServiceDlg(string title, map line) ``{
 
+    /* Translators: Special widget for inetd */
     term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
     term    xinetd_specific  = `Empty();                                     // xinetd specific widgets
     boolean input_failed     = false;                                        // for all required widgets filled check
@@ -870,6 +894,8 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 				AcceptButtonLabel()
 				);
 
+    Wizard::SetScreenShotName("inetd-6-servicedetails");
+
     UI::SetFocus(`id(`service));
 
     /*
@@ -897,7 +923,8 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
     UI::ChangeWidget(`id(`user),      `Value, lookup(line, "user",        ""));
     string group = lookup(line, "group", "");
     if (group == "") {
-        UI::ChangeWidget(`id(`group), `Value, _("--default--"));
+        /* Translators: Please BE CAREFUL! This text is often used in code! This Translation must be the same. */
+	UI::ChangeWidget(`id(`group), `Value, _("--default--"));
     }
     else {
         UI::ChangeWidget(`id(`group), `Value, group);
@@ -915,6 +942,10 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	if (user_choice != `back) {
 
 	    // Are required values filled?
+	    // Inetd specific:
+	    //   Service and Server must be filled
+	    // Xinetd specific:
+	    //   Service must be filled.
 	    if(((Inetd::configured_service == `inetd) &&
 		((UI::QueryWidget(`id(`service), `Value) == "") ||
 		//(UI::QueryWidget(`id(`user),    `Value) == "") ||
@@ -924,6 +955,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		((UI::QueryWidget(`id(`service), `Value) == "")))) {
 		//(UI::QueryWidget(`id(`user),     `Value) == "")))) {
 		UI::MessagePopup((Inetd::configured_service == `inetd) ?
+		    /* Translators: MessagePopup */
 		    _("The Service or Server field is empty.
 Please enter valid values.
 ") :
@@ -932,9 +964,11 @@ Please enter valid values.
 "));
 	    input_failed = true;
 	    }
-	    else if ((UI::QueryWidget(`id(`server), `Value) != "internal") &&
+	    else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
-		UI::MessagePopup(_("The user --default-- is reserved only for server internal."));
+		/* Translators: sformat-ed() 3 strings */
+		UI::MessagePopup(sformat("%1%2%3", _("The user "), _("--default--"),
+		    _(" is reserved only for server internal.")));
 		input_failed = true;
 	    }
 	    // YES (input is OK) --- so save settings!
@@ -973,6 +1007,7 @@ Please enter valid values.
 	}
     } until (((user_choice == `next) && (input_failed == false)) || (user_choice == `back));
     Wizard::CloseDialog();
+    Wizard::RestoreScreenShotName();
     // tell the calling function what user done
     if (user_choice == `back) {
 	return(nil);  // operation canceled
