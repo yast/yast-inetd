@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Apr 30 10:21:51 CEST 2001 - jbuch@suse.de
+
+- fixed bug with return nil to list | void 
+
+-------------------------------------------------------------------
 Tue Apr 24 07:16:21 CEST 2001 - jbuch@suse.de
 
 - define -> global define 
