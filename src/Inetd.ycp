@@ -469,6 +469,7 @@ global define boolean Import (map settings) ``{
 
     // we do not want to install RPMs in autoinstallation mode...
     auto_mode = true;
+    modified  = false;
 
     if (settings == $[])
 	module_status = `not_configured;

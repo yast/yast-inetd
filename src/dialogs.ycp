@@ -615,9 +615,10 @@ global define symbol InetdDialog () ``{
 	    if (return_val != nil) {
 		// new service was created --- add to global configuration
 		Inetd::addLine(return_val);
-		need_reindex = true;                 // iid_to_index and index_to_iid and
-		need_rebuild = true;                 //   table_data must be rebuild
-		to_select    = "new" + last_created; // select new entry
+		Inetd::modified = true;
+		need_reindex    = true;                 // iid_to_index and index_to_iid and
+		need_rebuild    = true;                 //   table_data must be rebuild
+		to_select       = "new" + last_created; // select new entry
 	    }
 	    else {
 		need_reindex = false;                // nothing changed
@@ -641,8 +642,9 @@ global define symbol InetdDialog () ``{
 		    UI::ErrorPopup(_("Cannot delete the service. It is not installed."));
 		}
 		else {
-		    need_reindex = true; // see `create (above) for more details
-		    need_rebuild = true;
+		    Inetd::modified = true;
+		    need_reindex    = true; // see `create (above) for more details
+		    need_rebuild    = true;
 		    integer old_index = iid_to_index[selected_item]:0;
 		    Inetd::deleteLine(selected_item);
 		    if (old_index == size(iid_to_index)) {
@@ -681,9 +683,10 @@ global define symbol InetdDialog () ``{
 		    }
 		    // change line in database
 		    Inetd::changeLine(current_line, selected_item);
-		    need_reindex = true;
-		    need_rebuild = true;
-		    to_select    = selected_item;
+		    Inetd::modified = true;
+		    need_reindex    = true;
+		    need_rebuild    = true;
+		    to_select       = selected_item;
 		}
 		else if (result == `auto) {
 		    last_created   = last_created + 1;
@@ -697,14 +700,16 @@ global define symbol InetdDialog () ``{
 			"user":"root", "group":"", "comment":"",
 			"iid":"inst" + last_created, "created":true, "server":n_server];
 		    Inetd::addLine(new_line);
-		    need_reindex = true;
-		    need_rebuild = true;
-		    to_select = "inst" + last_created;
+		    Inetd::modified = true;
+		    need_reindex    = true;
+		    need_rebuild    = true;
+		    to_select       = "inst" + last_created;
 		}
 		else if (result == `installed) {
-		    need_reindex = true;
-		    need_rebuild = true;
-		    to_select    = "";
+		    Inetd::modified = true;
+		    need_reindex    = true;
+		    need_rebuild    = true;
+		    to_select       = "";
 		}
 		else {
 		    need_reindex = false;
@@ -736,6 +741,7 @@ global define symbol InetdDialog () ``{
 		    // check for changes
 		    if (return_val != nil) {
 			Inetd::changeLine(return_val, selected_item);
+			Inetd::modified = true;
 		    }
 		    need_reindex = true;
 		    need_rebuild = true;
@@ -753,14 +759,16 @@ global define symbol InetdDialog () ``{
 			"user":"root", "group":"", "comment":"",
 			"iid":"inst" + last_created, "created":true, "server":n_server];
 		    Inetd::addLine(new_line);
-		    need_reindex = true;
-		    need_rebuild = true;
-		    to_select = "inst" + last_created;
+		    Inetd::modified = true;
+		    need_reindex    = true;
+		    need_rebuild    = true;
+		    to_select       = "inst" + last_created;
 		}
 		else if (result == `installed) {
-		    need_reindex = true;
-		    need_rebuild = true;
-		    to_select    = "";
+		    Inetd::modified = true;
+		    need_reindex    = true;
+		    need_rebuild    = true;
+		    to_select       = "";
 		}
 		else {
 		    need_reindex = false;
@@ -787,9 +795,9 @@ global define symbol InetdDialog () ``{
             y2error("unexpected retcode: %1", ret);
             continue;
         }
-	if(!((ret == `next) || (ret == `back) || (ret == `abort))) {
+	/*if(!((ret == `next) || (ret == `back) || (ret == `abort))) {
 	    Inetd::modified = true;
-	}
+	}*/
 	table_data = CreateTableData(Inetd::netd_conf);
 	if (need_reindex == true) {
 	    indexTable();
