@@ -9,6 +9,11 @@ Fri Feb  7 12:49:39 CET 2003 - jsrain@suse.de
 - Merged texts from 2nd proofreading
 
 -------------------------------------------------------------------
+Tue Feb  4 16:32:12 CET 2003 - mvidner@suse.de
+
+- Fixed re-reading the files (don't keep the old services).
+
+-------------------------------------------------------------------
 Mon Feb  3 09:40:38 CET 2003 - mvidner@suse.de
 
 - Merged proofread texts.
