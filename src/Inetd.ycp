@@ -106,7 +106,8 @@
 	    y2milestone("Turning service inetd off");
 	    Runlevel::ServiceAdjust("inetd", "disable");	 
 	}
-	else {		
+	else
+	{		
 	    Runlevel::ServiceAdjust("inetd", "enable");
 	    if (inetd_status == `on_default)
 		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
@@ -194,28 +195,14 @@
 	{	
 	    return false;
 	}
-
-	boolean missing = false;
-	foreach (`k, ["start_inetd", "services"], ``{
-	    if (! haskey (settings, k))
-	    {
-		y2error ("Missing at Import: '%1'.", k);
-		missing = true;
-	    }
-	});
-	if (missing)
-	{
-	    return false;
-	}
-
 	    
 	if (settings["start_inetd"]:false && size(settings["services"]:[])>0)
 	{
 	    inetd_status = `on_custom;
 	    ReadFile();
-	    foreach(`s, settings["services"]:[], ``{
-		if (s["status"]:"" == "enable" || s["status"]:"" == "disable") {
-		    ChangeServiceStatus(s["service"]:"none", s["status"]:"none");
+	    foreach(`s, settings["inetd_services"]:[], ``{
+		if (s["service_status"]:"" == "enable" || s["service_status"]:"" == "disable") {
+		    ChangeServiceStatus(s["service_service"]:"none", s["service_status"]:"none");
 		}
 	    });
 	    
