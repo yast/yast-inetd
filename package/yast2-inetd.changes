@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 21 17:37:14 CET 2005 - mlazar@suse.cz
+
+- added maintainer keyword to header to default_conf_xinetd.ycp
+
+-------------------------------------------------------------------
 Mon Feb 21 17:35:41 CET 2005 - mlazar@suse.cz
 
 - propdel svn:mime-type all-services.sh
