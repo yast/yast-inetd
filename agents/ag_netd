@@ -418,10 +418,15 @@ sub parse_service ($)
 		if (/^\s*include\s+(\S+)/)
 		{
 		    $class->parse_file ($1);
+		    $reclineno = 0;
 		}
 		elsif (/^\s*includedir\s+(\S+)/)
 		{
 		    $class->include_dir ($1);
+		    # Bug 24270:
+		    # the include directive must not belong
+		    # to the following service
+		    $reclineno = 0;
 		}
 		elsif (/^\s*service\s+(\S+)/)
 		{
