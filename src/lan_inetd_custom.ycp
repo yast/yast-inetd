@@ -777,21 +777,22 @@ is to be executed by inetd when a request is found on its socket.
     string help_text = "";
 
     // helptext  "main dialog edit inetd.conf" 
-    help_text =  UI(_("<p>In the listbox you see all services preconfigured by SuSE</p>
-<p>All services marked with \"#\" are <i>inactive</i> (locked).</p>
-All services marked with \"Active!\" are <i>active</i> (unlocked).
-<p>Inactive means, that these services are preconfigured in the configuration
+    help_text =  UI(_("<p>In the listbox you see all services preconfigured by SuSE</p>"))
+	+
+UI(_("<p>All services marked with \"#\" are <i>inactive</i> (locked).
+All services marked with \"Active!\" are <i>active</i> (unlocked).</p>")) +
+UI(_("<p>Inactive means, that these services are preconfigured in the configuration
 file of inetd (/etc/inetd.conf), but they are locked.</p>
-
-<p>With a click to this entry, and a second click
+")) +
+UI(_("<p>With a click to this entry, and a second click
 on the button activat/inactivate you can unlock an inactive entry, or
 lock an active entry.</p>
-
-<p>With a click to an entry, and a second click
+")) +
+UI(_("<p>With a click to an entry, and a second click
 on the button edit you can change parameters of this service
 </p>"));
 
-     help_text = help_text + "<p>(.12)<\p>";
+     help_text = help_text + "<p>(.13)<\p>";
 
      // using SetContents (define in lan_inetd.ycp)
      UI(`SetContents(_("Enable/disable network services"), contents, help_text, true, true ));
