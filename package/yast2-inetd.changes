@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 20 15:14:41 CEST 2003 - jsuchome@suse.de
+
+- removed redundant "initialization dialog" (#28779)
+- 2.8.5
+
+-------------------------------------------------------------------
 Mon Aug 18 13:30:43 CEST 2003 - lslezak@suse.cz
 
 - 'Finish' button label at the main dialog

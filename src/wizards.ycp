@@ -55,13 +55,7 @@ global define symbol InetdSequence() ``{
 	]
     ];
 
-    string caption = _("Inetd configuration");
-    term contents = `Label(_("Initializing ..."));
-
     Wizard::CreateDialog();
-    Wizard::SetScreenShotName("inetd-1-start");
-    Wizard::SetContentsButtons(caption, contents, "",
-	    Label::BackButton(), Label::NextButton());
 
     any ret = WizardSequencer(aliases, sequence);
 
