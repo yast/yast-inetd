@@ -1,6 +1,8 @@
 // Author: Martin Vidner <mvidner@suse.cz>
 // $Id$
 // continue from all-services.sh
+
+// See doc/README.maintainer
 {
     /**
      * cache:
@@ -12,23 +14,28 @@
 	"internal": "",		// internal services for inetd
 
 	// this program is in multiple packages
+	// Assume it is already installed, smtp_daemon
+	// is required at a very low level
 	// (which it is, regardless of the rpm)
 	"/usr/sbin/sendmail": "",
 
-	// there's also cyrus-imapd, but let's assume it has its own
-	// init script. todo check xinetd
-	"imapd": "imap",
-	"rplayd": "rplay",
-	// send a patch to kukuk?
+	// Not present in the distro.
+	// So pretend that they _are_ present so that
+	// their installation is not attempted
+	// TODO: filter them out in the UI
+	"/usr/sbin/in.comsat": "",
+	"/usr/lib/xcept4/bin/ceptd": "",
+	"/usr/sbin/in.midinetd": "",
+	"/opt/mimer/bin/mimtcp": "",
+	"/usr/sbin/procstatd": "",
 	];
 
     /**
-     * Log 2 strings and put a dot to stdout
-     * @param s1 s1
-     * @param s2 s2
+     * Log a string and put a dot to stdout
+     * @param s string
      */
-    global define void Progress (string s1, string s2) ``{
-	y2milestone ("%1: %2", s1, s2);
+    global define void Progress (string s) ``{
+	y2milestone ("%1", s);
 	SCR::Write (.target.string, "/dev/stdout", ".");
     }
 
@@ -43,36 +50,63 @@
     }
 
     /**
+     * @param query will be substituted to --filter '%1'
+     * @return a list of packages that match
+     */
+    global define list (string) PdbQuery (string query) ``{
+	string cmd = sformat (
+	    "/usr/bin/pdb query --filter '%1' --attribs packname 2>/dev/null",
+	    query);
+	string out = lookup (SCR::Execute (.target.bash_output, cmd),
+			     "stdout", "");
+	list (string) lines = filter (string l, splitstring (out, "\n"),
+				      ``( l != ""));
+	// pdb adds trailing spaces
+	return maplist (string l, lines, ``( first_of_split (l, " ")));
+    }
+
+    /**
      * @param services default services list
+     * @param xinetd is this xinetd
      * @return services list with "package" determined
      */
-    global define list (map) DeterminePackages (list (map) services) ``{
+    global define list (map) DeterminePackages (list (map) services,
+						boolean xinetd) ``{
+	y2milestone ("%1", xinetd? "xinetd": "inetd");
 	return maplist (map service, services, ``{
+	    string sname = service["service"]:nil;
 	    string server = service["server"]:"";
 	    if (server == "/usr/sbin/tcpd")
 	    {
 		server = first_of_split (service["server_args"]:"", " \t");
 	    }
 
-	    string package = package_cache[server]:nil;
+	    // Ask which package has the server. If there are more
+	    // and it is xinetd, ask which package has the config
+	    // snippet.
+	    // Will caching work OK?
+	    // Xinetd should go first as it can provide more info
+
+	    // /usr/sbin for packages run via tcpd
+	    string package = package_cache[server]: package_cache["/usr/sbin/"+server]: nil;
 	    if (package == nil)
 	    {
-		string cmd = sformat ("/usr/bin/pdb query --filter 'rpmfile:*%1' --attribs packname", server);
-		string out = lookup (SCR::Execute (.target.bash_output, cmd),
-				     "stdout", "");
-		// first line
-		package = first_of_split (out, "\n");
-		// check if there were multiple packages:
-		integer count = size (filterchars (out, "\n"));
-		if (count != 1)
+		list (string) packages = PdbQuery ("rpmfile:*" + server);
+		if (size (packages) > 1)
 		{
-		    y2error ("%1# %2", server, count);
+		    y2milestone ("Resorting to init script");
+		    string script = "xinetd.d/" + service["script"]:nil;
+		    packages =  PdbQuery ("rpmfile:*" + script);
 		}
-		// pdb adds trailing spaces
-		package = first_of_split (package, " ");
+
+		if (size (packages) != 1)
+		{
+		    y2error ("%1# %2", server, size (packages));
+		}
+		package = packages[0]:"";
 		package_cache[server] = package;
 	    }
-	    Progress (server, package);
+	    Progress (sformat ("%1: %2 (%3)", server, package, sname));
 
 	    return add (service, "package", package);
 	});
@@ -98,8 +132,8 @@
 
     y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
 
-    dc_inetd = DeterminePackages (dc_inetd);
-    dc_xinetd = DeterminePackages (dc_xinetd);
+    dc_xinetd = DeterminePackages (dc_xinetd, true);
+    dc_inetd = DeterminePackages (dc_inetd, false);
     // watch out, a single value, not an include
     SCR::Write (.target.ycp, "default_conf_inetd.ycp", dc_inetd);
     SCR::Write (.target.ycp, "default_conf_xinetd.ycp", dc_xinetd);
