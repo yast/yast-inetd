@@ -1,5 +1,4 @@
 @HEADER-COMMENT@
-
 # neededforbuild  yast2-devel-packages yast2-runlevel
 
 @HEADER@
@@ -7,8 +6,8 @@ Requires:	yast2 yast2-runlevel
 
 Provides:	yast2-config-inet y2c_inet
 Obsoletes:	yast2-config-inet y2c_inet
-Provides:	yast2-trans-inet
-Obsoletes:	yast2-trans-inet 
+Provides:	yast2-trans-inet y2t_inet
+Obsoletes:	yast2-trans-inet y2t_inet
 
 BuildArchitectures:	noarch
 
