@@ -786,7 +786,7 @@ UI(_("<p>Inactive means, that these services are preconfigured in the configurat
 file of inetd (/etc/inetd.conf), but they are locked.</p>
 ")) +
 UI(_("<p>With a click to this entry, and a second click
-on the button activat/inactivate you can unlock an inactive entry, or
+on the button activate/inactivate you can unlock an inactive entry, or
 lock an active entry.</p>
 ")) +
 UI(_("<p>With a click to an entry, and a second click
