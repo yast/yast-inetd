@@ -13,18 +13,34 @@ textdomain "inetd";
 
 import "Runlevel";
 
+/**
+ * Return rpm -q status for inetd package
+ * @return rpm -q exit code
+ */
 global define integer GetInetdInstalled() ``{
     return SCR::Execute(.target.bash, "/bin/rpm -q inetd 2>&1 > /dev/null", []);
 }
 
+/**
+ * Return rpm -q status for xinetd package
+ * @return rpm -q exit code
+ */
 global define integer GetXinetdInstalled() ``{
     return SCR::Execute(.target.bash, "/bin/rpm -q xinetd 2>&1 > /dev/null", []);
 }
 
+/**
+ * Return status of inetd service
+ * @return Runlevel::ServiceStatus() result
+ */
 global define integer GetInetdStatus() ``{
     return Runlevel::ServiceStatus("inetd");
 }
 
+/**
+ * Return status of xinetd service
+ * @return Runlevel::ServiceStatus() result
+ */
 global define integer GetXinetdStatus() ``{
     return Runlevel::ServiceStatus("xinetd");
 }
@@ -74,6 +90,7 @@ global define void ProgressNextStage(string title) ``{
 
 /**
  * Converts configuration format from agent to table data structures
+ * @param netd_conf netd_conf handles whole configuration of configured service
  * @return returnes table data
  */
 global define list(term) CreateTableData(list netd_conf) ``{
@@ -143,6 +160,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
  * Read user names from passwd.
  * It does not get the NIS entries.
  * "+" is filtered out.
+ * @return list users
  */
 global define CreateLocalUsersList() ``{
     list(map) passwd   = SCR::Read(.etc.passwd);
@@ -158,6 +176,7 @@ global define CreateLocalUsersList() ``{
  * Read group names from  group
  * It does not get the NIS entries.
  * "+" is filtered out.
+ * @return list groups
  */
 global define CreateLocalGroupsList() ``{
     list(map) group     = SCR::Read(.etc.group);
@@ -171,6 +190,7 @@ global define CreateLocalGroupsList() ``{
 /**
  * Find any service to be enabled
  * If no found, return `no
+ * @param ready_conf ready_conf handles whole service configuration (Inetd::netd_conf)
  * @return returnes if found `yes, otherwise `no
  */
 global define symbol IsAnyServiceEnabled(list ready_conf) ``{

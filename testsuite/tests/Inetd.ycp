@@ -1,3 +1,17 @@
+/
+ * File:        testsuite/tests/Inetd.ycp
+ * Package:     Configuration of inetd
+ * Summary:     Testsuite for Reading and Writing (x)inetd configuration
+ * Authors:     Martin Vidner <mvidner@suse.cz>
+ *              Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ *
+ * This is testsuite for Inetd.ycp source file.
+ * These tests are checking reading and writing
+ * of inetd or xinetd services.
+ */
+
 {
 
 include "testsuite.ycp";
