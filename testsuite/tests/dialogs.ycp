@@ -23,7 +23,10 @@ import "Report";
 
 Report::DisplayErrors(false, 0);
 
-list<map> netd_conf = [
+// already in dialogs.ycp
+// typedef list< map<string, any> > services_t;
+
+services_t netd_conf = [
 	$["iid": "whatever",
 	    "comment": "My service",
 	    "enabled": true,
@@ -36,7 +39,7 @@ list<map> netd_conf = [
 	    "server_args": "in.fingerd -w"]
 	];
 
-list<map> netd_conf_none = [
+services_t netd_conf_none = [
 	$["iid": "whatever",
 	    "comment": "My service",
 	    "enabled": false,

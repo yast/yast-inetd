@@ -20,7 +20,9 @@ import "Report";
 
 Report::DisplayErrors(false, 0);
 
-list<map> SYSTEM_CONF = [
+typedef list< map<string, any> > services_t;
+
+services_t SYSTEM_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -47,7 +49,7 @@ list<map> SYSTEM_CONF = [
     ]
 ];
 
-list<map> PROFILE_CONF = [
+services_t PROFILE_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -78,7 +80,7 @@ list<map> PROFILE_CONF = [
  * In normal mode, the new installed service has no entry
  * in netd_conf.
  */
-list<map> EDITED_CONF = [
+services_t EDITED_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
