@@ -132,10 +132,10 @@
 	integer no_of_steps = 2 ;
 	
 	Progress::New ( caption, " ", no_of_steps,
-		       [ _("Write the new inted.conf"),
-			 _("Restart inted service") ],
-		       [ _("Writing the new inted.conf..."),
-			 _("Restarting inted service..."),
+		       [ _("Write the new inetd.conf"),
+			 _("Restart inetd service") ],
+		       [ _("Writing the new inetd.conf..."),
+			 _("Restarting inetd service..."),
 			 _("Finished") ],
 		       "" );
 
