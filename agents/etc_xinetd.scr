@@ -1,4 +1,4 @@
-.test.xinetd
+.etc.xinetd
 `ag_netd (
     Xinetd ("/etc/xinetd.conf")
 )
