@@ -206,5 +206,13 @@ global define symbol IsAnyServiceEnabled(list ready_conf) ``{
     return ret;
 }
 
+/**
+ * Reads xinetd defaults (see Inetd::xinetd_defauls for more details)
+ * @return list Returnes Inetd::xinetd_defaults
+ */
+global define list GetXinetdDefaults() ``{
+    return SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
+}
+
 /* EOF */
 }

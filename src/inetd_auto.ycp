@@ -33,6 +33,9 @@ include "inetd/dialogs.ycp";
 string func  = WFM::Args(0);
 map    param = WFM::Args(1);
 
+// we do not want to install RPMs in autoinstallation mode...
+Inetd::write_only = false;
+
 /**
  * Create a summary
  * return string

@@ -11,4 +11,6 @@ $["package":"xinetd", "service":"servers", "protocol":"tcp"],
 $["package":"xinetd", "service":"services", "protocol":"tcp"],
 $["package":"xinetd", "service":"time", "protocol":"tcp"],
 $["package":"xinetd", "service":"time", "protocol":"udp"],
+//for testing only...
+$["package":"testpackage", "service":"test", "protocol":"tcp"]
 ]
