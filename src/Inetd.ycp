@@ -754,6 +754,16 @@ global define list getChanged(list config) ``{
 		return; // skip the following code
 	    }
 
+	    // especially for inetd, server must not be tcpd, because
+	    // we could trow away the real server which distinguishes
+	    // a service among its variants
+	    if (line["server"]:"" == "/usr/sbin/tcpd")
+	    {
+		string s = select (splitstring (line["server_args"]:"", " \t"),
+				   0, "");
+		line = add (line, "server", s);
+	    }
+
 	    // for each item of the map
 	    foreach(string name, any val, line, ``{
 		// Remove it if its value is the default
