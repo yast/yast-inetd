@@ -81,8 +81,10 @@ global define symbol InetdAutoSequence() ``{
     Wizard::SetContentsButtons(caption, contents, "",
 	    BackButtonLabel(), NextButtonLabel());
 
+    Inetd::xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
     any ret = InetdDialog ();
 
+    y2milestone("%1", ret);
     UI::CloseDialog();
     return ret;
 }

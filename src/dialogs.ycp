@@ -113,9 +113,9 @@ global define symbol PackageDialog() ``{
 	}
     }
 
-    //fillup global variables and obtain services status
+    // fillup global variables and obtain services status
 
-    //booth services are installed
+    // booth services are installed
     if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
 	Inetd::netd_service  = `both;
 	Inetd::inetd_status  = GetInetdStatus();
@@ -174,12 +174,6 @@ global define symbol PackageAutoDialog() ``{
 	    `VSpacing(0.5)
 	);
 
-    //Wizard::RestoreHelp(HELPS["packages-auto"]:"");
-
-    // Check for installed packages has no meaning here - no packages are installed
-    //Inetd::inetd_installed  = GetInetdInstalled();
-    //Inetd::xinetd_installed = GetXinetdInstalled();
-
     // Detect main packages (syntax check)
     string inetdp  = select(Inetd::service_package, 0, "");
     string xinetdp = select(Inetd::service_package, 1, "");
@@ -224,6 +218,8 @@ global define symbol PackageAutoDialog() ``{
     // User will continue
     else {
 	// Determine user selection
+	Inetd::inetd_installed  = -1;
+	Inetd::xinetd_installed = -1;
 	list packages = [];
 	if(install_inetd) {
 	    packages                = add(packages, "inetd");
@@ -238,26 +234,30 @@ global define symbol PackageAutoDialog() ``{
 	    //DoInstallAndRemove(packages, []);
 	    Inetd::service_package  = packages;
 	}
+	else {
+	    /* Translators: MessagePopup */
+	    UI::MessagePopup(_("No package was selected. Configuration aborted."));
+	    return `back;
+	}
     }
+    // fillup global variables and obtain services status
 
-    //fillup global variables and obtain services status
-
-    //booth services are installed
-    if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
-	Inetd::netd_service  = `both;
-    }
     // only inetd is installed
-    else if(Inetd::inetd_installed == 0) {
+    if(Inetd::inetd_installed == 0) {
 	Inetd::netd_service = `inetd;
     }
     // only xinetd is installed
-    else if(Inetd::xinetd_installed == 0) {
+    if(Inetd::xinetd_installed == 0) {
 	Inetd::netd_service  = `xinetd;
     }
-    // none is installed
-    else {
-	Inetd::netd_service = `none;
+    // booth services are installed
+    if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
+	Inetd::netd_service  = `both;
     }
+    // none is installed
+    /*else {
+	Inetd::netd_service = `none;
+    }*/
 
     return `next;
 }
@@ -375,33 +375,7 @@ global define list GetProvidedPackage(term service_info) ``{
  */
 global define symbol InstallProvidedPackage(term service_info) ``{
     symbol ret = `next;
-    /*list packages = [];
-    term contents =
-	`VBox(
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(2),
-		`Label(_("Please select one package you want to install")),
-		`HSpacing(2)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(6),
-		`SelectionBox(`id(`packages), _("&Packages provided same service:"), packages),
-		`HSpacing(6)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
-		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
-	    ),
-	    `VSpacing(0.5)
-	);*/
-    //UI::OpenDialog(contents);
-    //ret = UI::UserInput();
-    //GetProvidedPackages(service_info);
-    //UI::CloseDialog();
-    
+
     // service (package) is installed and its configuration is known,
     // so simply skip dialog
     if (service_info == nil) {
@@ -417,7 +391,7 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	// Add requested package into list...
 	Inetd::required_packages = add(Inetd::required_packages, package_name);
 	/* Translators: In autoinstallation mode:
-	                The package name is stored in %1. */
+	                The package name is stored in %1. This is MessagePopup. */
 	UI::MessagePopup(sformat(_("Package %1 will be installed during the write process."),
 	    select(package_name, 0, "")));
 	ret = `auto;
@@ -430,8 +404,8 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	/* Translators: The package name is stored in %1. */
 	if (!InstallAndRemove(package_name, [], sformat(_("Package %1 will be installed"),
 	    select(package_name, 0, "")))) {
-	//if (true) {
-	    /* Translators: The package name is stored in %1. */
+	//if (true) { // for debugging
+	    /* Translators: The package name is stored in %1. This is MessagePopup. */
 	    UI::MessagePopup(sformat(_("Package %1 was not installed. The service cannot be edited."),
 		select(package_name, 0, "")));
 	    ret = `none;
@@ -444,10 +418,13 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    // Reread configuration!
 	    Inetd::netd_conf = SCR::Read(.etc.xinetd_conf.services);
 	    Inetd::netd_conf = Inetd::mergeAfterInstall(Inetd::netd_conf, old_conf);
-	    ret = `next;
+	    /* Translators: The package name is stored in %1 */
+	    UI::MessagePopup(sformat(_("Package %1 was successfuly installed."),
+		select(package_name, 0, "")));
+	    ret = `installed;
 	    return ret;
 	}
-	y2milestone("%1", "ahoj" + select(package_name, 0, ""));
+	//y2milestone("%1", "ahoj" + select(package_name, 0, ""));
     }
     //y2milestone("%1", package_name);
     return ret;
@@ -479,7 +456,7 @@ global define term GetSelectedService(any selected_item) ``{
  */
 global define symbol InetdDialog () ``{
 
-    /* XXPkg configure1 dialog contents */
+    /* Main dialog contents */
     term contents =
 	`VBox(
 	    `VSpacing(1),
@@ -491,7 +468,6 @@ global define symbol InetdDialog () ``{
 			`RadioButton(`id(`editable), `opt(`notify), _("Enab&le"), false)
 		    )
 		)
-		//`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)
 	    ),
 	    `VSpacing(1),
 	      // Main dialog edit inetd.conf
@@ -531,6 +507,10 @@ global define symbol InetdDialog () ``{
 
     any ret = nil;
 
+    //y2milestone("%1", Inetd::netd_service);
+    //y2milestone("%1", Inetd::inetd_installed);
+    //y2milestone("%1", Inetd::xinetd_installed);
+
     // Check for both services installed. Only one can run in real-time
     if(Inetd::netd_service == `both) {
 	// ask user
@@ -541,6 +521,9 @@ global define symbol InetdDialog () ``{
     }
     else {
 	Inetd::configured_service = Inetd::netd_service;
+    }
+    if(Inetd::auto_mode) {
+	Inetd::netd_service = Inetd::configured_service;
     }
 
     // load configuration of selected service (ore installed service --- if only one)
@@ -560,7 +543,7 @@ global define symbol InetdDialog () ``{
 	    BackButtonLabel(), NextButtonLabel());
 
     Wizard::ReplaceBackButton(`Empty());
-    
+
     Wizard::SetScreenShotName("inetd-5-maindialog");
 
     boolean new_state = false;
@@ -579,10 +562,10 @@ global define symbol InetdDialog () ``{
     table_data = CreateTableData(Inetd::netd_conf);
     indexTable();
     UI::ChangeWidget(`id(`table),         `Items,   table_data);
-    
+
     //used for new iid "generator"
     integer last_created = 0;
-    
+
 //    // Generate default configuration
 //    SCR::Write(.target.ycp, "/default_conf.ycp", Inetd::xinetd_conf);
     // main loop
@@ -595,7 +578,10 @@ global define symbol InetdDialog () ``{
 	// skip time critical calculations if need_rebuild == false (don't call CreateTableData())
 	boolean need_rebuild = true;
 
-	UI::SetFocus(`id(`table));
+	if(UI::QueryWidget(`id(`editable), `Value))
+	    UI::SetFocus(`id(`table));
+	else
+	    UI::SetFocus(`id(`stop));
 	ret = UI::UserInput();
 
         if((ret == `editable) || (ret == `stop)) {
@@ -699,6 +685,11 @@ global define symbol InetdDialog () ``{
 		    need_rebuild = true;
 		    to_select    = selected_item;
 		}
+		else if (result == `installed) {
+		    need_reindex = true;
+		    need_rebuild = true;
+		    to_select    = "";
+		}
 		else {
 		    need_reindex = false;
 		    need_rebuild = false;
@@ -720,11 +711,11 @@ global define symbol InetdDialog () ``{
 	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
 	    // line must be selected
 	    if (selected_item != nil) {
-		map current_line = select(filter(`line, Inetd::netd_conf,
-		    ``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
 		any result = InstallProvidedPackage(GetSelectedService(selected_item));
 		if (result == `next) {
-		    /* Translators: Caption fo EditOrCreateServiceDlg() */
+		    map current_line = select(filter(`line, Inetd::netd_conf,
+			``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
+		    /* Translators: Caption of EditOrCreateServiceDlg() */
 		    any return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
 		    // check for changes
 		    if (return_val != nil) {
@@ -736,14 +727,24 @@ global define symbol InetdDialog () ``{
 		}
 		else if (result == `auto) {
 		    last_created   = last_created + 1;
-		    map  new_line  = $["enabled":true, "service":select(service_info, 3, ""), "max":"",
-			"socket_type":"stream", "protocol":select(service_info, 5, ""), "wait":false, "server_args":"",
+		    //y2milestone("%1", selected_item);
+		    term service_info = GetSelectedService(selected_item);
+		    string n_service  = select(service_info, 3, "");
+		    string n_protocol = select(service_info, 5, "");
+		    string n_server   = select(service_info, 8, "");
+		    map  new_line  = $["enabled":true, "service":n_service, "max":"",
+			"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
 			"user":"root", "group":"", "comment":"",
-			"iid":"inst" + last_created, "created":true, "server":select(service_info, 8, "")];
+			"iid":"inst" + last_created, "created":true, "server":n_server];
 		    Inetd::addLine(new_line);
 		    need_reindex = true;
 		    need_rebuild = true;
 		    to_select = "inst" + last_created;
+		}
+		else if (result == `installed) {
+		    need_reindex = true;
+		    need_rebuild = true;
+		    to_select    = "";
 		}
 		else {
 		    need_reindex = false;
@@ -782,7 +783,7 @@ global define symbol InetdDialog () ``{
 	    UI::ChangeWidget(`id(`table), `CurrentItem, to_select);
 	}
     }
-    
+
     if(ret == `next) {
 	if(IsAnyServiceEnabled(Inetd::netd_conf) == `no) {
 	    Inetd::netd_status = -1;
@@ -868,14 +869,17 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	    `VBox(
 		// user and group ComboBoxes
 		`HBox(
-		    `VBox(
-			`ComboBox(`id(`user), _("&User"), local_users),
-			`HSpacing(10)
+		    `HWeight(1, `ComboBox(`id(`user), _("&User"), local_users)),
+		    `HSpacing(1),
+		    `HWeight(1, `ComboBox(`id(`group), _("&Group"), local_groups))
+		    /*`VBox(
+			`HSpacing(40),
+			`ComboBox(`id(`user), _("&User"), local_users)
 		    ),
 		    `VBox(
 			`ComboBox(`id(`group), _("&Group"), local_groups),
 			`HSpacing(10)
-		    )
+		    )*/
 		),
 		// Server arguments
 		`TextEntry(`id(`server), _("S&erver")),
@@ -950,7 +954,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		((UI::QueryWidget(`id(`service), `Value) == "") ||
 		//(UI::QueryWidget(`id(`user),    `Value) == "") ||
 		(UI::QueryWidget(`id(`server),  `Value) == ""))) ||
-		 
+
 		((Inetd::configured_service == `xinetd) &&
 		((UI::QueryWidget(`id(`service), `Value) == "")))) {
 		//(UI::QueryWidget(`id(`user),     `Value) == "")))) {
@@ -967,8 +971,7 @@ Enter valid values.
 	    else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
 		/* Translators: sformat-ed() 3 strings */
-		UI::MessagePopup(sformat("%1%2%3", _("The user "), _("--default--"),
-		    _(" is reserved for internal services.")));
+		UI::MessagePopup(sformat(_("The user %1 is reserved only for server internal."), _("--default--")));
 		input_failed = true;
 	    }
 	    // YES (input is OK) --- so save settings!
