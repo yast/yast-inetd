@@ -1,0 +1,37 @@
+//
+{
+    integer old = WFM::SCRGetDefault ();
+
+    integer h = WFM::SCROpen ("ag_netd", false);
+    if (h < 1)
+    {
+	return;
+    }
+    WFM::SCRSetDefault (h);
+    SCR::Xinetd (WFM::Args (0));
+
+    list s = SCR::Read (.services);
+    map ns = $[
+	// no iid
+	"changed": true,
+	"comment": " Dys is mai servis",
+	"enabled": false,
+	"service": "sgi_fam",
+	"rpc_version": "1-2",
+	"socket_type": "stream",
+	"protocol": "tcp",
+	"wait": false,
+	"max": 42, //ignored
+	"user": "root",
+	"group": "bin",
+	"server": "/usr/sbin/fam",
+	"server_args": "fam",
+	];
+    s = add (s, ns);
+    boolean r = SCR::Write (.services, s);
+
+    WFM::SCRClose (h);
+    WFM::SCRSetDefault (old);
+
+    return r;
+}
