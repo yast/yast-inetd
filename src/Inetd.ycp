@@ -22,9 +22,10 @@
     import "Summary";
     import "Directory";
     
-
-    global symbol  inetd_status = `off;
-
+    // is inetd or xinetd running? (See netd_service for more info)
+    global symbol  netd_status = `off;
+    // determine, which service is in use: `xinetd for xinetd or `inetd for inetd
+    global symbol  netd_service = `none;
     /**
      * /etc/inetd.conf, as a list of lines
      * where lines are maps, all containing:
@@ -90,18 +91,32 @@
      */
 
     /**
-     * Determines inetd_status
+     * Determines netd_status - IMPLEMENTED in ui.ycp!
      * @return True on success
      */
     global define boolean Read (block abort) ``{
 
-	boolean start_inetd = Runlevel::ServiceEnabled ("inetd");
+//	boolean start_inetd = Runlevel::ServiceEnabled ("inetd");
+        //sleep(1000);
+	if (netd_service == `inetd) {
+	    inetd_conf = SCR::Read(.test.netd.services); // read config file
+	}
+	else {
+	    inetd_conf = SCR::Read(.test.xinetd.services); // read config file
+	}
+	if (inetd_conf == nil) {                     // if no configuration found
+	  inetd_conf = [];                           //   simply set to empty map
+	}
+	/*if (eval(abort) == true) {
+	  inetd_conf = [];
+	} */
+	return true;
 
 	/* check if there is a default for inetd.conf, else create one
 	 * different inetd.conf and inetd.conf.default will set inetd_status = `on_custom
 	 */
 
-	if ( SCR::Read(.target.size, "/etc/inetd.conf.default") != -1 )
+/*	if ( SCR::Read(.target.size, "/etc/inetd.conf.default") != -1 )
 	{
 	    SCR::Execute(.target.bash, "/bin/cp /etc/inetd.conf /etc/inetd.conf.default" );
 	    if( start_inetd) inetd_status = `on_default;
@@ -120,7 +135,7 @@
 	    }
 	}
 
-	return true;
+	return true;*/
     }
 
     /**
@@ -386,11 +401,21 @@
     }
 
 
-    global define deleteLine (  integer line_number )
-    ``{
+    global define deleteLine(any line_number) ``{
 	// delete
-	changed_conf = true;
-	inetd_conf = filter( `line,  inetd_conf, ``(lookup( line, "line_number", 0 ) != line_number ) );
+//	changed_conf = true;
+	map current_line = select(filter(`line, Inetd::inetd_conf,
+	    ``(lookup(line, "iid", "0") == line_number)), 0, $[]);
+	current_line = add(current_line, "deleted", true);
+	inetd_conf   = maplist(`line, inetd_conf, ``{
+	    if (lookup(line, "iid", "0") == line_number) {
+		return(current_line);
+	    }
+	    else {
+		return(line);
+	    }
+	});
+/*	inetd_conf = filter( `line,  inetd_conf, ``(lookup( line, "line_number", 0 ) != line_number ) );
 	// renumber
 	inetd_conf = maplist( `line, inetd_conf, ``{
 	    integer curr_number = lookup( line, "line_number", 0 );
@@ -401,7 +426,7 @@
 	    }
 	    return( line );
 	});
-
+*/
     };
 
 
@@ -410,11 +435,10 @@
      * @return void
      */
 
-    global define void addLine (  map new_line, integer line_number )
-    ``{
+    global define void addLine(map new_line) ``{
 	changed_conf = true;
 	// renumber
-	inetd_conf = maplist( `line, inetd_conf,
+/*	inetd_conf = maplist( `line, inetd_conf,
 	``{
 	    integer curr_number = lookup( line, "line_number", 0 );
 
@@ -423,10 +447,10 @@
 		line = add( line, "line_number", curr_number +1 );
 	    }
 	    return( line );
-	});
+	});*/
 
 	// add
-	inetd_conf = add( inetd_conf, new_line );
+	inetd_conf = add(inetd_conf, new_line);
 	return;
     }
 
@@ -437,22 +461,18 @@
      * @return  internal-DB map
      */
 
-    global define changeLine (   map new_line, integer line_number )
-    ``{
-	changed_conf = true;
-        inetd_conf =  maplist( `line, inetd_conf,
-	``{
-	    if ( lookup( line, "line_number", 0 ) == line_number )
-	    {
-		return( new_line );
+    global define changeLine(map new_line, any line_number) ``{
+//	changed_conf = true;
+        // entry was changed
+	new_line   = add(new_line, "changed", true);
+	inetd_conf = maplist(`line, inetd_conf, ``{
+	    if (lookup(line, "iid", "0") == line_number) {
+		return(new_line);
 	    }
-	    else
-	    {
-		return( line );
+	    else {
+		return(line);
 	    }
 	});
-
-
     };
 
     /**
@@ -540,13 +560,63 @@
      * @return List-DB map
      */
 
-    global define list(term) convertInternalToList ( )
-    ``{
-	list table_input = [];
+    global define list(term) convertInternalToList() ``{
+	list    table_input     = [];
+	list    my_table        = [];
+	any     status          = false;
+	string  status_text     = "";
+	string  wait_text       = "";
+	integer numberOfEntries = size(inetd_conf);
 
-	foreach(`line, inetd_conf, ``{
+	if (numberOfEntries != 0) {
+	    /*while (index <= numberOfEntries) {
+		y2milestone("entry %1", inetd_conf[1, 1]);
+		index = index + 1;
+	    }*/
+	    foreach(`line, inetd_conf, ``{
+		// service must be marked as nondeleted ("deleted" == false or "deleted" not exists)
+		if (lookup(line, "deleted", false) != true) {
+
+		    // determine service is enabled (enabled text)
+		    any status = lookup(line, "enabled", true);
+		    if (status == true) {
+			status_text = _("On");
+		    }
+		    else {
+			status_text = _("Off");
+		    }
+		    // determine wait mode (convert to string)
+		    status = lookup(line, "wait", true);
+		    if (status == true) {
+			wait_text = "wait";
+		    }
+		    else {
+			wait_text = "nowait";
+		    }
+		    // create line for table structure
+		    term entry = `item(`id(lookup(line, "iid", "0")),
+			status_text,
+			lookup(line, "service", ""),
+			lookup(line, "socket_type", ""),
+			lookup(line, "protocol", ""),
+			wait_text,
+			lookup(line, "user", ""),
+			lookup(line, "server_args", ""));
+		    // add line to table structure
+		    table_input = add(table_input, entry);
+		    //y2milestone("%1", status_text);
+		};
+	    });
+	}
+	//y2milestone ("size(inetd_conf) = %1", size(inetd_conf));
+        return table_input;
+
+	/*foreach(`line, inetd_conf, ``{
+
+	    //y2milestone ("`line: %1", line);
 
 	    symbol status = lookup(line, `status, `comment);
+            my_table = add (my_table, line);
 
 	    if ( status != `comment )
 	    {
@@ -580,8 +650,8 @@
 	    }
 
         });
-
-	return( table_input );
+        y2milestone("my_table: %1", my_table);
+	return( table_input );*/
     };
 
 
