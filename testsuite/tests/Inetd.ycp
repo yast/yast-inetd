@@ -1,0 +1,20 @@
+{
+
+include "testsuite.ycp";
+import "Inetd.ycp";
+
+map READ = $[
+    "target" : $[
+	"size" : -1,
+    ],
+    "init" : $[
+	"scripts" : $[
+	    "exists" : true,
+	]
+    ],
+];
+
+DUMP("Read");
+TEST(``(Inetd::Read(nil)), [READ], nil);
+
+}

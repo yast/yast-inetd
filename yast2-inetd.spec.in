@@ -1,0 +1,32 @@
+@HEADER-COMMENT@
+# neededforbuild yast2-devel-packages yast2-runlevel
+
+@HEADER@
+Requires:	yast2 yast2-runlevel
+
+Provides:	yast2-config-inet y2c_inet
+Obsoletes:	yast2-config-inet y2c_inet
+
+BuildArchitectures:	noarch
+
+Summary:	Configuration of inetd
+
+%description
+-
+
+@PREP@
+
+@BUILD-YCP@
+
+@INSTALL-YCP@
+
+@CLEAN@
+
+%files
+%defattr(-,root,root)
+%dir @yncludedir@/inetd
+@yncludedir@/inetd/*
+@clientdir@/inetd*.ycp
+@moduledir@/Inetd.ycp
+@configdir@/inetd.y2cc
+%doc @docdir@

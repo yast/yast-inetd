@@ -1,0 +1,6 @@
+Dump	Read
+Read	.init.scripts.exists "inetd" true
+Read	.init.scripts.runlevel "inetd" nil
+Read	.target.size "/etc/inetd.conf.default" -1
+Execute	.target.bash "/usr/bin/diff /etc/inetd.conf /etc/inetd.conf.default" 0
+Return	true
