@@ -180,11 +180,13 @@ global define MainDialog () ``{
 								   // main dialog: RasioButton: don't start inetd
 								   _("O&ff, don't start inetd"), Inetd::inetd_status == `off  )),
 						`Label(""),
-						`Left(`RadioButton(`id(`on_default),`opt(`notify),
-								   // main dialog: RasioButton: don't start inetd
-								   _("On with d&efault configuration"),
-								   Inetd::inetd_status == `on_default )),
-						`Label(""),
+						// default on 8.1 is no services, so the option is for future use
+						//
+						// `Left(`RadioButton(`id(`on_default),`opt(`notify),
+						// 		   // main dialog: RasioButton: don't start inetd
+						// 		   _("On with d&efault configuration"),
+						// 		   Inetd::inetd_status == `on_default )),
+						// `Label(""),
 						`Left(`RadioButton(`id(`on_custom),`opt(`notify),
 								   // main dialog: RasioButton: don't start inetd
 								   _("On with c&ustom configuraton ..."),
@@ -481,7 +483,7 @@ global define ConfigureDialog() ``{
 		 {
 		     current_line = select( return_val, 1 , $[]);
 
-		     Initd::addLine(  current_line, w_id-1);
+		     Inetd::addLine(  current_line, w_id-1);
 
 
 		     //   	- a dialog-ouput for comment    -> insert line X-1
@@ -492,7 +494,7 @@ global define ConfigureDialog() ``{
 			 // B.1
 			 map new_line = $[ `status:`comment, "comment":new_comment ];
 			 new_line     = add( new_line, "line_number", w_id);
-			 Initd::addLine(  new_line, w_id-1);
+			 Inetd::addLine(  new_line, w_id-1);
 		     }
 		 }
 	     }
@@ -692,7 +694,7 @@ global define ConfigureDialog() ``{
 				 // B.1
 				 map new_line = $[ `status:`comment, "comment":new_comment ];
 				 new_line     = add( new_line, "line_number", w_id);
-				 Initd::addLine( new_line, w_id-1);
+				 Inetd::addLine( new_line, w_id-1);
 			     }
 			     else
 			     {

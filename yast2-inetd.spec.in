@@ -32,4 +32,5 @@ Summary:	Configuration of inetd
 @clientdir@/inetd*.ycp
 @moduledir@/Inetd.ycp
 @configdir@/inetd.y2cc
+@ybindir@/build_inetd_conf_ycp.pl
 %doc @docdir@

@@ -18,6 +18,7 @@
     import "Progress";
     import "Runlevel";
     import "Report";
+    import "Mode";
 
 
 

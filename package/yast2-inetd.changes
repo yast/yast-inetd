@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 30 13:13:39 CEST 2002 - mike@suse.de
+
+- bugfixes  15501 16420 16132 18266
+ - network service editor misses lines from inetd.conf,
+ - does not work,
+ - create does not work
+
+-------------------------------------------------------------------
 Tue Aug 27 20:00:00 CEST 2002 - jsuchome@suse.cz
 
 - provide/obsolete old translation packages
