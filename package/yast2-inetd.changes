@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 21 17:35:41 CET 2005 - mlazar@suse.cz
+
+- propdel svn:mime-type all-services.sh
+
+-------------------------------------------------------------------
 Mon Feb 21 15:29:26 UTC 2005 - mlazar@suse.cz
 
 - fixet `table notify
