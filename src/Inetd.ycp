@@ -264,7 +264,8 @@ global define boolean Write() ``{
 	    // xinetd must be stopped - if installed
 	    if (xinetd_installed == 0) {
 		y2milestone("xinetd installed  --- stopping and disabling service");
-		Runlevel::RunInitScript("xinetd", "stop");
+		if (!write_only)
+		    Runlevel::RunInitScript("xinetd", "stop");
 		Runlevel::ServiceAdjust("xinetd", "disable");
 	    }
 	    else {
@@ -276,7 +277,8 @@ global define boolean Write() ``{
 	    if (netd_status != 0) { // want to stop
 		if (inetd_status == 0) { // was running --- stop
 		    y2milestone("inetd was running --- stoping and disabling service");
-		    Runlevel::RunInitScript("inetd", "stop");
+		    if (!write_only)
+			Runlevel::RunInitScript("inetd", "stop");
 		    Runlevel::ServiceAdjust("inetd", "disable");
 		} // else --- leave stopped
 	    }
@@ -284,13 +286,15 @@ global define boolean Write() ``{
 		// if inetd is running - only reload
 		if (inetd_status == 0) {
 		    y2milestone("inetd was running --- calling force-reload");
-		    Runlevel::RunInitScript("inetd", "force-reload");
+		    if (!write_only)
+			Runlevel::RunInitScript("inetd", "force-reload");
 		}
 		// if stopped - enable and start
 		else {
 		    y2milestone("inetd was stopped --- enabling and starting service");
 		    Runlevel::ServiceAdjust("inetd", "enable");
-		    Runlevel::RunInitScript("inetd", "start");
+		    if (!write_only)
+			Runlevel::RunInitScript("inetd", "start");
 		}
 	    }
 	}
@@ -299,7 +303,8 @@ global define boolean Write() ``{
 	    // inetd must be stopped - if installed
 	    if (inetd_installed == 0) {
 		y2milestone("inetd installed     --- stopping and disabling service");
-		Runlevel::RunInitScript("inetd", "stop");
+		if (!write_only)
+		    Runlevel::RunInitScript("inetd", "stop");
 		Runlevel::ServiceAdjust("inetd", "disable");
 	    }
 	    else {
@@ -311,7 +316,8 @@ global define boolean Write() ``{
 	    if (netd_status != 0) { // want to stop
 		if (xinetd_status == 0) {
 		    y2milestone("xinetd was running --- stopping and disabling service");
-		    Runlevel::RunInitScript("xinetd", "stop");
+		    if (!write_only)
+			Runlevel::RunInitScript("xinetd", "stop");
 		    Runlevel::ServiceAdjust("xinetd", "disable");
 		}
 	    }
@@ -319,13 +325,15 @@ global define boolean Write() ``{
 		// if xinetd is running - only reload
 		if (xinetd_status == 0) {
 		    y2milestone("xinetd was running --- calling force-reload");
-		    Runlevel::RunInitScript("xinetd", "force-reload");
+		    if (!write_only)
+			Runlevel::RunInitScript("xinetd", "force-reload");
 		}
 		// if stopped - enable and start
 		else {
 		    y2milestone("xinetd was stopped --- enabling and starting service");
 		    Runlevel::ServiceAdjust("xinetd", "enable");
-		    Runlevel::RunInitScript("xinetd", "start");
+		    if (!write_only)
+			Runlevel::RunInitScript("xinetd", "start");
 		}
 	    }
 	}
