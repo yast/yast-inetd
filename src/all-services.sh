@@ -3,6 +3,8 @@
 # required: pdb-commandline.rpm
 #
 
+# See doc/README.maintainer
+
 # generate default_conf_{inet,xinetd}.ycp, as required by
 # http://w3.suse.de/~kkaempf/yast2/planning/descr/improvement_24.html
 # by
