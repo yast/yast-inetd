@@ -595,7 +595,7 @@ define symbol InetdDialog () ``{
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
 	    Label::BackButton(), Label::FinishButton());
 
-    Wizard::ReplaceBackButton(`Empty());
+    Wizard::HideBackButton();
 
     Wizard::SetScreenShotName("inetd-5-maindialog");
 
