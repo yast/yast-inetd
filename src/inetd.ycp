@@ -18,7 +18,10 @@
 
 textdomain "inetd";
 
+import "Inetd";
 import "CommandLine";
+
+typedef integer service_id_t;
 
 
 /* The main () */
@@ -35,13 +38,213 @@ if ( size(args)>0 && is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
     propose = true;
 }
 
+boolean AddHandler(map<string,string> opts) {
+    if (nil == CommandLine::UniqueOption( opts, ["service"])) 
+	return false;
+    return true;
+}
+
+boolean DeleteHandler(map<string,string> opts) {
+    if (nil == CommandLine::UniqueOption( opts, ["service"])) 
+	return false;
+    return true;
+}
+
+boolean SetHandler(map<string,string> opts) {
+    if (nil == CommandLine::UniqueOption( opts, ["service"])) 
+	return false;
+    return true;
+}
+
+void CommandLineTableDump(list<list> table)
+{
+    integer columns = 0;
+    list<integer> len = [];
+    integer totallen = 0;
+    integer c = 0;
+    foreach(list l, table, {
+	columns = size(l) > columns ? size(l) : columns;
+	c = 0;
+	while(c<size(l)) {
+	    if (l[c]:nil != nil) {
+		len[c] = size(l[c]:"") > len[c]:0 ? size(l[c]:"") : len[c]:0;
+	    }
+	    c = c+1;
+	}
+    });
+    c=0;
+    while(c<columns) {
+	totallen = totallen + len[c]:0 + 3;
+	c = c+1;
+    }
+    if (totallen >= 80) {
+	len[columns-1] = 80 - (totallen - len[columns-1]:0);
+	if (len[columns-1]:0<3) len[columns-1] = 3;
+    }
+    foreach(list l, table, {
+	string line = "";
+	c=0;
+	if (size(l)>0) {
+	    while(c<columns) {
+		totallen = size(line);
+		line = line + l[c]:"";
+		if (c<columns-1) {
+		    while(size(line)<totallen+len[c]:0) {line=line+" ";}
+		    line = line + " | ";
+		}
+		c=c+1;
+	    }
+	} else {
+	    while(c<columns) {
+		totallen = size(line);
+		while(size(line)<totallen+len[c]:0) {line=line+"-";}
+		if (c<columns-1) {
+		    line = line + "-+-";
+		}
+		c=c+1;
+	    }
+	}
+	CommandLine::Print(line);
+    });
+}
+
+map<string,any> opts2mask(map<string,string> opts)
+{
+    service_t mask = $[];
+    if (opts["disable"]:nil != nil) {
+	mask["enable"] = opts["disable"]:nil == "yes" ? false : true;
+    }
+    if (opts["wait"]:nil != nil) {
+	mask["wait"] = opts["wait"]:nil == "yes" ? true : false;
+    }
+    foreach(string key, ["service", "rpc_version", "socket_type", "protocol", "user",
+	 "group", "server", "server_args", "comment"],
+    {
+	if (opts[key]:nil != nil)
+	    mask[key] = opts[key]:nil;
+    });
+    return mask;
+}
+
+boolean SummaryHandler(map<string,string> opts) {
+    list<service_id_t> service_ids = Inetd::GetServicesId(opts2mask(opts));
+    list<list> services = [[_("Status"),_("Service"),_("Type"),_("Prot."),_("Wait"),_("User"),_("Server")],[]];
+
+    foreach(service_id_t id, service_ids, {
+	string user = Inetd::ServiceGetStr(id, "user", "");
+	if (Inetd::ServiceGetStr(id, "group", "") != "")
+	    user = user + "." + Inetd::ServiceGetStr(id, "group", "");
+	string server = Inetd::ServiceGetStr(id, "server", "");
+	if (Inetd::ServiceGetStr(id, "server_args", "") != "")
+	    server = server + " " + Inetd::ServiceGetStr(id, "server_args", "");
+	string service = Inetd::ServiceGetStr(id, "service", "");
+	if (Inetd::ServiceGetStr(id, "rpc_version", "") != "")
+	    service = service + "/" + tostring(Inetd::ServiceGetStr(id, "rpc_version", ""));
+	list line = [ 
+	    Inetd::ServiceEnabled(id) ? _("On") : _("Off"),
+	    service,
+	    Inetd::ServiceGetStr(id, "socket_type", ""),
+	    Inetd::ServiceGetStr(id, "protocol", ""),
+	    Inetd::ServiceGetTruth(id, "wait", true) ? _("Yes") : _("No"),
+	    user,
+	    server
+	];
+	services = add(services, line);
+    });
+    CommandLineTableDump(services);
+    return true;
+}
+
 map mini = $[
-        // help text
-        "help"      : _("Configuration of Network Services (xinetd)"),
-        "id"        : "inetd",
-        // GUI handler (symbol())
-        "guihandler": InetdSequence,
-    ];
+    "help"      : _("Configuration of Network Services (xinetd)"),
+    "id"        : "inetd",
+    "guihandler": InetdSequence,
+    "initialize": Inetd::Read,
+    "finish": Inetd::Write,
+    "actions": $[
+	"summary": $[
+	    // translators: command line help text for "summary" action
+	    "help": _("Show a list of current sestem service status"),
+	    "handler": SummaryHandler,
+	],
+	"add": $[
+	    // translators: command line help text for "add" action
+	    "help": _("Enable the service"),
+	    "handler": AddHandler,
+	],
+	"delete": $[
+	    // translators: command line help text for "delete" action
+	    "help": _("Disable the service"),
+	    "handler": DeleteHandler,
+	]
+    ],
+    "options": $[
+	"service" : $[
+	    // translators: command line help text for "service" option
+	    "help": _("Service name"),
+	    "type": "string",
+	],
+	"disable" : $[
+	    // translators: command line help text for "disable" option
+	    "help": _("Disable service"),
+	    "type": "enum",
+	    "typespec": ["yes", "no"],
+	],
+	"rpc_version" : $[
+	    // translators: command line help text for "rpc_version" option
+	    "help": _("RPC version of RPC service"),
+	    "type": "string",
+	],
+	"socket_type" : $[
+	    // translators: command line help text for "socket_type" option
+	    "help": _("Socket type"),
+	    "type": "enum",
+	    "typespec": ["stream", "dgram" "raw", "seqpacket"],
+	],
+	"protocol" : $[
+	    // translators: command line help text for "protocol" option
+	    "help": _("Internet (IP) protocols"),
+	    "type": "enum",
+	    "typespec": ["tcp", "udp", "rpc/tcp", "rpc/udp"],
+	],
+	"wait" : $[
+	    // translators: command line help text for "wait" option
+	    "help": _("Wait attribute"),
+	    "type": "enum",
+	    "typespec": ["yes", "no"],
+	],
+	"user" : $[
+	    // translators: command line help text for "user" option
+	    "help": _("Determines the uid for the server process"),
+	    "type": "string",
+	],
+	"group" : $[
+	    // translators: command line help text for "group" option
+	    "help": _("Determines the gid for the server process"),
+	    "type": "string",
+	],
+	"server" : $[
+	    // translators: command line help text for "server" option
+	    "help": _("Path name of program to be executed"),
+	    "type": "string",
+	],
+	"server_args" : $[
+	    // translators: command line help text for "server_arguments" option
+	    "help": _("Parameters for server"),
+	    "type": "string",
+	],
+	"comment" : $[
+	    // translators: command line help text for "comment" option
+	    "help": _("User comment"),
+	    "type": "string",
+	]
+    ],
+    "mappings": $[
+	"summary": ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
+	"add":     ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
+	"delete":  ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
+    ]
+];
 
 
 /* main ui function */

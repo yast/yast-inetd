@@ -662,7 +662,7 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 		// service socket type
 		`HWeight(3,
 		    `ComboBox(`id(`type), `opt(`hstretch), _("Socket T&ype"),
-			["stream", "dgram", "raw", "rdm", "seqpacket"])
+			["stream", "dgram", "raw", "seqpacket"])
 		),
 		`HSpacing(1),
 		// for protocol option - ediatble ComboBox
