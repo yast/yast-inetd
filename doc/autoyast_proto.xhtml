@@ -21,8 +21,8 @@ content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
 <body>
 <h1>(x)inetd module in Autoyast in SuSE Linux 9.0</h1>
 
-<p>Martin Vidner &lt;mvidner@suse.cz&gt; and
-Petr Hadraba.</p>
+<p>Martin Vidner &lt;mvidner@suse.cz&gt; 2003-07-21,
+based on a document by Petr Hadraba.</p>
 
 <p>This document describes the format of the inetd/xinetd part of the Autoyast
 profile. It focuses on creating the profile without using the GUI Configuration
@@ -68,7 +68,8 @@ Management System.</p>
 (<code>netd_status</code>) and how the services should be configured
 (<code>netd_conf</code>).</p>
 
-<p>A service description element has conceptually two parts: key and non-key.
+<p>A service description element has conceptually two parts:
+<a id="key">key</a> and non-key.
 When writing the configuration, services are matched using the key fields and
 to the matching service, non-key fields are applied. If no service matches, it
 is created. If more services match, a warning is reported. The key fields are
@@ -83,8 +84,6 @@ more loosely: if it is /usr/sbin/tcpd, the real server name is taken from
 <code>server_args</code>. After that, the basename of the first
 whitespace-sparated word is taken and these values are compared.</p>
 
-<p>TODO finish</p>
-
 <p>Legend for the tables:</p>
 <dl>
 <dt>O</dt>
@@ -94,6 +93,8 @@ whitespace-sparated word is taken and these values are compared.</p>
 <dt>m</dt>
 <dd>Mandatory for the daemon, but can be omitted in the profile if the value is
 already specified in an existing configuration.</dd>
+<dt>K</dt>
+<dd><a href="#key">Key field</a>, at least one of them is mandatory.</dd>
 <dt>N/A</dt>
 <dd>Not available</dd>
 </dl>
@@ -165,7 +166,8 @@ disabled.<br />
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c1">A list of &lt;listentry&gt; elements, whose items are described
+<td class="c1">A list of <code>listentry</code> elements,
+whose items are described
 in the following table.
 </td>
 </tr>
@@ -194,14 +196,11 @@ in the following table.
 <td class="c1"><code>changed</code><br />
 </td>
 <td class="c1">boolean</td>
-<td class="c1">M<br />
+<td class="c1">O<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">O<br />
 </td>
-<td class="c1">This should be set to <tt>true</tt>, otherwise the
-rest of the service info will be ignored. (In some cases it is not
-necessary, but it is too complex to explain.)
-TODO now optional and defaults to true
+<td class="c1">Internal flag, now defaults to <tt>true</tt>. Accepted for <a href="#compat-82">compatibility with 8.2</a>.
 </td>
 </tr>
 
@@ -235,13 +234,14 @@ multiple lines, initial hashes (#) will be added.</td>
 </td>
 <td class="c1">boolean<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">O<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">O<br />
 </td>
 <td class="c1">If <span class="c5">true</span>, service will be
 activated.<br />
-TODO now defaults to true
+Now defaults to <tt>true</tt>.
+See <a href="#compat-82">compatibility with 8.2</a>.
 </td>
 </tr>
 
@@ -263,11 +263,16 @@ TODO now defaults to true
 </td>
 <td class="c1">string<br />
 </td>
-<td class="c1">!<br />
+<td class="c1">O<br />
 </td>
-<td class="c1">!<br />
+<td class="c1">O<br />
 </td>
-<td class="c1">"Internal identifier." See <a href="#xinetd">below</a>.<br />
+<td class="c1">"Internal identifier."
+If present, should not contain a colon (<tt>:</tt>).
+If it starts with <tt>new</tt>, no key field matching is done and the service
+is added (to a file specified with <code>script</code> or the main
+configuration file).
+See <a href="#compat-82">compatibility with 8.2</a>.
 </td>
 </tr>
 
@@ -289,14 +294,14 @@ TODO now defaults to true
 </td>
 <td class="c1">string<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">K<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">K<br />
 </td>
-<td class="c1">Service protocol specification (See inetd (xinetd)
+<td class="c1">Service protocol specification, eg. <tt>tcp</tt> or <tt>udp</tt>
+(See inetd (xinetd)
 man pages for more details.)<br />
-Part of the (service,protocol,server) triple that identifies a
-service.</td>
+</td>
 </tr>
 
 <tr>
@@ -317,16 +322,32 @@ For xinetd, <tt>type = RPC</tt> is automatically added.</td>
 </td>
 <td class="c1">string<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">K<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">K<br />
 </td>
-<td class="c1">Contains full path to service program.<br />
-If service is beeing installed, this property contains only server
-program filename (without path!) and (rpm-)package name in rounded
-brackets.<br />
-Part of the (service,protocol,server) triple that identifies a
-service.</td>
+<td class="c1">For new services, contains the full path to the service
+program.<br />
+For modified services, it is a <a href="#key">key field</a> matched this way:
+if it is /usr/sbin/tcpd, the real server name is taken from
+<code>server_args</code>. After that, the basename of the first
+whitespace-sparated word is taken and these values are compared.
+See <a href="#compat-82">compatibility with 8.2</a>.
+</td>
+</tr>
+
+<tr>
+<td class="c1"><code>script</code><br />
+</td>
+<td class="c1">string<br />
+</td>
+<td class="c1">K<br />
+</td>
+<td class="c1">K<br />
+</td>
+<td class="c1">The base name of the config file: usually a
+file in /etc/xinetd.d, eg. "echo-udp", or "inetd.conf".
+</td>
 </tr>
 
 <tr>
@@ -347,13 +368,11 @@ service.</td>
 </td>
 <td class="c1">string<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">K<br />
 </td>
-<td class="c1">M<br />
+<td class="c1">K<br />
 </td>
 <td class="c1">Service name.<br />
-Part of the (service,protocol,server) triple that identifies a
-service.
 <!--(rpc_version is separate which may be a bug)-->
 </td>
 </tr>
@@ -416,83 +435,25 @@ Eg. <pre
 </tbody>
 </table>
 
-<!--
-applies to 8.2
-
-<h3 id="xinetd">Xinetd</h3>
-
-<h4>Enabling an existing service</h4>
-
-<p>If a RPM package includes a xinetd config file placed in /etc/xinetd.d, the
-service can be enabled (or disabled) in this way:</p>
-<pre
->  iid: inst
-  enabled: true or false
-  service: ...
-  protocol: ...
-  server: ...
-</pre>
-<p>
-Service, protocol and server must match:
-(More precisely, the first word of the profile's server field must be contained
-in the config file's server field. That's how the profiles created by the
-Autoyast Configuration Management System work.)
-Other fields in the profile, such as user, are <b>discarded</b>.
-</p>
-
-<h4 id="add_srv"
->Adding a new service or changing parameters of an existing one</h4>
-
-<p>
-Due to a bug,
-changing other parameters of a service works only by adding another copy of the
-service configuration (which is OK because by default the already present
-configuratin is disabled). Don't be confused by the fact that it is added to
-the main configuration file, not to xinetd.d.
-</p>
-<pre
->  iid: new
-  changed: true
-  enabled: true or false
-
-  plus other fields as described in the <a href="#netd_conf_item"
->table above</a>.
-</pre>
-
-<h3>Inetd</h3>
-
-<h4>Enabling or changing an existing service</h4>
-
-<p>
-Changing a service that is in the default inetd.conf file (except VNC related
-ones, that's a bug).
-</p>
-<pre
->  enabled: true or false
-  service: ...
-  protocol: ...
-  server: ...
-</pre>
-<p>
-Service, protocol and server must match.
-Server must be with full path and will be /usr/sbin/tcpd for most services.
-(That also means that enabling ftp in this way will enable both in.ftpd an
-vsftpd, that's a bug.)
-<a href="#netd_conf_item">Other fields</a> can be specified.
-</p>
-
-<h4>Adding a service</h4>
-
-<p>Works like <a href="#add_srv">adding a service for xinetd</a>.</p>
-end of 8.2 stuff
--->
-
 
 <h3>Compatibility with previous versions</h3>
 
 <h4 id="compat-82">SL 8.2</h4>
 
-<p>TODO, explain "server (package)", iid=inst, iid=new</p>
+<p>The UI for preparing autoinstallation profiles in SL 8.2 produces
+<code>server</code> fields in the form "server (package)". That is one of the
+reasons for the way the <code>server</code> filed is matched the way it is.</p>
+
+<p>The <code>changed</code> field, though internal, used to be mandatory. That
+is now fixed.</p>
+
+<p>The <code>enabled</code> field had its default changed from <tt>false</tt>
+to <tt>true</tt>. It should save some typing and cause no problems.</p>
+
+<p>The <code>iid</code> field is only handled specially if it starts with
+<tt>new</tt>. That is, the former way with <tt>inst</tt> will not be special
+and will now use the key
+field matching and the value of non-key fields, unlike in SL 8.2.</p>
 
 <h4>SLES 8, SL 8.1</h4>
 
@@ -504,7 +465,7 @@ simple:</p>
   "inetd_services": [
     $[
       "service_name": "foo",
-      "service_status": "enable",	// or "disable", string! 
+      "service_status": "enable",	// or "disable", string!
     ],
     //...
   ],
