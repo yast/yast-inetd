@@ -13,11 +13,8 @@
 
 {
 
-include "testsuite.ycp";
 import "Directory";
 import "Inetd";
-import "Report";
-
 // make it respect Y2DIR
 string y2dir = (string) (lookup ((map) SCR::Execute (.target.bash_output,
 				     "echo -n ${Y2DIR-/usr/share/YaST2}"),
@@ -26,6 +23,9 @@ Directory::datadir = y2dir + "/data";
 
 // do it now, because during TEST we do not have a live SCR
 Inetd::EnsureDefaultConfLoaded ();
+
+include "testsuite.ycp";
+import "Report";
 
 Report::DisplayErrors(false, 0);
 

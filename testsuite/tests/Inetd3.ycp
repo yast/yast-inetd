@@ -12,6 +12,7 @@
  */
 
 {
+    // testedfiles: Inetd.ycp Service.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 import "Inetd";

@@ -15,6 +15,7 @@
  */
 
 {
+    // testedfiles: dialogs.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 import "Inetd";
