@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 24 15:09:01 CET 2004 - mvidner@suse.cz
+
+- alert the user if he is not root (#35363)
+- Runlevel -> Service
+- 2.9.10
+
+-------------------------------------------------------------------
 Thu Mar 18 15:36:07 CET 2004 - mvidner@suse.cz
 
 - added autoyast compatibility for SL8.1/SLES8 (#28067)
