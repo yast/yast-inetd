@@ -275,7 +275,7 @@ global define symbol WhatToConfigureDialog() ``{
 		`HSpacing(2),
 		/* Traslators: If both services (Inetd and Xinetd) are installed, this messagebox is displayed.
 		               This is text above radio-buttons... */
-		`Label(_("Please select service you want to configure")),
+		`Label(_("Select the service to configure.")),
 		`HSpacing(2)
 	    ),
 	    `VSpacing(0.5),
@@ -418,7 +418,7 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	Inetd::required_packages = add(Inetd::required_packages, package_name);
 	/* Translators: In autoinstallation mode:
 	                The package name is stored in %1. */
-	UI::MessagePopup(sformat(_("Package %1 will be installed during write process."),
+	UI::MessagePopup(sformat(_("Package %1 will be installed during the write process."),
 	    select(package_name, 0, "")));
 	ret = `auto;
 	return ret;
@@ -432,7 +432,7 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    select(package_name, 0, "")))) {
 	//if (true) {
 	    /* Translators: The package name is stored in %1. */
-	    UI::MessagePopup(sformat(_("Package %1 was not installed. Service can't be edited."),
+	    UI::MessagePopup(sformat(_("Package %1 was not installed. The service cannot be edited."),
 		select(package_name, 0, "")));
 	    ret = `none;
 	    return ret;
@@ -496,7 +496,7 @@ global define symbol InetdDialog () ``{
 	    `VSpacing(1),
 	      // Main dialog edit inetd.conf
 	    /* Translators: Name of table with services (echo, chargen, ...) */
-	    `Left(`Label(_("Currently available services"))),
+	    `Left(`Label(_("Currently Available Services"))),
 	    `HBox(
 		/* Translators: Table Header: The "Ch" label is short of "Changed". Please, make the
 		                translation as short as possible. */
@@ -522,7 +522,7 @@ global define symbol InetdDialog () ``{
 		`Right(
 		    `HBox(
 			/* Translators: Change service status */
-			`PushButton(`id(`switch_active), _("&Toggle status (On/Off)")),
+			`PushButton(`id(`switch_active), _("&Toggle Status (On or Off)")),
 			`HSpacing(1))
 		)
 	    ),
@@ -624,7 +624,7 @@ global define symbol InetdDialog () ``{
 		"iid":"new" + last_created, "created":true];
 	    // execute dialog
 	    /* Translators: Caption for EditOrCreateServiceDlg() */
-	    return_val = EditOrCreateServiceDlg(_("Add a new service entry"), new_line);
+	    return_val = EditOrCreateServiceDlg(_("Add a New Service Entry"), new_line);
 	    // check Cancel
 	    if (return_val != nil) {
 		// new service was created --- add to global configuration
@@ -652,7 +652,7 @@ global define symbol InetdDialog () ``{
 	    if (selected_item != nil) {
 		if (GetSelectedService(selected_item) != nil) {
 		    /* Translators: ErrorPopup */
-		    UI::ErrorPopup(_("Can't delete non-installed service."));
+		    UI::ErrorPopup(_("Cannot delete the service. It is not installed."));
 		}
 		else {
 		    need_reindex = true; // see `create (above) for more details
@@ -707,7 +707,7 @@ global define symbol InetdDialog () ``{
 	    }
 	    else { // No line is selcted:
 		/* Translators: MessagePopup */
-		UI::MessagePopup(_("To activate or deactivate a service, select one in the main dialog") );
+		UI::MessagePopup(_("To activate or deactivate a service, select one in the main dialog.") );
 		need_reindex = false;
 		need_rebuild = false;
 		to_select    = "";
@@ -831,13 +831,13 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		    ),
 		    `HSpacing(1),
 		    `HWeight(1,
-			`TextEntry(`id(`rpc_version), _("RPC versio&n"))
+			`TextEntry(`id(`rpc_version), _("RPC Versio&n"))
 		    ),
 		    `HSpacing(1),
 		    //`VBox(
 			//`VSpacing(),
 			// service status (running or stopped)
-		    `Bottom(`CheckBox(`id(`status), _("service is acti&ve"),
+		    `Bottom(`CheckBox(`id(`status), _("Service is acti&ve."),
 			lookup(line, "enabled", false)))
 		    //)
 		)
@@ -879,7 +879,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		),
 		// Server arguments
 		`TextEntry(`id(`server), _("S&erver")),
-		`TextEntry(`id(`servargs), _("Server argumen&ts")),
+		`TextEntry(`id(`servargs), _("Server Argumen&ts")),
 		// Comment above the service line in inetd.conf
 		`MultiLineEdit(`id(`comment), _("Co&mment"))
 	    )
@@ -956,11 +956,11 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		//(UI::QueryWidget(`id(`user),     `Value) == "")))) {
 		UI::MessagePopup((Inetd::configured_service == `inetd) ?
 		    /* Translators: MessagePopup */
-		    _("The Service or Server field is empty.
-Please enter valid values.
+		    _("Service or Server is empty.
+Enter valid values.
 ") :
-		    _("The Service field is empty.
-Please enter valid values.
+		    _("Service is empty.
+Enter valid values.
 "));
 	    input_failed = true;
 	    }
