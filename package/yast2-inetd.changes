@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Dec 10 16:00:43 CET 2002 - mvidner@suse.de
+
+- Extended to work with xinetd apart from inetd
+- UI by phadraba, SCR by mvidner
+WORK IN PROGRESS
+- 2.7.0
+
+-------------------------------------------------------------------
 Mon Oct  7 16:20:23 CEST 2002 - mvidner@suse.cz
 
 - The temporary file is created in /var/lib/YaST2, not /tmp (#16420).

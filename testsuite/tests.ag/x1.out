@@ -6,11 +6,11 @@
 service ftp
 {
 #	server_args	= -a
-	socket_type = stream
-	protocol = tcp
-	wait = no
-	user = nobody
-	server = /usr/sbin/in.ftpd
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = nobody
+	server          = /usr/sbin/in.ftpd
         instances       = UNLIMITED
 }
 

@@ -31,10 +31,10 @@ service telnet
 # Dys is mai servis
 service finger
 {
-	socket_type = stream
-	protocol = tcp
-	wait = no
-	user = nobody
-	server = /usr/sbin/tcpd
-	server_args = in.fingerd -w
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = nobody
+	server          = /usr/sbin/tcpd
+	server_args     = in.fingerd -w
 }
