@@ -334,7 +334,7 @@ sub parse_service ($)
 	$service =
 	{
 	 "iid" => "$reclineno:$file->{name}",
-	 "script" => basename ($file->{name}),
+	 "script" => File::Basename::basename ($file->{name}),
 
 	 "enabled" => $enabled,
 	 "comment" => $comment,
@@ -455,7 +455,7 @@ sub parse_service ($)
 		    {
 		     "service" => $1,
 		     "iid" => "$reclineno:$file->{name}",
-		     "script" => basename ($file->{name}),
+		     "script" => File::Basename::basename ($file->{name}),
 		     # default values:
 		     "enabled" => ycp::to_bool (1),
 		     "rpc_version" => "",
