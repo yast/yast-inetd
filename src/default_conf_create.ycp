@@ -1,0 +1,91 @@
+// $Id$
+// continue from all-services.sh
+{
+    /**
+     * cache:
+     * server -> package
+     */
+    map package_cache = $[
+	// no package specified => assume it is already installed
+	"": "",			// internal services for xinetd
+	"internal": "",		// internal services for inetd
+
+	// this program is in multiple packages
+	// (which it is, regardless of the rpm)
+	"/usr/sbin/sendmail": "",
+
+	// there's also cyrus-imapd, but let's assume it has its own
+	// init script. todo check xinetd
+	"imapd": "imap",
+	"rplayd": "rplay",
+	// send a patch to kukuk?
+	];
+
+    /**
+     * Shortcut for first element of splitstring
+     */
+    global define any first_of_split (string whole, string delimiters) ``{
+	return select (splitstring (whole, delimiters), 0, "");
+    }
+
+    /**
+     *
+     */
+    global define list (map) DeterminePackages (list (map) services) ``{
+	return maplist (map service, services, ``{
+	    string server = service["server"]:"";
+	    if (server == "/usr/sbin/tcpd")
+	    {
+		server = first_of_split (service["server_args"]:"", " \t");
+	    }
+
+	    string package = package_cache[server]:nil;
+	    if (package == nil)
+	    {
+		string cmd = sformat ("/usr/bin/pdb query --filter 'rpmfile:*%1' --attribs packname", server);
+		string out = lookup (SCR::Execute (.target.bash_output, cmd),
+				     "stdout", "");
+		// first line
+		package = first_of_split (out, "\n");
+		// check if there were multiple packages:
+		integer count = size (filterchars (out, "\n"));
+		if (count != 1)
+		{
+		    y2error ("%1# %2", server, count);
+		}
+		// pdb adds trailing spaces
+		package = first_of_split (package, " ");
+		package_cache[server] = package;
+	    }
+	    y2milestone ("%1: %2", server, package);
+
+	    return add (service, "package", package);
+	});
+    }
+
+    integer old = WFM::SCRGetDefault ();
+
+    integer h = WFM::SCROpen ("ag_netd", false);
+    if (h < 1)
+    {
+	return;
+    }
+    WFM::SCRSetDefault (h);
+
+    SCR::Inetd ("etc/inetd.conf");
+    list dc_inetd = SCR::Read (.services);
+
+    SCR::Xinetd ("all-services.conf");
+    list dc_xinetd = SCR::Read (.services);
+
+    WFM::SCRClose (h);
+    WFM::SCRSetDefault (old);
+
+    y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
+
+    dc_inetd = DeterminePackages (dc_inetd);
+    dc_xinetd = DeterminePackages (dc_xinetd);
+    // watch out, a single value, not an include
+    SCR::Write (.target.ycp, "default_conf_inetd.ycp", dc_inetd);
+    SCR::Write (.target.ycp, "default_conf_xinetd.ycp", dc_xinetd);
+}
