@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jul 13 15:59:38 CEST 2000 - mike@suse.de
+
+- fix in specfile: perlscript now included
+
+-------------------------------------------------------------------
 Tue Jul 11 14:48:08 CEST 2000 - mike@suse.de
 
 - fix: read inetd.conf now with perl
