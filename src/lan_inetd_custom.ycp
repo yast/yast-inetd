@@ -147,7 +147,7 @@ server should run.
 is to be executed by inetd when a request is found on its socket. 
 
 </p>
-<p>---</p> " );
+<p>---</p> ");
 
 
 		 
