@@ -108,12 +108,11 @@ _("<p>Enter a valid service name into the <b>service</b> field.
 </p>
 ")+
 
-_("<p>The <b>socket type</b> should be stream, dgram, raw, rdm,
-or seqpacket, depending on whether the socket is a stream, datagram,
-raw, reliably delivered message, or sequenced packet socket.
+_("<p>The <b>socket type</b> should be stream, dgram, raw or seqpacket,
+depending on whether the sorvice is a stream-based, datagram-based,
+requires direct access to IP or requires reliable sequential datagram
+transmission.</p>")+
 
-</p>
-")+
 _("<p>The <b>protocol</b> must be a valid protocol as specified in /etc/protocols.
 Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
 </p>

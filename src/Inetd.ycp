@@ -698,5 +698,61 @@ global void DBG (string i) {
     y2milestone ("  netd_conf: %1",   netd_conf);
 }
 
+/* LiMaL interface */
+
+typedef integer service_id_t;
+
+global list<service_id_t> GetServicesId(service_t mask)
+{
+    list<service_id_t> ids = [];
+    integer i = 0;
+    
+    while(size(netd_conf) > i) {
+	boolean fit = true;
+	if (mask != nil) {
+	    foreach(string key, any val, mask, {
+		if (fit && val != netd_conf[i,key]:nil)
+		    fit = false;
+	    });
+	}
+	if (fit)
+	    ids = add(ids, i);
+	i = i+1;
+    };
+    return ids;
+}
+
+global list<string> ServiceAttributes(service_id_t id)
+{
+    return maplist(string attribute, any val, netd_conf[id]:$[], {return attribute;});
+}
+
+global string ServiceGetStr(service_id_t id, string attribute, string default)
+{
+    if (haskey(netd_conf[id]:$[], attribute))
+	return (string)netd_conf[id, attribute]:nil;
+    return default;
+}
+
+global integer ServiceGetInt(service_id_t id, string attribute, integer default)
+{
+    if (haskey(netd_conf[id]:$[], attribute))
+	return (integer)netd_conf[id, attribute]:nil;
+    return default;
+}
+
+global boolean ServiceGetTruth(service_id_t id, string attribute, boolean default)
+{
+    if (haskey(netd_conf[id]:$[], attribute))
+	return (boolean)netd_conf[id, attribute]:nil;
+    return default;
+}
+
+global boolean ServiceEnabled(service_id_t id)
+{
+    return ServiceGetTruth(id, "enabled", true);
+}
+
 /* EOF */
 }
+
