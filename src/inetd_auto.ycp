@@ -30,8 +30,8 @@ include "inetd/wizards.ycp";
 include "inetd/dialogs.ycp";
 
 /* The settings are in the second argument */
-string func  = WFM::Args(0);
-map    param = WFM::Args(1);
+string func  = (string) WFM::Args(0);
+map    param = (map) WFM::Args(1);
 any    ret   = nil;
 
 y2milestone("func = %1", func);
