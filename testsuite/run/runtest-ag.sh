@@ -11,7 +11,7 @@ unset Y2DEBUG
 unset Y2DEBUGGER
 
 shopt -s expand_aliases
-alias kick-debug-lines="fgrep -v ' <0> '"
+alias kick-nonerror-lines="grep -v -e ' <[0-2]> '"
 alias kick-empty-lines="grep -v '^$'"
 alias strip-constant-part="sed 's/^....-..-.. ..:..:.. [^)]*) //g'"
 alias mask-line-numbers="sed 's/^\([^ ]* [^)]*):\)[[:digit:]]*/\1XXX/'"
@@ -33,7 +33,7 @@ done
 
 Y=/usr/lib/YaST2/bin/y2base
 Y2DIR="$AGDIR" $Y -l - 2>&1 >"$OUT_TMP" "$YCP" '("'"$IN.test"'")' testsuite \
-    | kick-debug-lines \
+    | kick-nonerror-lines \
     | kick-empty-lines \
     | strip-constant-part \
     | mask-line-numbers \
