@@ -17,8 +17,8 @@ textdomain "inetd";
 global map HELPS = $[
 
     "packages" : _("<p><b><big>Searching for installed packages</big></b><br>
-Please wait for a while...<br></p>
-If no packages will be found, you will be asked for installing them.<br></p>") +
+Please wait for a while...<br>
+If no packages will be found, you will be asked for installing them.</p>") +
 
     _("<p><b><big>Aborting the initialization:</big></b><br>
 Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
@@ -84,14 +84,26 @@ Choose a inetd to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>"),
 
     /* Configure1 dialog help 1/2 */
-    "c1" : _("<p><b><big>Configure, part one</big></b><br>
-Please press the <b>Next</b> button.
-<br></p>") +
-
-    /* Configure1 dialog help 2/2 */
-_("<p><b><big>Selecting something:</big></b><br>
-It is not possible, you must code it first :-)
-</p>"),
+    "c1" : _("<p><b><big>Ineternet super-server configuration</big></b><br>
+Click the <b>Enable super-server</b> checkbox to enable custom super-server
+(inetd or xinetd - it depends on what you have installed) configuration.
+If you want to stop super-server, please leave the checkbox unchecked.</p>") +
+"<p><br></p>" +
+    _("<p><b><big>Services status:</big></b><br>
+All services marked with <b>---</b> are inactive (locked),
+All services marked with <b>On</b> are active (unlocked).</p>") +
+    _("<p><b><big>Changing services status:</big></b><br>
+Select the service you want to enable (disable) and press <b>Active ro Deactivate</b>.</p>") +
+    _("<p><b><big>Editting services:</big></b><br>
+Select the service you want to edit and press <b>Edit</b>.</p>") +
+    _("<p><b><big>Deleting services:</big></b><br>
+Select the service you want to delete and press <b>Delete</b>.</p>") +
+_("<p><b><big>Adding new entry:</big></b>
+Click <b>Create</b> and fill the form.</p>") +
+"<p><br></p>" +
+    _("<p><b><big>Aborting the configuration:</big></b>
+You can abort the configuration by pressing the <b>Abort</b> button.
+If you do so, all your changes will be lost and original configuration will be untouched...</p>"),
 
     /* Configure2 dialog help 1/2 */
     "c2" : _("<p><b><big>Configure, part two</big></b><br>

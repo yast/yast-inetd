@@ -40,7 +40,7 @@ global boolean write_only = false;
  * @return true if modified
  */
 global define boolean Modified() ``{
-    y2debug("modified=%1",modified);
+    //y2debug("modified=%1",modified);
     return modified;
 };
 

@@ -15,7 +15,6 @@ import "Inetd";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
-//include "require.ycp";
 
 include "inetd/helps.ycp";
 include "inetd/routines.ycp";
@@ -62,10 +61,9 @@ global define symbol PackageDialog() ``{
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`HSpacing(2),
-		`Left(`PushButton(`id(`back), _("&Cancel"))),
-		`Right(`PushButton(`id(`next), `opt(`default), _("&OK"))),
-		`HSpacing(2)
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
+		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
+		//`HSpacing(2)
 	    ),
 	    `VSpacing(0.5)
 	);
@@ -97,7 +95,8 @@ global define symbol PackageDialog() ``{
 		packages = add(packages, "xinetd");
 	    }
 	    if(size(packages) > 0) {
-	        RequireAndConflict(packages, [], HELPS["install_packages"]:"");
+		include "require.ycp";
+		DoInstallAndRemove(packages, []);
 	    }
 	    // Check for installed packages
 	    Inetd::inetd_installed  = GetInetdInstalled();
@@ -163,14 +162,12 @@ global define symbol WhatToConfigureDialog() ``{
 	    ),
 	    `VSpacing(0.5),
 	    `HBox(
-		`HSpacing(2),
-		`Left(`PushButton(`id(`back), _("&Cancel"))),
-		`Right(`PushButton(`id(`next), `opt(`default), _("&OK"))),
-		`HSpacing(2)
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
+		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
 	    ),
 	    `VSpacing(0.5)
 	);
-    
+
     Wizard::RestoreHelp(HELPS["service_selection"]:"");
     UI::OpenDialog(contents);
 
@@ -217,12 +214,12 @@ global define indexTable() ``{
 global define symbol InetdDialog () ``{
 
     /* Inetd configure dialog caption */
-    string caption = _("Inetd configuration");
+    string caption = _("Internet super-server configuration");
 
     /* XXPkg configure1 dialog contents */
     term contents =
 	`VBox(
-	`Left(`CheckBox(`id(`editable), `opt(`notify), _("Enable c&ustom configuration"), false)),
+	`Left(`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)),
 	      // Main dialog edit inetd.conf
 	      `HBox(
 		    //`Label("     "),
@@ -231,7 +228,7 @@ global define symbol InetdDialog () ``{
 						_("Type "),
 						`Center(_("Protocol")),
 						_("Flags"),
-						_("User"), _("Server / Args")),
+						_("User"), _("Server"), _("Server / Args")),
 			   table_data)
 		    ),
 	      `HBox(
@@ -419,7 +416,7 @@ global define symbol InetdDialog () ``{
             y2error("unexpected retcode: %1", ret);
             continue;
         }
-	if((ret != `next) || (ret != `back) || (ret != `abort)) {
+	if(!((ret == `next) || (ret == `back) || (ret == `abort))) {
 	    Inetd::modified = true;
 	}
 	table_data = CreateTableData(Inetd::netd_conf);
@@ -429,6 +426,13 @@ global define symbol InetdDialog () ``{
 	UI::ChangeWidget(`id(`table), `Items,  table_data);
 	if (to_select != "") {
 	    UI::ChangeWidget(`id(`table), `CurrentItem, to_select);
+	}
+    }
+    
+    if(ret == `next) {
+	if(IsAnyServiceEnabled(Inetd::netd_conf) == `no) {
+	    Inetd::netd_status = -1;
+	    UI::ErrorPopup(_("All services are marked as disabled (locked). Internet super-server will be disabled."));
 	}
     }
 
@@ -489,8 +493,8 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 			["wait", "nowait"])
 		),
 		// check for used service - if inetd, add max TextEntry
-		`HWeight((Inetd::netd_service == `inetd) ? 1 : 0,
-		    (Inetd::netd_service == `inetd) ? inetd_specific : xinetd_specific
+		`HWeight((Inetd::configured_service == `inetd) ? 1 : 0,
+		    (Inetd::configured_service == `inetd) ? inetd_specific : xinetd_specific
 		)
 	    ),
 	    `VBox(
@@ -500,6 +504,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		    `ComboBox(`id(`group), _("&Group"), local_groups)
 		),
 		// Server arguments
+		`TextEntry(`id(`server), _("Se&rver")),
 		`TextEntry(`id(`servargs), _("S&erver / Args")),
 		// Comment above the service line in inetd.conf
 		`MultiLineEdit(`id(`comment), _("Co&mment"))
@@ -522,7 +527,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
      *
      * inetd has special widget max - we must check it
      */
-    if (Inetd::netd_service == `inetd) {
+    if (Inetd::configured_service == `inetd) {
         any max_value = lookup(line, "max", "0");
 	if (max_value == "") {
 	    max_value = "0";
@@ -546,6 +551,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
     else {
         UI::ChangeWidget(`id(`group), `Value, group);
     }
+    UI::ChangeWidget(`id(`server),    `Value, lookup(line, "server",      ""));
     UI::ChangeWidget(`id(`servargs),  `Value, lookup(line, "server_args", ""));
     UI::ChangeWidget(`id(`comment),   `Value, lookup(line, "comment",     ""));
 
@@ -558,14 +564,21 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	if (user_choice != `back) {
 
 	    // Are required values filled?
-	    if ((UI::QueryWidget(`id(`service), `Value) == "") ||
-	      (UI::QueryWidget(`id(`protocol),  `Value) == "") ||
-	      (UI::QueryWidget(`id(`type),      `Value) == "") ||
-	      (UI::QueryWidget(`id(`flags),     `Value) == "") ||
-	      (UI::QueryWidget(`id(`user),      `Value) == "")) {
-		UI::MessagePopup(_("Error: The server, protocol, flags, type or user field is empty.
+	    if(((Inetd::configured_service == `inetd) &&
+		((UI::QueryWidget(`id(`service), `Value) == "") ||
+		//(UI::QueryWidget(`id(`user),    `Value) == "") ||
+		(UI::QueryWidget(`id(`server),  `Value) == ""))) ||
+		 
+		((Inetd::configured_service == `xinetd) &&
+		((UI::QueryWidget(`id(`service), `Value) == "")))) {
+		//(UI::QueryWidget(`id(`user),     `Value) == "")))) {
+		UI::MessagePopup((Inetd::configured_service == `inetd) ?
+		    _("The Service or Server field is empty.
 Please enter valid values.
-") );
+") :
+		    _("The Service field is empty.
+Please enter valid values.
+"));
 	    input_failed = true;
 	    }
 	    // YES (input is OK) --- so save settings!
@@ -589,9 +602,10 @@ Please enter valid values.
 		line = add(line, "flags",       UI::QueryWidget(`id(`flags),    `Value));
 		line = add(line, "user",        UI::QueryWidget(`id(`user),     `Value));
 		line = add(line, "group",       UI::QueryWidget(`id(`group),    `Value));
+		line = add(line, "server",      UI::QueryWidget(`id(`server),   `Value));
 		line = add(line, "server_args", UI::QueryWidget(`id(`servargs), `Value));
 		line = add(line, "comment",     UI::QueryWidget(`id(`comment),  `Value));
-		if (Inetd::netd_service == `inetd) {
+		if (Inetd::configured_service == `inetd) {
 		    line = add(line, "max", UI::QueryWidget(`id(`max), `Value));
 		}
 	    }

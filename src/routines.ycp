@@ -96,7 +96,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		    status_text = _("On");
 		}
 		else {
-		    status_text = _("Off");
+		    status_text = _("---");
 		}
 		// determine wait mode (convert to string)
 		status = lookup(line, "wait", true);
@@ -114,6 +114,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		    lookup(line, "protocol", ""),
 		    wait_text,
 		    lookup(line, "user", ""),
+		    lookup(line, "server", ""),
 		    lookup(line, "server_args", ""));
 		// add line to table structure
 		table_input = add(table_input, entry);
@@ -147,6 +148,26 @@ global define CreateLocalGroupsList() ``{
     // group entry in inetd_conf can be also empty
     groups              = add(groups, _("--NONE--"));
     return groups;
+}
+
+/**
+ * Find any service to be enabled
+ * If no found, return `no
+ * @return returnes if found `yes, otherwise `no
+ */
+global define symbol IsAnyServiceEnabled(list ready_conf) ``{
+    any ret = `no;
+
+    foreach(`line, ready_conf, ``{
+	if(lookup(line, "deleted", false) != false) {
+	    if(loookup(line, "enabled", false) != false) {
+		ret = `yes;
+		break;
+	    }
+	}
+    });
+    y2milestone("%1", ret);
+    return ret;
 }
 
 /* EOF */
