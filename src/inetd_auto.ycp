@@ -71,6 +71,13 @@ else if (func == "Change") {
     ret = InetdAutoSequence();
 }
 /**
+ * Return list of needed packages
+ * return map or list
+ */
+else if (func == "Packages") {
+    ret = Inetd::AutoPackages();
+}
+/**
  * Return configuration data
  * return map or list
  */

@@ -884,6 +884,15 @@ global define void changeLine(map new_line, any line_number) ``{
 	}
     });
 };
+/**
+ * Return required packages for auto-installation
+ * FIXME: Need to make this return the needed packages during installation
+ * @return map of packages to be installed and to be removed
+ */
+global define map AutoPackages() ``{
+	return ($["install": [], "remove": []]);
+
+}
 
 /* EOF */
 }
