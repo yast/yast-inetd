@@ -220,6 +220,14 @@ sub write_file ()
     return 1;
 }
 
+sub services_by_package ()
+{
+    foreach my $s (@services)
+    {
+	print STDERR "$s->{service}\t$s->{protocol}\n";
+    }
+}
+
 
 package inetd;
 @inetd::ISA = qw(netd);
@@ -667,6 +675,22 @@ while ( <STDIN> )
 	{
 	    ycp::Return ($message, 1);
 	    $message = "";
+	}
+	else
+	{
+	    y2error ("Unrecognized path! '$path'");
+	    ycp::Return (undef);
+	}
+    }
+
+    # A special hack - write known services/protocols to stderr
+    # Used for gathering a list of all available services by package
+    elsif ($command eq "Execute")
+    {
+	if ($path eq ".sbp")
+	{
+	    $netd->services_by_package ();
+	    ycp::Return ("true");
 	}
 	else
 	{
