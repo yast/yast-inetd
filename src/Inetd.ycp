@@ -28,7 +28,7 @@
      *   "server": string
      *   "server_args": string
      *   "comment": string      // possibly multiline, without #
-     *   "enabled": string      // service is active
+     *   "enabled": boolean     // service is active
      ** bookkeeping fields:
      *   "iid": string          // internal id, use as table `id
      *                          //   Iid is necessary because there may be multiple variants
@@ -316,6 +316,13 @@ global define boolean Read() ``{
  * This function solves differences between new (after installing requested packages)
  * xinetd configuration and old small configuration created by user.
  * <pre>
+ * <b>In normal mode</b>:
+ * take the system services
+ *   if it matches a service in the ui (service,protocol,server substring)
+ *     use the ui data
+ * (it seems that not installed ones are not a part of netd_conf, they
+ * only enter the table in mergexinetdconfs)
+ *
  * <b>In auto mode</b>:
  * for each user's service:
  *   if its iid contains "inst",
@@ -328,8 +335,8 @@ global define boolean Read() ``{
  *     the user's service is taken as it is
  * So for xinetd AY UI, only toggling works
  * </pre>
- * @param netd_conf holds new configuration (auto: on the system)
- * @param old_conf  holds old configuration (auto: profile + defaults)
+ * @param netd_conf holds new configuration (on the system)
+ * @param old_conf  holds old configuration (normal: UI, auto: profile + defaults)
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
