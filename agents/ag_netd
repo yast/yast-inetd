@@ -452,7 +452,7 @@ sub parse_service ($)
     my $state = "init"; # "brace", "inside"
     my $in_defaults = 0;
     my $unparsed = "";
-    while (defined ($_ = $file->{fh}->getline))
+    while ($file && $file->{fh} && defined ($_ = $file->{fh}->getline))
     {
 	++$file->{lineno};
 	y2debug ($file->{name}, $file->{lineno}, "parse");
