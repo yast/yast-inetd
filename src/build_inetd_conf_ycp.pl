@@ -2,7 +2,7 @@
 #
 # Usage:   build_inetd_conf_ycp
 #
-# writes a inetd.conf in ycp notation to /tmp as inetd_conf.ycp
+# writes a inetd.conf in ycp notation to /var/lib/YaST2/inetd_conf.ycp
 #	-v	verbose
 #	-d	debug
 #
@@ -19,8 +19,6 @@ use vars qw( $opt_v $opt_d );
 
 my $verbose		= 0;
 my $debug		= 0;
-my $tmp			= "$PID.tmp";
-my $date                = "1.1.1900";
 
 # Call the main function and exit.
 # DO NOT enter any other code outside a sub!
@@ -30,6 +28,9 @@ my $date                = "1.1.1900";
 # program (local) variables. It is just too easy to mix things up; one
 # simple 'i' variable in the main program might too easily be mixed up
 # with a function's forgotten 'i' declaration.
+
+# predeclare to avoid a warning
+sub main;
 
 main();
 exit 0;
@@ -53,15 +54,6 @@ sub main()
     $verbose	= 1 if $opt_v;
     $debug	= 1 if $opt_d;
 
-    
-    # set globale variables:
-    # - new packagename
-    # - maintainer
-    # - email adress from maintainer
-    # - the target dir and create it
-    # - the date
- 
-    $date = system("date");
 
     my ( $src ) = @_;
     my $line;
@@ -85,7 +77,7 @@ sub main()
 
 
     open ( SRC,     "/etc/inetd.conf"      ) or die "EXITING cause:: Can't open: $!";
-    open ( TARGET, ">/tmp/inetd_conf.ycp"  ) or die "EXITING cause:: Can't open: $!";
+    open ( TARGET, ">/var/lib/YaST2/inetd_conf.ycp"  ) or die "EXITING cause:: Can't open: $!";
     my $res;
     my $first = 1;
     my $linecount = 0;
