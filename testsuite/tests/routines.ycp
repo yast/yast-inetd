@@ -21,8 +21,18 @@ include "testsuite.ycp";
 import "Inetd";
 include "inetd/routines.ycp";
 import "Report";
+import "Directory";
 
 Report::DisplayErrors(false, 0);
+
+// make it respect Y2DIR
+string y2dir = lookup (SCR::Execute (.target.bash_output,
+				     "echo -n ${Y2DIR-/usr/share/YaST2}"),
+		       "stdout", "");
+Directory::datadir = y2dir + "/data";
+
+// do it now, because during TEST we do not have a live SCR
+Inetd::EnsureDefaultConfLoaded ();
 
 list netd_conf = [
 	$["iid": "whatever",
@@ -52,9 +62,7 @@ list netd_conf_none = [
 
 DUMP("\nCreateTableData()\n");
 
-list table_data = CreateTableData(netd_conf);
-
-DUMP(table_data);
+TEST (``( CreateTableData(netd_conf) ), [$[],$[],$[] ], nil);
 
 DUMP("\n  ---\n");
 
