@@ -106,10 +106,15 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		else {
 		    wait_text = "nowait";
 		}
+		any service = lookup(line, "service",     "");
+		any rpc_ver = lookup(line, "rpc_version", "");
+		if (rpc_ver != "") {
+		    service = service + "/" + rpc_ver;
+		}
 		// create line for table structure
 		term entry = `item(`id(lookup(line, "iid", "0")),
 		    status_text,
-		    lookup(line, "service", ""),
+		    service,
 		    lookup(line, "socket_type", ""),
 		    lookup(line, "protocol", ""),
 		    wait_text,
@@ -159,10 +164,9 @@ global define symbol IsAnyServiceEnabled(list ready_conf) ``{
     any ret = `no;
 
     foreach(`line, ready_conf, ``{
-	if(lookup(line, "deleted", false) != false) {
-	    if(loookup(line, "enabled", false) != false) {
+	if(lookup(line, "deleted", false) == false) {
+	    if(lookup(line, "enabled", false) != false) {
 		ret = `yes;
-		break;
 	    }
 	}
     });

@@ -212,7 +212,7 @@ global define indexTable() ``{
  * @return dialog result
  */
 global define symbol InetdDialog () ``{
-
+    
     /* Inetd configure dialog caption */
     string caption = _("Internet super-server configuration");
 
@@ -253,6 +253,7 @@ global define symbol InetdDialog () ``{
     else {
 	Inetd::netd_conf = Inetd::xinetd_conf;
     }
+    //y2milestone("%1", Inetd::netd_conf);
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
@@ -432,7 +433,8 @@ global define symbol InetdDialog () ``{
     if(ret == `next) {
 	if(IsAnyServiceEnabled(Inetd::netd_conf) == `no) {
 	    Inetd::netd_status = -1;
-	    UI::ErrorPopup(_("All services are marked as disabled (locked). Internet super-server will be disabled."));
+	    UI::ErrorPopup(_("All services are marked as disabled (locked).
+Internet super-server will be disabled."));
 	}
     }
 
@@ -466,14 +468,18 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	    `VSquash(
 		`HBox(
 		    // service name
-		    `TextEntry(`id(`service), _("&Service")),
-		    `VBox(
-			`VSpacing(),
+		    `HWeight(3,
+			`TextEntry(`id(`service), _("&Service"))
+		    ),
+		    `HWeight(1,
+			`TextEntry(`id(`rpc_version), _("RPC versio&n"))
+		    ),
+		    //`VBox(
+			//`VSpacing(),
 			// service status (running or stopped)
-			`Bottom(`CheckBox(`id(`status), _("service is acti&ve"),
-			    lookup(line, "enabled", false))
-			)
-		    )
+		    `Bottom(`CheckBox(`id(`status), _("service is acti&ve"),
+			lookup(line, "enabled", false)))
+		    //)
 		)
 	    ),
 	    `HBox(
@@ -504,7 +510,7 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		    `ComboBox(`id(`group), _("&Group"), local_groups)
 		),
 		// Server arguments
-		`TextEntry(`id(`server), _("Se&rver")),
+		`TextEntry(`id(`server), _("S&erver")),
 		`TextEntry(`id(`servargs), _("S&erver / Args")),
 		// Comment above the service line in inetd.conf
 		`MultiLineEdit(`id(`comment), _("Co&mment"))
@@ -534,9 +540,10 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	}
 	UI::ChangeWidget(`id(`max), `Value, tointeger(max_value));
     }
-    UI::ChangeWidget(`id(`service),   `Value, lookup(line, "service",     ""));
-    UI::ChangeWidget(`id(`type),      `Value, lookup(line, "socket_type", ""));
-    UI::ChangeWidget(`id(`protocol),  `Value, lookup(line, "protocol",    ""));
+    UI::ChangeWidget(`id(`service),     `Value, lookup(line, "service",     ""));
+    UI::ChangeWidget(`id(`rpc_version), `Value, lookup(line, "rpc_version", ""));
+    UI::ChangeWidget(`id(`type),        `Value, lookup(line, "socket_type", ""));
+    UI::ChangeWidget(`id(`protocol),    `Value, lookup(line, "protocol",    ""));
     if (lookup(line, "wait", true) == true) {
 	UI::ChangeWidget(`id(`flags), `Value, "wait");
     }
@@ -596,15 +603,16 @@ Please enter valid values.
 		else {
 		    line = add(line, "wait", false);
 		}
-		line = add(line, "service",     UI::QueryWidget(`id(`service),  `Value));
-		line = add(line, "socket_type", UI::QueryWidget(`id(`type),     `Value));
-		line = add(line, "protocol",    UI::QueryWidget(`id(`protocol), `Value));
-		line = add(line, "flags",       UI::QueryWidget(`id(`flags),    `Value));
-		line = add(line, "user",        UI::QueryWidget(`id(`user),     `Value));
-		line = add(line, "group",       UI::QueryWidget(`id(`group),    `Value));
-		line = add(line, "server",      UI::QueryWidget(`id(`server),   `Value));
-		line = add(line, "server_args", UI::QueryWidget(`id(`servargs), `Value));
-		line = add(line, "comment",     UI::QueryWidget(`id(`comment),  `Value));
+		line = add(line, "service",     UI::QueryWidget(`id(`service),     `Value));
+		line = add(line, "rpc_version", UI::QueryWidget(`id(`rpc_version), `Value));
+		line = add(line, "socket_type", UI::QueryWidget(`id(`type),        `Value));
+		line = add(line, "protocol",    UI::QueryWidget(`id(`protocol),    `Value));
+		line = add(line, "flags",       UI::QueryWidget(`id(`flags),       `Value));
+		line = add(line, "user",        UI::QueryWidget(`id(`user),        `Value));
+		line = add(line, "group",       UI::QueryWidget(`id(`group),       `Value));
+		line = add(line, "server",      UI::QueryWidget(`id(`server),      `Value));
+		line = add(line, "server_args", UI::QueryWidget(`id(`servargs),    `Value));
+		line = add(line, "comment",     UI::QueryWidget(`id(`comment),     `Value));
 		if (Inetd::configured_service == `inetd) {
 		    line = add(line, "max", UI::QueryWidget(`id(`max), `Value));
 		}
