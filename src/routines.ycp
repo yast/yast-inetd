@@ -1,0 +1,153 @@
+/**
+ * File:	include/inetd/routines.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Miscelanous functions for configuration of inetd.
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "inetd";
+
+import "Runlevel";
+
+global define integer GetInetdInstalled() ``{
+    return SCR::Execute(.target.bash, "/bin/rpm -q inetd", []);
+}
+
+global define integer GetXinetdInstalled() ``{
+    return SCR::Execute(.target.bash, "/bin/rpm -q xinetd", []);
+}
+
+global define integer GetInetdStatus() ``{
+    return Runlevel::ServiceStatus("inetd");
+}
+
+global define integer GetXinetdStatus() ``{
+    return Runlevel::ServiceStatus("xinetd");
+}
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global define boolean Modified() ``{
+    return Inetd::Modified();
+}
+
+/**
+ * Abort function
+ * @return blah blah lahjk
+ */
+global define boolean Abort() ``{
+    if(AbortFunction != nil)
+	return eval(AbortFunction) == true;
+    return false;
+}
+
+/**
+ * Check for pending Abort press
+ * @return true if pending abort
+ */
+global define boolean PollAbort() ``{
+    return UI::PollInput() == `abort;
+}
+
+/**
+ * If modified, ask for confirmation
+ * @return true if abort is confirmed
+ */
+global define boolean ReallyAbort() ``{
+    return !Modified() || UI::ReallyAbortPopup(true);
+}
+
+/**
+ * Progress::NextStage and Progress::Title combined into one function
+ * @param title progressbar title
+ */
+global define void ProgressNextStage(string title) ``{
+    Progress::NextStage();
+    Progress::Title(title);
+}
+
+/**
+ * Converts configuration format from agent to table data structures
+ * @return returnes table data
+ */
+global define list(term) CreateTableData(list netd_conf) ``{
+    list    table_input     = [];
+    list    my_table        = [];
+    any     status          = false;
+    string  status_text     = "";
+    string  wait_text       = "";
+    integer numberOfEntries = size(netd_conf);
+
+    if (numberOfEntries != 0) {
+
+	foreach(`line, netd_conf, ``{
+	    // service must be marked as nondeleted ("deleted" == false or "deleted" not exists)
+	    if (lookup(line, "deleted", false) != true) {
+
+		// determine service is enabled (enabled text)
+		any status = lookup(line, "enabled", true);
+		if (status == true) {
+		    status_text = _("On");
+		}
+		else {
+		    status_text = _("Off");
+		}
+		// determine wait mode (convert to string)
+		status = lookup(line, "wait", true);
+		if (status == true) {
+		    wait_text = "wait";
+		}
+		else {
+		    wait_text = "nowait";
+		}
+		// create line for table structure
+		term entry = `item(`id(lookup(line, "iid", "0")),
+		    status_text,
+		    lookup(line, "service", ""),
+		    lookup(line, "socket_type", ""),
+		    lookup(line, "protocol", ""),
+		    wait_text,
+		    lookup(line, "user", ""),
+		    lookup(line, "server_args", ""));
+		// add line to table structure
+		table_input = add(table_input, entry);
+	    };
+	});
+    }
+    return table_input;
+};
+
+/**
+ * Read user names from passwd.
+ * It does not get the NIS entries.
+ * "+" is filtered out.
+ */
+global define CreateLocalUsersList() ``{
+    list(map) passwd   = SCR::Read(.etc.passwd);
+    list(string) users = maplist(map entry, passwd, ``(entry["username"]:""));
+    users              = sort(filter(string u, users, ``(u != "+")));
+    return users;
+}
+
+/**
+ * Read group names from  group
+ * It does not get the NIS entries.
+ * "+" is filtered out.
+ */
+global define CreateLocalGroupsList() ``{
+    list(map) group     = SCR::Read(.etc.group);
+    list(string) groups = maplist(map entry, group, ``(entry["groupname"]:""));
+    groups              = sort(filter(string u, groups, ``(u != "+")));
+    // group entry in inetd_conf can be also empty
+    groups              = add(groups, _("--NONE--"));
+    return groups;
+}
+
+/* EOF */
+}

@@ -1,712 +1,345 @@
 /**
  * File:	modules/Inetd.ycp
  * Package:	Configuration of inetd
- * Summary:	Data for configuration of Inetd, input and output functions.
- * Authors:	Michael Hager <mike@suse.de>
+ * Summary:	Data for configuration of inetd, input and output functions.
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
  *
  * $Id$
  *
- * Representation of the configuration of Inetd.
+ * Representation of the configuration of inetd.
  * Input and output routines.
  */
 
 {
 
-    module "Inetd";
-    textdomain "inetd";
+module "Inetd";
+textdomain "inetd";
 
-    import "Progress";
-    import "Runlevel";
-    import "Report";
-    import "Mode";
-    import "Summary";
-    import "Directory";
-    
-    // is inetd or xinetd running? (See netd_service for more info)
-    // this "flag" is filled by UI::DetectDialog(), because we need know this fact
-    // before calling Read();
-    global symbol  netd_status      = `off;
-    // determine, which service is in use: `xinetd for xinetd or `inetd for inetd
-    global symbol  netd_service     = `none;
-    // *_installed - is service installed? 0 means YES, anything other means NO or ERROR(also NO)
-    global integer inetd_installed  = -1;
-    global integer xinetd_installed = -1;
-    // *_status    - is installed services running? 0 means YES, anything else means NO or ERROR(also NO)
-    global integer inetd_status     = -1;
-    global integer xinetd_status    = -1;
+import "Progress";
+import "Report";
+import "Summary";
 
-    /**
-     * /etc/inetd.conf, as a list of lines
-     * where lines are maps, all containing:
-     *   "line_number": integer
-     *   `status: `comment, `active or `inactive // note `status, not "status"
-     * And additionally, depending on `status:
-     * For `comment:
-     *   // TODO: does it include #, space or \n?
-     *   "comment": string
-     * For `active and `inactive:
-     * All are strings corresponding to fields of inetd.conf
-     *   "service"
-     *   "type"
-     *   "protocol"
-     *   "flags"
-     *   "user"
-     *   "servargs": combines server and its arguments
-     */
-    global list inetd_conf       = [];
+include "inetd/routines.ycp";
 
-//    boolean file_read = false;
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global block AbortFunction = nil;
 
-//    global boolean changed_conf = false;
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
 
-    /**
-     * New SCR interface:
-     * A service map looks like this:
-     * $[
-     *   "service": string	// * different from equally named field above
-     *   "rpc_version": string
-     *   "socket_type": string
-     *   "protocol": string
-     *   "wait": boolean
-     *   "max": integer		// inetd only
-     *   "user": string		// *
-     *   "group": string
-     *   "server": string
-     *   "server_args": string
-     *   "comment": string	// possibly multiline, without #
-     ** bookkeeping fields:
-     *   "iid": string		// internal id, use as table `id
-     *      Iid is necessary because there may be multiple variants
-     *      of the same service.
-     *   "changed": boolean	// when writing, unchanged services are ignored
-     * ]
-     * When handling existing maps, take care to preserve any other fields
-     * that may be present!
-     *
-     * path netd = .whatever.inetd or .whatever.xinetd;
-     *
-     * SCR::Read (netd + .services) -> list of service maps
-     *   There should be a warning if inetd and xinetd are both installed
-//     * SCR::Read (netd + .services + service_name) -> service map (or empty)
-//     * SCR::Read (netd + .services + service_name + field) -> (any) field
-     * SCR::Write (netd, nil) -> boolean
-     *   Commits changes performed by other writes (see below) to disk
-     * // Hm, maybe we should check that vaid fields are passed?
-     * SCR::Write (netd + .services, list of service maps) -> true
-     * SCR::Write (netd + .services + service_name, service map) -> true
-     * SCR::Write (netd + .services + service_name + field, any) -> true
-     *   This last one should be useful for autoyast - changing just
-     *   the "enabled" field.
-     */
+global boolean proposal_valid = false;
+global boolean write_only = false;
 
-    /**
-     * Search for installed services (inetd and xinetd)
-     * @return void
-     */
-    global define void GetInstalledServices() ``{
-	inetd_installed  = SCR::Execute(.target.bash, "/bin/rpm -q inetd",  []);
-	xinetd_installed = SCR::Execute(.target.bash, "/bin/rpm -q xinetd", []);
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() ``{
+    y2debug("modified=%1",modified);
+    return modified;
+};
+
+// Settings: Define all variables needed for configuration of inetd
+// TODO FIXME: Define all the variables necessary to hold
+// TODO FIXME: the configuration here (with the appropriate
+// TODO FIXME: description)
+// TODO FIXME: For example:
+//   /**
+//    * List of the configured cards.
+//    */
+//   list cards = [];
+//
+//   /**
+//    * Some additional parameter needed for the configuration.
+//    */
+//   boolean additional_parameter = true;
+
+/**
+ * hold informations about installed services (rpm -q exit code).
+ * 0 means installed, anything else means no or error
+ */
+global integer inetd_installed   = -1;
+global integer xinetd_installed  = -1;
+
+/**
+ * What service is ready for configuration?
+ * `none   means no available --- this is for AutoInstallation
+ * `both   means the selection dialog will be displayed (only one service can run)
+ * `inetd  inetd will be configured
+ * `xinetd xinetd will be configured
+ */
+global symbol netd_service       = `none;
+
+/**
+ * What service was configured?
+ * Same values as netd_service except `both
+ */
+global symbol configured_service = `none;
+
+/**
+ * These variables hold service's configuration
+ */
+global list inetd_conf           = [];
+global list xinetd_conf          = [];
+
+/**
+ * Holds configuration of selected service.
+ */
+global list netd_conf            = [];
+
+/**
+ * Is inetd (or xinetd) running?
+ */
+global integer inetd_status      = -1;
+global integer xinetd_status     = -1;
+
+/**
+ * Status of edited service (see WhatToConfigureDialog() in dialogs.ycp)
+ */
+global integer netd_status       = -1;
+
+/**
+ * Read all inetd settings
+ * @return true on success
+ */
+global define boolean Read() ``{
+
+    /* Inetd read dialog caption */
+    string caption = _("Initializing inetd configuration");
+
+    integer steps = 1;
+
+    integer sl = 0;
+    sleep(sl);
+
+    // TODO FIXME Names of real stages
+    // We do not set help text here, because it was set outside
+    Progress::New( caption, " ", steps, [
+	    _("Read the configuration"),
+	], [
+	    _("Reading the configuration..."),
+	    _("Finished")
+	],
+	""
+    );
+
+    integer read_status = 0;
+    // read database
+    if(Abort()) return false;
+
+    if(netd_service == `none)
+	return false;
+
+    if(netd_service == `both) {
+	inetd_conf  = SCR::Read(.etc.inetd.services);
+	xinetd_conf = SCR::Read(.etc.xinetd.services);
+    }
+    else if(netd_service == `inetd) {
+	inetd_conf = SCR::Read(.etc.inetd.services);
+    }
+    else if(netd_service == `xinetd) {
+	xinetd_conf = SCR::Read(.etc.xinetd.services);
     }
 
-    /**
-     * Get status of installed services (running/stopped)
-     * @return void
-     */
-    global define void GetServicesStatus() ``{
-	inetd_status  = Runlevel::ServiceStatus("inetd");
-	xinetd_status = Runlevel::ServiceStatus("xinetd");
+    // in future: catch error
+    if(false) Report::Error(_("Can not read the database1!"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    modified = false;
+    Progress::Finish();
+    return true;
+}
+
+/**
+ * Write all inetd settings
+ * @return true on success
+ */
+global define boolean Write() ``{
+
+    /* Inetd read dialog caption */
+    string caption = _("Saving inetd configuration");
+
+    // TODO FIXME And set the right number of stages
+    integer steps = 1;
+
+    integer sl = 0;
+    sleep(sl);
+
+    // TODO FIXME Names of real stages
+    // We do not set help text here, because it was set outside
+    Progress::New(caption, " ", steps, [
+	    _("Write the settings"),
+	], [
+	    _("Writing the settings..."),
+	    _("Finished")
+	],
+	""
+    );
+
+    // write settings
+    if(Abort()) return false;
+//    y2milestone("%1, %2", configured_service, netd_status);
+    if (netd_status != 0) {
+	Runlevel::ServiceAdjust("inetd", "disable");
+	Runlevel::RunInitScript("inetd", "stop");
+	Runlevel::ServiceAdjust("xinetd", "disable");
+	Runlevel::RunInitScript("xinetd", "stop");
+    }
+    // custom
+    else {
+	if (configured_service == `inetd) {
+	    // xinetd must be stopped - if installed
+	    if (xinetd_installed == 0) {
+		Runlevel::ServiceAdjust("xinetd", "disable");
+		Runlevel::RunInitScript("xinetd", "stop");
+	    }
+	    SCR::Write(.etc.inetd.services, netd_conf);
+	    // So, Restart service
+	    // if inetd is running - only reload
+	    if (inetd_status == 0) {
+		Runlevel::RunInitScript("inetd", "force-reload");
+	    }
+	    // if stopped - enable and start
+	    else {
+		Runlevel::ServiceAdjust("inetd", "enable");
+		Runlevel::RunInitScript("inetd", "start");
+	    }
+	}
+	// configured service is xinetd
+	else {
+	    // inetd must be stopped - if installed
+	    if (inetd_installed == 0) {
+		Runlevel::ServiceAdjust("inetd", "disable");
+		Runlevel::RunInitScript("inetd", "stop");
+	    }
+	    SCR::Write(.etc.xinetd.services, netd_conf);
+	    // So, Restart service
+	    // if xinetd is running - only reload
+	    if (inetd_status == 0) {
+		Runlevel::RunInitScript("xinetd", "force-reload");
+	    }
+	    // if stopped - enable and start
+	    else {
+		Runlevel::ServiceAdjust("xinetd", "enable");
+		Runlevel::RunInitScript("xinetd", "start");
+	    }
+	}
     }
 
-    /**
-     * Determines netd_status - IMPLEMENTED in ui.ycp!
-     * @return True on success
-     */
-    global define boolean Read (block abort) ``{
-	if (netd_service == `inetd) {
-	    inetd_conf = SCR::Read(.test.netd.services); // read config file
+    // in future: catch errors
+    if(false) Report::Error (_("Can not write settings!"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    Progress::Finish();
+    return true;
+}
+
+/**
+ * Get all inetd settings from the first parameter
+ * (For use by autoinstallation.)
+ * @param settings The YCP structure to be imported.
+ * @return boolean True on success
+ */
+global define boolean Import (map settings) ``{
+    // TODO FIXME: your code here (fill the above mentioned variables)...
+    sleep(3000);
+    return true;
+}
+
+/**
+ * Dump the inetd settings to a single map
+ * (For use by autoinstallation.)
+ * @return map Dumped settings (later acceptable by Import ())
+ */
+global define map Export () ``{
+    // TODO FIXME: your code here (return the above mentioned variables)...
+    sleep(3000);
+    return $[];
+}
+
+/**
+ * Create a textual summary and a list of unconfigured cards
+ * @param split split configured and unconfigured?
+ * @return summary of the current configuration
+ */
+global define list Summary() ``{
+    // TODO FIXME: your code here...
+    return [ _("Configuration summary ..."), [] ];
+}
+
+/**
+ * Create an overview table with all configured cards
+ * @return table items
+ */
+global define list Overview() ``{
+    // TODO FIXME: your code here...
+    return [];
+}
+
+/**
+ * delete line in netd_conf
+ * @param line_number "iid" geted from table's item ID
+ * @return If success returns updated line
+ */
+global define deleteLine(any line_number) ``{
+    // delete
+    map current_line = select(filter(`line, netd_conf,
+	``(lookup(line, "iid", "0") == line_number)), 0, $[]);
+    // set "deleted" flag to true
+    current_line = add(current_line, "deleted", true);
+    netd_conf    = maplist(`line, netd_conf, ``{
+	if (lookup(line, "iid", "0") == line_number) {
+	    return(current_line);
 	}
 	else {
-	    inetd_conf = SCR::Read(.test.xinetd.services); // read config file
+	    return(line);
 	}
-	if (inetd_conf == nil) {                     // if no configuration found
-	  inetd_conf = [];                           //   simply set to empty map
-	}
-	// abort is not needed.
-	// Routines are too fast... :o)
-	/*if (eval(abort) == true) {
-	  inetd_conf = [];
-	} */
-	return true;
-    }
-
-    /**
-     * Read inetd.conf file
-     * @return void
-     */
-
-/*    global define ReadFile()``{
-
-	if (!file_read) {
-	    changed_conf = false;
-	    SCR::Execute(.target.bash, "/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl");
-	    inetd_conf =  SCR::Read(.target.ycp, "/var/lib/YaST2/inetd_conf.ycp");
-	    SCR::Execute(.target.bash, "/bin/rm /var/lib/YaST2/inetd_conf.ycp");
-	    if (inetd_conf == nil)
-	    {
-		inetd_conf = [];
-	    }
-
-	    if (size(inetd_conf)>0)
-	    {
-		file_read = true;
-	    }
-	    if (Mode::config)
-	    {
-		inetd_conf = makeAllInactive();
-	    }
-	}
-	return;
-    }*/
-
-    /**
-     * Changes configuration only, services are not started
-     * @return boolean
-     */
-    global define boolean WriteOnly()``{
-	if (changed_conf && inetd_status == `on_custom )
-	{
-	    Runlevel::ServiceAdjust("network", "enable");
-	    Runlevel::ServiceAdjust("inetd", "enable");
-	    WriteInetdConf();
-	    return true;
-	}
-
-	if (inetd_status == `off)
-	{
-	    y2milestone("Turning service inetd off");
-	    Runlevel::ServiceAdjust("inetd", "disable");
-	    return true;
-	}
-	else
-	{
-	    Runlevel::ServiceAdjust("network", "enable");
-	    Runlevel::ServiceAdjust("inetd", "enable");
-	    if (inetd_status == `on_default)
-		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
-		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );
-	    return true;
-	}
-	return true;
-    }
+    });
+};
 
 
+/**
+ * add a line in DB
+ * @return void
+ */
+global define void addLine(map new_line) ``{
+    // add
+    netd_conf = add(netd_conf, new_line);
+    return;
+}
 
-    /**
-     * Update the SCR according to Inetd settings
-     * @param abort A block that can be called by Write to find
-     *	      out whether abort is requested. Returns true if abort
-     *	      was pressed.
-     * @return True on success
-     */
-    global define boolean Write (block abort) ``{
-
-	y2milestone("Calling Write");
-	boolean write_aborted = false;
-
-	string caption = _("Saving Inetd service configuration");
-
-	integer no_of_steps = 2 ;
-
-	Progress::New ( caption, " ", no_of_steps,
-		       [ _("Write the new internet services daemon configuration"),
-			 _("Restart service") ],
-		       [ _("Writing the new configuration..."),
-			 _("Restarting service..."),
-			 _("Finished") ],
-		       "" );
-
-
-        Progress::NextStage();
-
-	if (netd_status == `off) {
-	    Runlevel::ServiceAdjust("inetd", "disable");
-	    Runlevel::RunInitScript("inetd", "stop");
-	    Runlevel::ServiceAdjust("xinetd", "disable");
-	    Runlevel::RunInitScript("xinetd", "stop");
-	}
-	// custom
-	else {
-	    if (netd_service == `inetd) {
-		// xinetd must be stopped - if installed
-		if (xinetd_installed == 0) {
-		    Runlevel::ServiceAdjust("xinetd", "disable");
-		    Runlevel::RunInitScript("xinetd", "stop");
-		}
-		SCR::Write(.test.netd.services, inetd_conf);
-		// So, Restart service
-		// in inetd is running - only reload
-		if (inetd_status == 0) {
-		    Runlevel::RunInitScript("inetd", "force-reload");
-		}
-		// if stopped - enable and start
-		else {
-		    Runlevel::ServiceAdjust("inetd", "enable");
-		    Runlevel::RunInitScript("inetd", "start");
-		}
-	    }
-	    // configured service is xinetd
-	    else {
-		// inetd must be stopped - if installed
-		if (xinetd_installed == 0) {
-		    Runlevel::ServiceAdjust("inetd", "disable");
-		    Runlevel::RunInitScript("inetd", "stop");
-		}
-		SCR::Write(.test.xinetd.services, inetd_conf);
-		// So, Restart service
-		// in inetd is running - only reload
-		if (inetd_status == 0) {
-		    Runlevel::RunInitScript("xinetd", "force-reload");
-		}
-		// if stopped - enable and start
-		else {
-		    Runlevel::ServiceAdjust("xinetd", "enable");
-		    Runlevel::RunInitScript("xinetd", "start");
-		}
-	    }
-	}
-
-	/*Progress::NextStage();
-	if (changed_conf && inetd_status == `on_custom ) {
-	    WriteInetdConf();
-	}
-
-	Progress::NextStage();
-
-	if (inetd_status == `off)
-	{
-	    y2milestone("Turning service off");
-	    Runlevel::ServiceAdjust("inetd", "disable");
-	    Runlevel::RunInitScript("inetd", "stop");
+/**
+ * Change a line in DB
+ * @return  internal-DB map
+ */
+global define changeLine(map new_line, any line_number) ``{
+    // entry was changed - so set "changed" flag to true
+    new_line  = add(new_line, "changed", true);
+    netd_conf = maplist(`line, netd_conf, ``{
+	if (lookup(line, "iid", "0") == line_number) {
+	    return(new_line);
 	}
 	else {
-	    Runlevel::ServiceAdjust("inetd", "enable");
-	    if (inetd_status == `on_default)
-		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
-		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );
-
-	    if (0 != Runlevel::RunInitScript ("inetd", "restart"))
-	    {
-		y2error ("Can not start service");
-		return false;
-	    }
-
+	    return(line);
 	}
-
-        */
-	// increase the progress to "finish"
-	Progress::Finish ();
-	return !write_aborted;
-    }
-
-    /**
-     * Get all Inetd settings from the first parameter
-     * (For use by autoinstallation.)
-     * @param settings The YCP structure to be imported.
-     * @return True on success
-     * @example settings=$["start_inetd":true,
-     "services":[
-                 $[
-		 "service":"telnet",
-		 "status":"enable"
-		 ]
-     ]
-     */
-    global define boolean Import (map settings) ``{
-	if (size (settings) == 0)
-	{
-	    return false;
-	}
-
-	Set(settings);
-	return true;
-    }
-
-    /**
-     * Find a service in the parsed file
-     * @return map: service map
-     */
-    define map FindService(string service)``{
-	return (select( filter( `line,
-				inetd_conf,
-				``(line["service"]:"none" == service)
-				), 0 , $[]));
-    }
-
-    /**
-     * Change service status
-     * @param service service to change
-     * @param status new status
-     * @return true on success
-     */
-    global define boolean ChangeServiceStatus(string service, string status)
-	``{
-	ReadFile();
-	map service_line = FindService(service);
-	if (size(service_line)>0) {
-	    if (status == "enable")
-		change(service_line,`status,`active);
-	    else if (status == "disable")
-		change(service_line,`status,`inactive);
-	}
-	changeLine( service_line, service_line["line_number"]:0);
-	return true;
-    }
+    });
+};
 
 
-    /**
-     * Dump the Inetd settings to a single map
-     * (For use by autoinstallation.)
-     * @return Dumped settings (later acceptable by Import ())
-     */
-    global define map Export () ``{
-	boolean start_inetd = false;
-	if (inetd_status != `off)
-	    start_inetd = true;
-	list services = [];
-	foreach(`line, inetd_conf,
-		``{
-	    symbol status = lookup(line, `status, `comment);
-	    if ( status == `active)
-	    {
-		services = add(services,$["service_name": line["service"]:"",
-					  "service_status": "enable"]);
-	    }
-	});
-	return $["start_inetd":start_inetd, "inetd_services":services];
-    }
-
-    /**
-     * Build a textual summary that can be used e.g. in inst_hw_config () or
-     * something similar.
-     * @return Summary of the configuration.
-     */
-    global define string Summary ()
-	``{
-	list services = [];
-	foreach(`line, inetd_conf,
-		``{
-	    symbol status = lookup(line, `status, `comment);
-	    if ( status == `active)
-	    {
-		services = add(services,$["service_name": line["service"]:"",
-					  "service_status": "enable"]);
-	    }
-	});
-
-	string summary = "";
-	summary = Summary::AddHeader(summary, _("Enabled Services"));
-	if (size(services)==0)
-	{
-	    summary = Summary::AddLine(summary,  Summary::NotConfigured ());
-	}
-	else
-	{
-	    summary = Summary::OpenList(summary);
-	    foreach(`s,services,``{
-		summary = Summary::AddListItem(summary, s["service_name"]:"error");
-	    });
-	    summary = Summary::CloseList(summary);
-	}
-	return summary;
-    }
-
-
-     /**
-     * Build a textual summary that can be used e.g. in inst_hw_config () or
-     * something similar.
-     * @return Summary of the configuration.
-     */
-    global define void Set (map settings) ``{
-	if (settings["start_inetd"]:false && size(settings["inetd_services"]:[])>0)
-	{
-	    inetd_status = `on_custom;
-	    ReadFile();
-	    foreach(`s, settings["inetd_services"]:[], ``{
-		if (s["service_status"]:"" == "enable" || s["service_status"]:"" == "disable") {
-		    ChangeServiceStatus(s["service_name"]:"none", s["service_status"]:"none");
-		}
-	    });
-
-	}
-	else if (settings["start_inetd"]:false && size(settings["inetd_services"]:[])==0)
-	{
-	    inetd_status = `on_default;
-	} else {
-	    inetd_status = `off;
-	}
-	changed_conf = true;
-
-	return;
-    }
-
-    /**
-     * delete line in inetd_conf
-     * @param line_number "iid" geted from table's item ID
-     * @return If success returns updated line
-     */
-    global define deleteLine(any line_number) ``{
-	// delete
-	map current_line = select(filter(`line, inetd_conf,
-	    ``(lookup(line, "iid", "0") == line_number)), 0, $[]);
-	// set "deleted" flag to true
-	current_line = add(current_line, "deleted", true);
-	inetd_conf   = maplist(`line, inetd_conf, ``{
-	    if (lookup(line, "iid", "0") == line_number) {
-		return(current_line);
-	    }
-	    else {
-		return(line);
-	    }
-	});
-    };
-
-
-    /**
-     * add a line in DB
-     * @return void
-     */
-
-    global define void addLine(map new_line) ``{
-	// add
-	inetd_conf = add(inetd_conf, new_line);
-	return;
-    }
-
-
-
-    /**
-     * Change a line in DB
-     * @return  internal-DB map
-     */
-
-    global define changeLine(map new_line, any line_number) ``{
-        // entry was changed - so set "changed" flag to true
-	new_line   = add(new_line, "changed", true);
-	inetd_conf = maplist(`line, inetd_conf, ``{
-	    if (lookup(line, "iid", "0") == line_number) {
-		return(new_line);
-	    }
-	    else {
-		return(line);
-	    }
-	});
-    };
-
-    /**
-     * UNUSED
-     * Convert SCR-DB Line to internal DB line
-     * @return internal-DB map
-     */
-
-// Unused? We comment it
-/*    global define convertScrLineToInternal ( map line, string service, symbol status, integer line_number )
-    ``{
-	map line_map = $[];
-
-	line_map = add( line_map, `status,       status );
-	line_map = add( line_map, "service",     service );
-	line_map = add( line_map, "line_number", line_number );
-	line_map = add( line_map, "flags",       lookup( line, "flags",    "dgram" ));
-	line_map = add( line_map, "servargs",    lookup( line, "servargs", "internal" ));
-	line_map = add( line_map, "user",        lookup( line, "user",     "root" ));
-
-
-	// Check for  sockettype: stream dgram raw rdm seqpacket
-	// therefore check EXISTANCE of <sockettype>protocol
-
-	string  dgram_protocol = lookup( line, "dgram_protocol" , "");
-
-	if ( dgram_protocol != nil )
-	{
-	    line_map = add( line_map, "type",       "dgram");
-	    line_map = add( line_map, "protocol",    dgram_protocol );
-	}
-	else
-	{
-	    string  stream_protocol = lookup( line, "stream_protocol" , "");
-	    if ( stream_protocol != nil )
-	    {
-		line_map = add( line_map, "type",       "stream");
-		line_map = add( line_map, "protocol",    stream_protocol );
-	    }
-	    else
-	    {
-		string  raw_protocol       = lookup( line, "raw_protocol" , "");
-		string  rdw_protocol       = lookup( line, "rdw_protocol" , "");
-		string  seqpacket_protocol = lookup( line, "seqpacket_protocol" , "");
-
-		if ( raw_protocol != nil )
-		{
-		    line_map = add( line_map, "type",       "raw");
-		    line_map = add( line_map, "protocol",    raw_protocol );
-		}
-		if ( rdw_protocol != nil )
-		{
-		    line_map = add( line_map, "type",       "rdw");
-		    line_map = add( line_map, "protocol",    rdw_protocol );
-		}
-		if ( seqpacket_protocol != nil )
-		{
-		    line_map = add( line_map, "type",       "seqpacket");
-		    line_map = add( line_map, "protocol",    seqpacket_protocol );
-		}
-	    }
-	}
-
-	return (line_map);
-    };
-*/
-
-    /**
-     * Make all services inactive
-     * @return List-DB map
-     */
-
-//unused
-/*    global define list(map) makeAllInactive ()
-    ``{
-	list table_input = [];
-
-	return maplist(`line, inetd_conf, ``{
-	    if (line[`status]:`none == `active)
-		line[`status] = `inactive;
-	    return line;
-	});
-    }*/
-
-    /**
-     * Convert Internal Map into the Format, the list widget needs
-     * @return List-DB map
-     */
-
-    global define list(term) convertInternalToList() ``{
-	list    table_input     = [];
-	list    my_table        = [];
-	any     status          = false;
-	string  status_text     = "";
-	string  wait_text       = "";
-	integer numberOfEntries = size(inetd_conf);
-
-	if (numberOfEntries != 0) {
-	    /*while (index <= numberOfEntries) {
-		y2milestone("entry %1", inetd_conf[1, 1]);
-		index = index + 1;
-	    }*/
-	    foreach(`line, inetd_conf, ``{
-		// service must be marked as nondeleted ("deleted" == false or "deleted" not exists)
-		if (lookup(line, "deleted", false) != true) {
-
-		    // determine service is enabled (enabled text)
-		    any status = lookup(line, "enabled", true);
-		    if (status == true) {
-			status_text = _("On");
-		    }
-		    else {
-			status_text = _("Off");
-		    }
-		    // determine wait mode (convert to string)
-		    status = lookup(line, "wait", true);
-		    if (status == true) {
-			wait_text = "wait";
-		    }
-		    else {
-			wait_text = "nowait";
-		    }
-		    // create line for table structure
-		    term entry = `item(`id(lookup(line, "iid", "0")),
-			status_text,
-			lookup(line, "service", ""),
-			lookup(line, "socket_type", ""),
-			lookup(line, "protocol", ""),
-			wait_text,
-			lookup(line, "user", ""),
-			lookup(line, "server_args", ""));
-		    // add line to table structure
-		    table_input = add(table_input, entry);
-		    //y2milestone("%1", status_text);
-		};
-	    });
-	}
-	//y2milestone ("size(inetd_conf) = %1", size(inetd_conf));
-        return table_input;
-    };
-
-
-
-
-    /**
-     * Write inetd_conf to disk
-     * - Convert internal DB into SCR format
-     * - write
-     * @return -
-     */
-
-// unused
-    /*global define void WriteInetdConf ( )
-	``{
-	// not tested yet!
-	string send_line = "";
-	SCR::Execute(.target.bash, "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" );
-	// Check if file still there and try to remove again, in case we dont have the permission to move
-	if (SCR::Read(.target.size, "/etc/inetd.conf") > 0  )
-	{
-		SCR::Execute(.target.bash, "/bin/rm /etc/inetd.conf " );
-	}
-	string file = "";
-	foreach(`line, inetd_conf,``{
-
-	    string inetd_conf_line = "";
-	    symbol status = lookup(line, `status, `comment);
-
-	    if ( status != `comment )
-	    {
-		if ( status == `active )
-		{
-		    inetd_conf_line = sformat( "%1 %2 %3 %4 %5 %6\n",
-					       lookup( line, "service", "error"),
-					       lookup( line, "type",     "error"),
-					       lookup( line, "protocol", "error"),
-					       lookup( line, "flags",    "error"),
-					       lookup( line, "user",     "error"),
-					       lookup( line, "servargs", "error"));
-		}
-		else
-		{
-		    inetd_conf_line = sformat( "# %1 %2 %3 %4 %5 %6\n",
-					       lookup( line, "service", "error"),
-					       lookup( line, "type",     "error"),
-					       lookup( line, "protocol", "error"),
-					       lookup( line, "flags",    "error"),
-					       lookup( line, "user",     "error"),
-					       lookup( line, "servargs", "error"));
-		}
-	    }
-	    else
-	    {
-		inetd_conf_line="# " + lookup( line, "comment", "") + "\n";
-	    }
-	    file = file + inetd_conf_line;
-
-	});
-
-	if (size(file)>0)
-	{
-	    SCR::Write(.target.string, "/etc/inetd.conf", file);
-	}
-	else
-	{
-	    Report::Error(_("Configuration is empty"));
-	}
-    }*/
-
+/* EOF */
 }

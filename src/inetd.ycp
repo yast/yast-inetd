@@ -2,33 +2,50 @@
  * File:	clients/inetd.ycp
  * Package:	Configuration of inetd
  * Summary:	Main file
- * Authors:	Michael Hager <mike@suse.de>
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
  *
  * $Id$
  *
- * Main file for inet configuration. Uses all other files.
+ * Main file for inetd configuration. Uses all other files.
  */
 
 {
 
 /***
- * <h3>Configuration of the inet</h3>
+ * <h3>Configuration of the inetd</h3>
  */
 
 textdomain "inetd";
 
-include "inetd/ui.ycp";
-
 /* The main () */
-y2milestone ("Inet module started");
 y2milestone ("----------------------------------------");
+y2milestone ("Inetd module started");
+
+include "inetd/wizards.ycp";
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+        y2milestone("Using PROPOSE mode");
+        propose = true;
+    }
+    else
+        y2error("Bad argument for inetd: %1", WFM::Args(0));
+}
 
 /* main ui function */
-any ret = InetSequence ();
-y2debug ("ret == %1", ret);
+any ret = nil;
+
+if(propose) ret = InetdAutoSequence();
+else ret = InetdSequence();
+y2debug("ret == %1", ret);
 
 /* Finish */
-y2milestone ("Inet module finished");
+y2milestone("Inetd module finished");
+y2milestone("----------------------------------------");
 return ret;
 
+/* EOF */
 }

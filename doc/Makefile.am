@@ -1,13 +1,12 @@
 #
-# Makefile.am for y2c_inet/doc
-#
-# $Id$
+# Makefile.am for devtools/devtools/skeletons/config/doc
 #
 
 SUBDIRS = autodocs
 
-htmldir = @docdir@
+htmldir = $(docdir)
 
+doc_DATA =
 html_DATA =
 
-EXTRA_DIST = $(html_DATA)
+EXTRA_DIST = $(doc_DATA) $(html_DATA)

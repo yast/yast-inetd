@@ -1,9 +1,12 @@
-# Makefile.am for YCP module .../doc/autodocs
+#
+# Makefile.am for devtools/devtools/skeletons/config/doc/autodocs
+#
 
-htmldir = @docdir@/autodocs
-
-html_DATA = index.html $(wildcard *.html)
-CLEANFILES = $(html_DATA)
+htmldir = $(docdir)/autodocs
 
 index.html: $(srcdir)/../../src/*.ycp
-	@ybindir@/ycpdoc -d. $(srcdir)/../../src/*.ycp
+	$(ybindir)/ycpdoc -d. $(srcdir)/../../src/*.ycp
+
+html_DATA = index.html $(wildcard *.html)
+
+CLEANFILES = $(html_DATA)

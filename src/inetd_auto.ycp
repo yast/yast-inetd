@@ -2,95 +2,55 @@
  * File:	clients/inetd_auto.ycp
  * Package:	Configuration of inetd
  * Summary:	Client for autoinstallation
- * Authors:	Michael Hager <mike@suse.de>
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
  *
  * $Id$
  *
  * This is a client for autoinstallation. It takes its arguments,
  * goes through the configuration and return the setting.
  * Does not do any changes to the configuration.
- *
- * @param first a map of inet settings
+ */
+
+/**
+ * @param first a map of inetd settings
  * @return map edited settings or an empty map if canceled
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule ("inet_auto", [ mm ]);
+ * @example map ret = WFM::CallModule ("inetd_auto", [ mm ]);
  */
 
 {
 
-    textdomain "inetd";
+textdomain "inetd";
 
-    import "Mode";
-    Mode::config = true;
+y2milestone("----------------------------------------");
+y2milestone("Inetd auto started");
 
-    import "Inetd";
+import "Inetd";
+include "inetd/ui.ycp";
 
-    include "inetd/ui.ycp";
-
-    list args = WFM::Args ();
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), map ) )
-    {
-	y2error ("Bad argument for inet_auto: %1", WFM::Args (0));
-	return false;
-    }
-
-    // The settings are in the first argument
-    map settings = select (args, 0, $[]);
-
-
-    Inetd::Import ( settings );
-    y2milestone("Imported: (%1)", settings);
-
-
-    define set_contents()
-	``{
-	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), Inetd::Summary()),
-		  `VSpacing(0.5),
-		  `HBox(
-			`PushButton(`id(`configure), _("&Configure Inetd")),
-			`HStretch(),
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			),
-		  `VSpacing(1)
-		  );
-	Wizard::SetContents(_("Inetd Configuration"),
-			    contents, "", true, true);
-    }
-
-    set_contents();
-    any result = nil;
-    any ret = nil;
-    repeat {
-	ret = UI::UserInput();
-	if (ret == `configure)
-	{
-	    result = InetAutoSequence ();
-
-	    if (result == `next || result == `finish)
-	    {
-		settings = Inetd::Export ();
-	    }
-	    Inetd::Set(settings);
-	    set_contents();
-	}
-	else if ( ret == `reset)
-	{
-	    settings= $[];
-	    Inetd::Set(settings);
-	    set_contents();
-	}
-    } until (ret == `back || ret == `next || ret ==`key || ret ==`auto || ret == `abort);
-
-    return [ret, settings];
+list args = WFM::Args();
+if(size(args) <= 0) {
+    y2error("Did not get the settings, probably some mistake...");
+    return false;
+}
+if(!is(WFM::Args(0), map)) {
+    y2error("Bad argument for inetd_auto: %1", WFM::Args(0));
+    return false;
 }
 
+/* The settings are in the first argument */
+map settings = select(args, 0, $[]);
+y2milestone("Imported: (%1)", settings);
 
+Inetd::Import(settings);
+symbol ret = InetdAutoSequence();
+y2debug("ret=%1", ret);
 
+y2milestone("Inetd auto finished");
+y2milestone("----------------------------------------");
+
+if(ret == `next) return Inetd::Export();
+return $[];
+
+/* EOF */
+}
