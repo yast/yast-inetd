@@ -13,6 +13,6 @@ bindir = $(YAST2DIR)/bin
 bin_SCRIPTS = build_inetd_conf_ycp.pl 
 
 
-menu_SCRIPTS = menuentry_lan_inetd.ycp
+menu_SCRIPTS = menuentry_lan_inetd.y2cc
 
 EXTRA_DIST = $(modules_SCRIPTS) $(menu_SCRIPTS) $(bin_SCRIPTS)
