@@ -115,6 +115,7 @@ global define symbol isServiceInstalled(list netd_conf, map which) ``{
  * @return list New table data
  */
 global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
+    y2milestone("in function mergeXinetdConfs()");
     integer index = 0;
     foreach(`line, Inetd::xinetd_packages, ``{
 	if(isServiceInstalled(netd_conf, line) == `no) {

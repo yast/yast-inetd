@@ -157,6 +157,11 @@ global integer xinetd_status     = -1;
 global integer netd_status       = -1;
 
 /**
+ * Status of inetd module if autoinstallation mode.
+ */
+global symbol module_status      = `not_configured;
+
+/**
  * Read all inetd settings
  * @return true on success
  */
@@ -222,15 +227,31 @@ global define boolean Read() ``{
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
     
     map new_entry = nil;
+    
+    if(!auto_mode) {
+    netd_conf = maplist(`new_line, netd_conf, ``{
+	new_entry = new_line;
+	foreach(`old_line, old_conf, ``{
+	    if((new_line["service"]:"" == old_line["service"]:"!") &&          // service
+		(new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
+		(find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
+	        new_entry = old_line;
+	    }
+	});
+	return new_entry;
+    });
+    return netd_conf;
+    }
+    else {
     old_conf = maplist(`old_line, old_conf, ``{
-	new_entry = nil;
+	new_entry = old_line;
 	// find all new lines for installed packages...
 	if(find(old_line["iid"]:"", "inst") != -1) { // iid is beginning with "inst"
 	    // find this line in new (installed) configuration
 	    foreach(`new_line, netd_conf, ``{
 		// service, protocol and server must be the same...
-		if((new_line["service"]:"" == old_line["service"]:"!") && // service
-		    (new_line["protocol"]:"" == old_line["protocol"]:"!") && // protocol
+		if((new_line["service"]:"" == old_line["service"]:"!") &&          // service
+		    (new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
 		    (find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
 		    new_line  = add(new_line, "enabled", old_line["enabled"]:true);
                     new_line  = add(new_line, "changed", true);
@@ -239,14 +260,10 @@ global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 		// else
 	    });
 	}
-	//y2error("%1", new_entry);
-	if(new_entry == nil)
-	    new_entry = old_line;
-	//else
-	    //return new_entry;
 	return new_entry;
     });
     return old_conf;
+    }
 }
 
 /**
@@ -449,6 +466,10 @@ global define boolean WriteOnly () ``{
  */
 global define boolean Import (map settings) ``{
 //    sleep(3000);
+    if (settings == $[])
+	module_status = `not_configured;
+    else
+	module_status = `configured;
     /*
      * if map contains "netd_service", whole configuration is filled from this map.
      * if "netd_service" is not found, configuration is generated from default values
@@ -478,6 +499,8 @@ global define boolean Import (map settings) ``{
     service_package    = settings["service_package"]:[];
     required_packages  = settings["xinetd_packages"]:[];
     configured_service = netd_service;
+//    y2milestone("%1", settings);
+//    y2milestone("%1", service_package);
     return true;
 }
 
@@ -496,7 +519,6 @@ global define map Export () ``{
     config = add(config, "xinetd_packages", required_packages);
     y2milestone("%1", config);
     return config;
-//    return $[];
 }
 
 /**
@@ -505,7 +527,17 @@ global define map Export () ``{
  * @return summary of the current configuration
  */
 global define list Summary() ``{
-    return [ _("Configuration Summary..."), [] ];
+    if(module_status == `not_configured)
+	return [ _("Network services was not configured"), [] ];
+    else {
+	string S = sformat(_("Configured as %1"), configured_service == `inetd ? "inetd" : "xinetd");
+	if (configured_service == `xinetd) { // xinetd
+	}
+	else { // inetd
+	}
+	return [ S, [], ];
+    }
+    //return [ _("Configuration Summary..."), [] ];
 }
 
 /**

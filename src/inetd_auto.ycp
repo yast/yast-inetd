@@ -32,6 +32,11 @@ include "inetd/dialogs.ycp";
 /* The settings are in the second argument */
 string func  = WFM::Args(0);
 map    param = WFM::Args(1);
+any    ret   = nil;
+
+y2milestone("func = %1", func);
+
+y2milestone("%1, %2", func, param);
 
 // we do not want to install RPMs in autoinstallation mode...
 Inetd::auto_mode = true;
@@ -42,7 +47,7 @@ Inetd::auto_mode = true;
  */
 if(func == "Summary") {
     Inetd::Import(param);
-    return ( select(Inetd::Summary(), 0 , ""));
+    ret = select(Inetd::Summary(), 0 , "");
 }
 /**
  * Reset configuration
@@ -50,15 +55,16 @@ if(func == "Summary") {
  */
 else if (func == "Reset") {
     // We can load default during first "Change" call :o)
-    //Inetd::Import($[]);
-    return ($[]);
+    Inetd::Import($[]);
+    ret = $[];
 }
 /**
  * Change configuration
  * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
  */
 else if (func == "Change") {
-    symbol ret = `back;
+//    y2milestone("%1", "Change");
+//    symbol ret = `back;
     Inetd::Import(param);
     
     ret = PackageAutoDialog();
@@ -66,18 +72,23 @@ else if (func == "Change") {
 	return ret;
     }
 
+//    y2milestone("%1", ret);
+
     ret = InetdAutoSequence();
     
-    if(ret == `next) return Inetd::Export();
+//    y2milestone("%1", ret);
+//    if(ret == `next) return Inetd::Export();
+//return $["ahoj":"voli"];
     
-    return ret;
+//    return ret;
 }
 /**
  * Return configuration data
  * return map or list
  */
 else if (func == "Result") {
-    return(Inetd::Export());
+//    return $["Result":"Export"];
+    ret = Inetd::Export();
 }
 /**
  * Write configuration data
@@ -85,15 +96,27 @@ else if (func == "Result") {
  */
 else if (func == "Write") {
     Inetd::write_only = true;
-    return(Inetd::Write());
+    ret = Inetd::Write();
 }
-
+/**
+ * Import settings
+ * return boolean
+ */
+else if (func == "Import") {
+    ret = Inetd::Import(param);
+}
 
 /* unknown function */
 else {
     y2error("unknown function: %1", func);
-    return false;
+    ret = false;
 }
+
+y2debug("ret=%1", ret);
+y2milestone("Inetd auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
 
 /* EOF */
 }

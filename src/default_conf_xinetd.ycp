@@ -16,7 +16,7 @@ textdomain "inetd";
 
 global map default_conf_xinetd = $[
     "netd_conf":[
-	$["comment":"#\n# Now the definitions of the different services\n#\n#\n",
+/*	$["comment":"#\n# Now the definitions of the different services\n#\n#\n",
 	    "comment_inside":"\tserver_args\t= -a\n",
 	    "enabled":true,
 	    "group":"",
@@ -141,7 +141,7 @@ global map default_conf_xinetd = $[
 	    "socket_type":"dgram",
 	    "unparsed":"",
 	    "user":"root",
-	    "wait":true], 
+	    "wait":true], */
 	$["comment":"",
 	    "comment_inside":"",
 	    "enabled":true,
@@ -170,7 +170,7 @@ global map default_conf_xinetd = $[
 	    "unparsed":"\ttype            = INTERNAL\n\tid              = echo-dgram\n",
 	    "user":"root",
 	    "wait":true], 
-	$["comment":"",
+/*	$["comment":"",
 	    "comment_inside":"",
 	    "enabled":true,
 	    "group":"",
@@ -197,7 +197,7 @@ global map default_conf_xinetd = $[
 	    "socket_type":"dgram",
 	    "unparsed":"\ttype            = INTERNAL\n\tid              = discard-dgram\n",
 	    "user":"root",
-	    "wait":true], 
+	    "wait":true], */
 	$["comment":"",
 	    "comment_inside":"",
 	    "enabled":true,
@@ -281,8 +281,8 @@ global map default_conf_xinetd = $[
 	    "socket_type":"dgram",
 	    "unparsed":"\ttype            = INTERNAL\n\tid              = time-dgram\n",
 	    "user":"root",
-	    "wait":true], 
-	$["comment":"",
+	    "wait":true] 
+/*	$["comment":"",
 	    "comment_inside":"",
 	    "enabled":true,
 	    "group":"",
@@ -323,7 +323,7 @@ global map default_conf_xinetd = $[
 	    "socket_type":"stream",
 	    "unparsed":"",
 	    "user":"news",
-	    "wait":false]
+	    "wait":false] */
         ],
     "netd_service":`xinetd,
     "netd_status" :-1];
