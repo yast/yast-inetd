@@ -27,6 +27,7 @@
  */
 
 {
+  textdomain "lan_inetd"; 
 
   // definition of map user_settings 
   map user_settings = $[];
