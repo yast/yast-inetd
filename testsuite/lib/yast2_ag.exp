@@ -10,9 +10,9 @@ proc run_ag_tests { agent_basename } {
 
     set test_cases [lsort [glob $srcdir/tests.ag/*.ycp]]
 
-    foreach test_case $test_cases {
-	run_case $test_case $agent_basename
-    }
+##    foreach test_case $test_cases {
+##	run_case $test_case $agent_basename
+##    }
 }
 
 # helper

@@ -26,7 +26,7 @@ include "inetd/dialogs.ycp";
  * Whole configuration of inetd
  * @return sequence result
  */
-global define symbol InetdSequence() ``{
+define symbol InetdSequence() ``{
 
     map aliases = $[
 	"packages"	: [ ``( PackageDialog() ), true ],
@@ -69,7 +69,7 @@ global define symbol InetdSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-global define symbol InetdAutoSequence() ``{
+define symbol InetdAutoSequence() ``{
     string caption = _("Inetd configuration");
     term contents = `Label(_("Initializing ..."));
 

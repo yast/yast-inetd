@@ -15,12 +15,12 @@
 {
 
 include "testsuite.ycp";
-import "Inetd.ycp";
+import "Inetd";
 import "Report";
 
 Report::DisplayErrors(false, 0);
 
-list SYSTEM_CONF = [
+list<map> SYSTEM_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -47,7 +47,7 @@ list SYSTEM_CONF = [
     ]
 ];
 
-list PROFILE_CONF = [
+list<map> PROFILE_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -78,7 +78,7 @@ list PROFILE_CONF = [
  * In normal mode, the new installed service has no entry
  * in netd_conf.
  */
-list EDITED_CONF = [
+list<map> EDITED_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",

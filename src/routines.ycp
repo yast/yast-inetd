@@ -19,15 +19,15 @@ import "Popup";
 import "Require";
 import "UsersCache";
 
-global define term ServiceToTableItem (map service, integer ni_index);
-global define boolean ServicesMatch (map<string, any> a, map<string, any> b);
-global define boolean IsInstalled (string rpm);
+define term ServiceToTableItem (map service, integer ni_index);
+define boolean ServicesMatch (map<string, any> a, map<string, any> b);
+define boolean IsInstalled (string rpm);
 
 /**
  * Return rpm -q status for inetd package
  * @return rpm -q exit code
  */
-global define integer GetInetdInstalled() ``{
+define integer GetInetdInstalled() ``{
     return (integer) SCR::Execute(.target.bash, "/bin/rpm -q inetd 2>&1 > /dev/null", []);
 }
 
@@ -35,7 +35,7 @@ global define integer GetInetdInstalled() ``{
  * Return rpm -q status for xinetd package
  * @return rpm -q exit code
  */
-global define integer GetXinetdInstalled() ``{
+define integer GetXinetdInstalled() ``{
     return (integer) SCR::Execute(.target.bash, "/bin/rpm -q xinetd 2>&1 > /dev/null", []);
 }
 
@@ -43,7 +43,7 @@ global define integer GetXinetdInstalled() ``{
  * Return status of inetd service
  * @return Runlevel::ServiceStatus() result
  */
-global define integer GetInetdStatus() ``{
+define integer GetInetdStatus() ``{
     return Runlevel::ServiceStatus("inetd");
 }
 
@@ -51,7 +51,7 @@ global define integer GetInetdStatus() ``{
  * Return status of xinetd service
  * @return Runlevel::ServiceStatus() result
  */
-global define integer GetXinetdStatus() ``{
+define integer GetXinetdStatus() ``{
     return Runlevel::ServiceStatus("xinetd");
 }
 
@@ -59,7 +59,7 @@ global define integer GetXinetdStatus() ``{
  * Check for pending Abort press
  * @return true if pending abort
  */
-global define boolean PollAbort() ``{
+define boolean PollAbort() ``{
     return UI::PollInput() == `abort;
 }
 
@@ -67,7 +67,7 @@ global define boolean PollAbort() ``{
  * If modified, ask for confirmation
  * @return true if abort is confirmed
  */
-global define boolean ReallyAbort() ``{
+define boolean ReallyAbort() ``{
     return !Inetd::Modified() || Popup::ReallyAbort(true);
 }
 
@@ -75,7 +75,7 @@ global define boolean ReallyAbort() ``{
  * Progress::NextStage and Progress::Title combined into one function
  * @param title progressbar title
  */
-global define void ProgressNextStage(string title) ``{
+define void ProgressNextStage(string title) ``{
     Progress::NextStage();
     Progress::Title(title);
 }
@@ -91,7 +91,7 @@ global define void ProgressNextStage(string title) ``{
  * @param server_args "server_args" field of a service
  * @return basename of the real server
  */
-global define string GetServerBasename (string server, string server_args) ``{
+define string GetServerBasename (string server, string server_args) ``{
     string result = server;
     // discard tcpd
     if (result == "/usr/sbin/tcpd")
@@ -118,7 +118,7 @@ global define string GetServerBasename (string server, string server_args) ``{
  * @param fields list of keys
  * @return Do the maps have all the named fields equal?
  */
-global define boolean struct_match (map a, map b, list fields) ``{
+define boolean struct_match (map a, map b, list fields) ``{
     // short circuit: use the _find_ builtin to get the mismatching key
     any mismatch = find (any key, fields,
 			 ``( a[key]:nil != b[key]:nil ));
@@ -139,7 +139,7 @@ global define boolean struct_match (map a, map b, list fields) ``{
  * @return Do the maps have all named fields that are in both of them equal?
  * @example match: $["a": 1, "b": 2, "c": 3], $["b": 2, "d": 4]
  */
-global define boolean struct_match_sparse (map a, map b, list fields) ``{
+define boolean struct_match_sparse (map a, map b, list fields) ``{
     // short circuit: use the _find_ builtin to get the mismatching key
     any mismatch = find (any key, fields,
 			 ``(
@@ -160,7 +160,7 @@ global define boolean struct_match_sparse (map a, map b, list fields) ``{
  * @param s a @ref service
  * @return match found
  */
-global define boolean isServiceMatchPresent (list<map> netd_conf, map<string, any> s) ``{
+define boolean isServiceMatchPresent (list<map> netd_conf, map<string, any> s) ``{
     map match = find (map<string, any> i, netd_conf, ``(
 			  ServicesMatch (i, s)
 			  ));
@@ -173,7 +173,7 @@ global define boolean isServiceMatchPresent (list<map> netd_conf, map<string, an
  * Needs Inetd::configured_service.
  * @return Inetd::default_conf_(x)inetd["netd_conf"]
  */
-global define list GetDefaults () ``{
+define list GetDefaults () ``{
     Inetd::EnsureDefaultConfLoaded ();
     return Inetd::configured_service == `inetd?
 	(Inetd::default_conf_inetd["netd_conf"]:[]):
@@ -194,7 +194,7 @@ global define list GetDefaults () ``{
  * @param table_data Table data structure used as source data
  * @return list New table data
  */
-global define list AddNotInstalled (list netd_conf, list table_data) ``{
+define list<term> AddNotInstalled (list<map> netd_conf, list<term> table_data) ``{
     //y2milestone("in function mergeXinetdConfs()");
 
     list defaults = GetDefaults ();
@@ -215,7 +215,7 @@ global define list AddNotInstalled (list netd_conf, list table_data) ``{
  * @param ni_index if nil, use iid as id, otherwise "NI"+ni_index
  * @return main table item
  */
-global define term ServiceToTableItem (map service, integer ni_index) ``{
+define term ServiceToTableItem (map service, integer ni_index) ``{
     y2debug ("* %1", service["service"]:"");
     string  status_text     = "";
     string  wait_text       = "";
@@ -269,7 +269,7 @@ global define term ServiceToTableItem (map service, integer ni_index) ``{
 	`id (
 	    ni_index == nil ?
 	    (service["iid"]:"0") :
-	    "NI" + ni_index
+	    ("NI" + ni_index)
 	    ),
 	changed_text,
 	status_text,
@@ -288,8 +288,8 @@ global define term ServiceToTableItem (map service, integer ni_index) ``{
  * @param netd_conf netd_conf handles whole configuration of configured service
  * @return returnes table data
  */
-global define list<term> CreateTableData(list netd_conf) ``{
-    list    table_input     = [];
+define list<term> CreateTableData(list<map> netd_conf) ``{
+    list<term>    table_input     = [];
 
     foreach(map service, netd_conf, ``{
 	// service must be marked as nondeleted ("deleted" == false or "deleted" not exists)
@@ -320,10 +320,10 @@ global define list<term> CreateTableData(list netd_conf) ``{
  * "+" is filtered out.
  * @return list users
  */
-global define list CreateLocalUsersList() ``{
+define list<string> CreateLocalUsersList() ``{
     list<string> users = (list<string>) merge (
-	UsersCache::GetUsernames ("local"),
-	UsersCache::GetUsernames ("system")
+	UsersCache::GetUsernames("local"),
+	UsersCache::GetUsernames("system")
     );
     users = sort(users);
     y2debug("users: %1", users);
@@ -340,10 +340,10 @@ global define list CreateLocalUsersList() ``{
  * "+" is filtered out.
  * @return list groups
  */
-global define list CreateLocalGroupsList() ``{
+define list<string> CreateLocalGroupsList() ``{
     list<string> groups = (list<string>) merge (
-	UsersCache::GetGroupnames ("local"),
-	UsersCache::GetGroupnames ("system")
+	UsersCache::GetGroupnames("local"),
+	UsersCache::GetGroupnames("system")
     );
     groups = sort(groups);
     y2debug("groups: %1", groups);
@@ -359,7 +359,7 @@ global define list CreateLocalGroupsList() ``{
  * @param ready_conf ready_conf handles whole service configuration (Inetd::netd_conf)
  * @return returnes if found `yes, otherwise `no
  */
-global define symbol IsAnyServiceEnabled(list ready_conf) ``{
+define symbol IsAnyServiceEnabled(list ready_conf) ``{
     symbol ret = `no;
 
     foreach(map line, ready_conf, ``{
@@ -382,7 +382,7 @@ global define symbol IsAnyServiceEnabled(list ready_conf) ``{
  * @param b other map
  * @return match?
  */
-global define boolean ServicesMatch (map<string, any> a, map<string, any> b) ``{
+define boolean ServicesMatch (map<string, any> a, map<string, any> b) ``{
     if (struct_match_sparse (a, b, ["script", "service", "protocol"]))
     {
 	// Compare whether the server matches
@@ -407,7 +407,7 @@ global define boolean ServicesMatch (map<string, any> a, map<string, any> b) ``{
  * @param environment name of requested variable
  * @return environment variable contents
  */
-global define string getenv(string environment) ``{
+define string getenv(string environment) ``{
     string command = sformat("echo $%1", environment);
     map result     = (map) SCR::Execute(.target.bash_output, command, []);
     if(result["stdout"]:"" == "") {
@@ -420,13 +420,13 @@ global define string getenv(string environment) ``{
 /**
  * Cache for @ref IsInstalled.
  */
-global map is_installed_cache = $[];
+map is_installed_cache = $[];
 
 /**
  * Clears cache for @ref IsInstalled .
  * This is too wasteful. Later, when it works, optimize for single packages.
  */
-global define void IsInstalledClearCache () ``{
+define void IsInstalledClearCache () ``{
      is_installed_cache = $[];
 }
 
@@ -437,7 +437,7 @@ global define void IsInstalledClearCache () ``{
  * package unknown, so it cannot be installed
  * @return installed?
  */
-global define boolean IsInstalled (string rpm) ``{
+define boolean IsInstalled (string rpm) ``{
     boolean result = rpm == ""? true: is_installed_cache[rpm]:nil;
     if (result == nil)
     {

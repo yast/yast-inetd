@@ -78,9 +78,13 @@ import "Report";
 import "Summary";
 import "Directory";
 
+// FIXME: initialize Security module (used by Userscache.pm)
+// remove this later when module initialization works from other languages
+import "Security";
+
 global define void EnsureDefaultConfLoaded ();
-global define list mergeAfterInstall(list system_c, list user_c);
-global define list MergeAyProfile (list target, list changes);
+global define list<map> mergeAfterInstall(list<map> system_c, list<map> user_c);
+global define list<map> MergeAyProfile (list<map> target, list<map> changes);
 
 /**
  * What service is in configuration process?
@@ -197,20 +201,20 @@ global symbol netd_service       = `none;
  *  ]
  * </pre>
  */
-global list inetd_conf           = [];
+global list<map> inetd_conf           = [];
 
 /**
  * This variable holds xinetd configuration.
  * The structure is the same as inetd_conf.
  */
-global list xinetd_conf          = [];
+global list<map> xinetd_conf          = [];
 
 /**
  * Holds configuration of selected service (service in configuration process).
  * The name of this service is stored in configured_service.
  * Structure of this variable is the same as inetd_conf or xinetd_conf.
  */
-global list netd_conf            = [];
+global list<map> netd_conf            = [];
 
 /**
  * Holds default configuration for currently edited superserver.
@@ -302,14 +306,14 @@ global define boolean Read() ``{
 	return false;
 
     if(netd_service == `both) {
-	inetd_conf  = (list) SCR::Read(.etc.inetd_conf.services);
-	xinetd_conf = (list) SCR::Read(.etc.xinetd_conf.services);
+	inetd_conf  = (list<map>) SCR::Read(.etc.inetd_conf.services);
+	xinetd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
     }
     else if(netd_service == `inetd) {
-	inetd_conf = (list) SCR::Read(.etc.inetd_conf.services);
+	inetd_conf = (list<map>) SCR::Read(.etc.inetd_conf.services);
     }
     else if(netd_service == `xinetd) {
-	xinetd_conf = (list) SCR::Read(.etc.xinetd_conf.services);
+	xinetd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
     }
 
     sleep(sl);
@@ -343,7 +347,7 @@ global define boolean Read() ``{
  * @param edited_conf holds old configuration (UI)
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
-global define list MergeEditedWithSystem (list system_conf, list edited_conf) ``{
+global define list<map> MergeEditedWithSystem (list<map> system_conf, list<map> edited_conf) ``{
     map new_entry = nil;
 
     // Take system services as the basis
@@ -395,7 +399,7 @@ global define boolean Write() ``{
     // write settings
     if(Abort()) return false;
     if (write_only) {
-	list new_conf = [];
+	list<map> new_conf = [];
 	if (configured_service == `inetd) {
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("inetd", "enable");
@@ -407,7 +411,7 @@ global define boolean Write() ``{
 	    SCR::Write(.etc.inetd_conf.services, netd_conf);
 	}
 	else if (configured_service == `xinetd) {
-	    new_conf  = (list) SCR::Read(.etc.xinetd_conf.services);
+	    new_conf  = (list<map>) SCR::Read(.etc.xinetd_conf.services);
 	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("xinetd", "enable");
@@ -538,7 +542,7 @@ global define boolean WriteOnly () ``{
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  * @see MergeAyProfile
  */
-global define list mergeAfterInstall(list system_c, list user_c) ``{
+global define list<map> mergeAfterInstall(list<map> system_c, list<map> user_c) ``{
     return MergeAyProfile (system_c, user_c);
 }
 
@@ -548,8 +552,8 @@ global define list mergeAfterInstall(list system_c, list user_c) ``{
  * @return complete configuration with user changes
  * @see MergeAyProfile
  */
-global define list mergeWithDefaults(list changes) ``{
-    list target = default_conf["netd_conf"]:[];
+global define list<map> mergeWithDefaults(list<map> changes) ``{
+    list<map> target = default_conf["netd_conf"]:[];
     return MergeAyProfile (target, changes);
 }
 
@@ -577,7 +581,7 @@ global define map SafeRemove (map m, list keys) ``{
  * @return merged list of services
  * @see <a href="../autoyast_proto.xhtml">autoyast docs</a>.
  */
-global define list MergeAyProfile (list target, list changes) ``{
+global define list<map> MergeAyProfile (list<map> target, list<map> changes) ``{
     // for each change in the patch list:
     foreach (map<string, any> change_s, changes, ``{
 	integer matches = 0;

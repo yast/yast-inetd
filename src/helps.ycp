@@ -14,7 +14,7 @@ textdomain "inetd";
 /**
  * All helps are here
  */
-global map HELPS = $[
+map HELPS = $[
 
     /* installed packages (inetd and xinetd) */
     "packages" : _("<p><b><big>Searching for Installed Packages</big></b><br>
@@ -116,7 +116,7 @@ If you do so, all your changes will be lost and the original configuration will 
      * Help for the EditOrCreateServiceDlg () dialog.
      * @return The help text.
      */
-    global define string EditCreateHelp () ``{
+    define string EditCreateHelp () ``{
 
 	return _("
 <p>To create a valid entry (service) for the super-server,

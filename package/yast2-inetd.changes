@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Feb  6 15:45:57 CET 2004 - lslezak@suse.cz
+
+- NI fixes (data types, globals)
+- build fixes (ycp hook, pack ybc file, needed packages)
+- testsuite update (NI fixes, agent testing disabled)
+- version 2.9.1
+
+-------------------------------------------------------------------
 Fri Oct 31 12:58:40 CET 2003 - mvidner@suse.cz
 
 - Fixed retrieving the lists of users and groups (#32783).

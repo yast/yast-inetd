@@ -36,4 +36,14 @@ desktop_DATA =			\
 module_DATA =			\
 	Inetd.ycp
 
+include $(top_srcdir)/Makefile.am.common
+
+inetd:
+	ln -sf . inetd
+
+ycpchook = inetd
+
+YCPCFLAGS=-I.
+
+
 EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA) $(ydata_DATA) $(desktop_DATA)
