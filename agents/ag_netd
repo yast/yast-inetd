@@ -39,6 +39,8 @@ sub strip_pwd ($)
 }
 
 my @services;
+# where new services are added
+my $base_file = "";
 # used for a warning about unsupported options
 my $message = "";
 
@@ -70,15 +72,23 @@ use ycp;
 
 # makes a hash (keyed by file names) of hashes (keyed by line numbers)
 # of changed services
+# exception: line -1 is a _list_ of new services
 sub get_changed (@)
 {
     my %ch = ();
     foreach my $s (@_)
     {
 	next if (!$s->{changed});
-	$s->{iid} =~ m/(\d+):(.*)/;
-	my ($line, $file) = ($1, $2);
-	$ch{$file}->{$line} = $s;
+	if (defined ($s->{iid}) && $s->{iid} =~ m/(\d+):(.*)/)
+	{
+	    my ($line, $file) = ($1, $2);
+	    $ch{$file}->{$line} = $s;
+	}
+	else
+	{
+	    y2debug "new $s->{service}";
+	    push (@{$ch{$base_file}->{-1}}, $s);
+	}
     }
     return %ch;
 }
@@ -135,9 +145,13 @@ sub include_dir ($)
     {
 	while (defined ($_ = $dir->read ()))
 	{
-	    push (@files, $_) unless m/^\./ || m/~$/;
+	    push (@files, $_) unless m/\./ || m/~$/;
 	}
 	$dir->close ();
+    }
+    else
+    {
+	y2error "Cannot include dir '$dirname'";
     }
 
     foreach (sort @files)
@@ -158,10 +172,13 @@ sub write_file ()
 	my $if = new linefile ($filename, "r");
 	my $OF = new IO::File (">$ofilename");
 
+	my @new_services = defined ($lines->{-1}) ? @{$lines->{-1}} : ();
+	delete $lines->{-1};
+
 	# copy the file, replacing services at specified lines by
 	# changed ones
 	my @linenos = sort keys %{$lines};
-
+	y2debug "@linenos";
 
 	# Be careful here not to read the line that starts the changed service
 	# because then we would have to "unget" it in both implementations
@@ -171,6 +188,8 @@ sub write_file ()
 	$if->{lineno} = 0;
 	do
 	{
+	    print $OF $_ unless $if->{lineno} == 0;
+
 	    if (defined ($linenos[0]) && $if->{lineno}+1 == $linenos[0])
 	    {
 		# got there
@@ -182,13 +201,20 @@ sub write_file ()
 		$class->parse_service ($if); #discard the old data
 		# ...
 	    }
-	    else
-	    {
-		print $OF $_ unless $if->{lineno} == 0;
-	    }
+
 	    ++$if->{lineno};
+	    y2debug ($if->{name}, ": ", $if->{lineno});
 	}
 	while (defined ($_ = $if->{fh}->getline));
+
+	# can we add new services?
+	foreach my $service (@new_services)
+	{
+	    y2debug "NEW $service->{service}";
+	    $class->write_service ($OF, $service)
+		unless $service->{deleted};
+	}
+
 	rename ($ofilename, $filename);
     }
     return 1;
@@ -335,6 +361,7 @@ sub parse_service ($)
     my $file = shift;
     my $service = undef;
     my $comment = "";
+    my $comment_inside = ""; # usually commented out attributes
     my $reclineno = 0; # line at which a record (including comment) starts
     my $state = "init"; # "brace", "inside"
     my $in_defaults = 0;
@@ -346,11 +373,16 @@ sub parse_service ($)
 	next if /^$/;
 	$reclineno ||= $file->{lineno};
 
-	# TODO separate these commented-out attributes
-	# so that they don't show up in the normal comment
 	if (s/^\s*#//)
 	{
-	    $comment .= "$_\n";
+	    if ($state eq "inside")
+	    {
+		$comment_inside .= "$_\n";
+	    }
+	    else
+	    {
+		$comment .= "$_\n";
+	    }
 	}
 	else
 	{
@@ -418,6 +450,7 @@ sub parse_service ($)
 		{
 		    # wrap up
 		    $service->{comment} = $comment;
+		    $service->{comment_inside} = $comment_inside;
 		    $service->{unparsed} = $unparsed;
 		    last;
 		}
@@ -447,7 +480,7 @@ sub parse_service ($)
 					wait| # bool
 					user|
 					group|
-					sever|
+					server|
 					server_args
 				       }x)
 			{
@@ -486,13 +519,18 @@ sub write_service ($$)
     my $f = shift;
     my $s = shift;
 
-    foreach (split (/\n/, $s->{comment}))
+    foreach (split (/\n/, $s->{comment} || ""))
     {
 	print $f "#$_\n";
     }
 
     print $f "service $s->{service}\n";
     print $f "{\n";
+
+    foreach (split (/\n/, $s->{comment_inside} || ""))
+    {
+	print $f "#$_\n";
+    }
 
     if (! $s->{enabled})
     {
@@ -513,7 +551,7 @@ sub write_service ($$)
     print $f "\tserver_args = $s->{server_args}\n" if $s->{server_args};
 
     print $f "\ttype = $s->{type}\n" if $s->{type};
-    print $f $s->{unparsed};
+    print $f $s->{unparsed} || "";
     print $f "}\n";
 }
 
@@ -546,6 +584,7 @@ while ( <STDIN> )
 	$netd = ($command eq "Xinetd")? "xinetd": "inetd";
 	my $fn = shift @arguments || "/etc/$netd.conf";
 
+	$base_file = strip_pwd ($fn);
 	$netd->parse_file ($fn);
 	next;
     }
