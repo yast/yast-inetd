@@ -99,6 +99,7 @@
     global define boolean WriteOnly()``{
 	if (changed_conf && inetd_status == `on_custom )
 	{
+	    Runlevel::ServiceAdjust("network", "enable");
 	    Runlevel::ServiceAdjust("inetd", "enable");
 	    WriteInetdConf();
 	    return true;
@@ -112,6 +113,7 @@
 	}
 	else
 	{
+	    Runlevel::ServiceAdjust("network", "enable");
 	    Runlevel::ServiceAdjust("inetd", "enable");
 	    if (inetd_status == `on_default)
 		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
@@ -536,7 +538,11 @@
 	// not tested yet!
 	string send_line = "";
 	SCR::Execute(.target.bash, "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" );
-	SCR::Execute(.target.bash, "/bin/rm /etc/inetd.conf " );  // if i have not the permission to move
+	// Check if file still there and try to remove again, in case we dont have the permission to move
+	if (SCR::Read(.target.size, "/etc/inetd.conf") > 0  )
+	{
+		SCR::Execute(.target.bash, "/bin/rm /etc/inetd.conf " );
+	}
 	string file = "";
 	foreach(`line, inetd_conf,``{
 
