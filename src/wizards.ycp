@@ -77,7 +77,7 @@ define symbol InetdSequence() ``{
  * @return sequence result
  */
 define symbol InetdAutoSequence() ``{
-    string caption = _("Inetd configuration");
+    string caption = _("Xinetd configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();

@@ -18,7 +18,7 @@ import "Progress";
 
 /* The main () */
 y2milestone("----------------------------------------");
-y2milestone("Inetd proposal started");
+y2milestone("Xinetd proposal started");
 
 string func = (string) WFM::Args(0);
 map param = (map) WFM::Args(1);
@@ -60,8 +60,8 @@ else if(func == "AskUser") {
 /* create titles */
 else if(func == "Description") {
     ret = $[
-	"rich_text_title" : _("Inetd"),
-	"menu_title" : _("&Inetd"),
+	"rich_text_title" : _("Xinetd"),
+	"menu_title" : _("&Xinetd"),
 	"id" : "inetd",
     ];
 }
@@ -76,7 +76,7 @@ else {
 
 /* Finish */
 y2debug("ret=%1",ret);
-y2milestone("Inetd proposal finished");
+y2milestone("Xinetd proposal finished");
 y2milestone("----------------------------------------");
 return ret;
 

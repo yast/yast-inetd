@@ -12,7 +12,7 @@ Obsoletes:	yast2-trans-inet y2t_inet
 
 BuildArchitectures:	noarch
 
-Summary:	Configuration of inetd
+Summary:	Configuration of xinetd
 
 %description
 -
