@@ -188,6 +188,7 @@ sub write_file ()
     use IO::File;
     my $class = shift;
 
+    my $ret = 1;
     my %changed_services = get_changed (@services);
     while (my ($filename, $lines) = each %changed_services)
     {
@@ -197,6 +198,12 @@ sub write_file ()
 	# which is taken care of below
 	my $if = new linefile ($filename, "r");
 	my $OF = new IO::File (">$ofilename");
+	if (! $OF)
+	{
+	    y2error ("Opening '$ofilename' for writing: $!");
+	    $ret = 0;
+	    next;		# continue with the next file
+	}
 
 	my @new_services = defined ($lines->{-1}) ? @{$lines->{-1}} : ();
 	delete $lines->{-1};
@@ -264,7 +271,7 @@ sub write_file ()
 
 	rename ($ofilename, $filename);
     }
-    return 1;
+    return $ret;
 }
 
 sub services_by_package ()
