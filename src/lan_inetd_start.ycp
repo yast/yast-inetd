@@ -42,7 +42,7 @@
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // check if there is a default for inetd.conf, else create one
     // differ inetd.conf and inetd.con.default set inetd_status = `on_custom 
-    if ( !fileexist ("/etc/inetd.conf.default"))
+    if ( SCR::Read(.target.size, "/etc/inetd.conf.default") != -1 )
     {
 	SCR(`Execute(.target.bash, "/bin/cp /etc/inetd.conf /etc/inetd.conf.default" ));
 	if( start_inetd == "yes" ) inetd_status = `on_default;
