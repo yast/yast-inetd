@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb  3 09:40:38 CET 2003 - mvidner@suse.de
+
+- Merged proofread texts.
+- 2.7.3
+
+-------------------------------------------------------------------
 Thu Jan 16 15:07:14 CET 2003 - mvidner@suse.de
 
 - Fixed disabling a xinetd service.
