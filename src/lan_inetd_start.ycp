@@ -1,0 +1,171 @@
+/*
+ *************************************************************
+ *
+ *     YaST2      SuSE Labs                        -o)
+ *     --------------------                        /\\
+ *                                                _\_v
+ *           www.suse.de / www.suse.com
+ * ----------------------------------------------------------
+ *
+ * Author:        Michael Hager <mike@suse.de>
+ *
+ * Description:   Choose, if inetd is to start or not
+                  if yes: Choose the ports, which are open
+ *
+ *
+ * Purpose:
+
+ * user_settings:
+ * symbol inetd_status    { `off, `on_default, `on_custom }
+ *
+ * external function:  SCR .etc.inetd.conf
+ *
+ *************************************************************
+
+ $Id$
+
+*/
+{
+  
+   symbol  ret         = `next;
+   symbol inetd_status = lookup( user_settings, "inetd_status", `off);
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // MAIN:
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // testoptions
+    //boolean test_mode   = true;
+    boolean test_mode     = false;
+    // architecture = "ppc";
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///                                                     MAIN DIALOG
+
+    term contents  =  `VBox(`Label(""),
+			    `HBox(
+				  `Label("            "),
+				  `Frame ( _("Enable/disable inetd:"),
+					   `RadioButtonGroup(`id(`inetd),
+							     `VBox(`Label(""),
+								   `Left(`RadioButton(`id(`off),`opt(`notify),
+										      // main dialog: RasioButton: don't start inetd
+										      _("O&ff, don't start inetd"), inetd_status == `off  )),
+								   `Label(""),
+								   `Left(`RadioButton(`id(`on_default),`opt(`notify),
+										      // main dialog: RasioButton: don't start inetd
+										      _("On with d&efault configuration"),
+										      inetd_status == `on_default )),
+								    `Label(""),
+								   `Left(`RadioButton(`id(`on_custom),`opt(`notify),
+										      // main dialog: RasioButton: don't start inetd
+										      _("On with c&ustom configuraton ..."),
+										      inetd_status == `on_custom )),
+								   `Label("")
+								   )
+							     )
+					   ),
+				  `Label("            ")
+				  ),
+			    `Label(" "),
+			    `Label(" "),
+			    `Label(""),
+			    `Label(" ")
+			    );
+
+    string help_text = "";
+
+    // helptext expert partitioning. 1 of 16
+    help_text =  UI(_("<p>Starting inetd will enable \"others\" to connect
+to network services installed on your server
+(e.g telnet, finger, ftp). Inetd is also
+needed for printing, as well as formatting the
+man-pages in the SuSE help package.
+Do you wish inetd to be started at boot time?
+</p>
+<p>
+If you want to start the inetd, you can choose
+the SuSE default configuration. If you choose
+the custom configuration, you can edit the default
+configuration for your needs in the next step.
+<\p>"));
+
+    help_text = help_text + "<p>(.11)<\p>";
+
+
+
+    // Main dialog: Header
+     UI(`SetContents(_("Network services"), contents, help_text, false, true));
+
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+   ////  Loop for User Input ....
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    repeat
+    {
+        ret= UI(`UserInput());
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////  INETD ON
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+        if (ret == `on_default)
+        {
+	    inetd_status = `on_default;
+	     UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+	}
+
+        if (ret == `on_custom)
+        {
+	    inetd_status = `on_custom;
+	    UI(`ChangeWidget(`id(`next), `Label,  _("&Next") ) );
+	}
+
+        if (ret == `off)
+        {
+	    inetd_status = `off;
+	     UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+	}
+
+	if (ret == `next || ret == `language || ret == `back)
+	{
+	    if ( ret == `next )
+	    {
+		/////////////////////////////////////////////////////////////
+		// Do the real work;
+		// put the setting to user_settings
+		// and write the variable START_INETD in /etc/rc.config
+		/////////////////////////////////////////////////////////////
+
+		user_settings = add( user_settings, "inetd_status", inetd_status );
+		
+		if ( inetd_status == `off )
+		{
+		    _debug( "Writing START_INETD no" );
+		    SCR(`Write(.etc.rcconfig.START_INETD, "no"));
+		}
+		else
+		{
+		     _debug( "Writing START_INETD yes" );
+		    SCR(`Write(.etc.rcconfig.START_INETD, "yes"));
+		}
+	    }
+
+	    if ( ret != `back )
+	    {
+		if (ret == `apply) return `again;
+	    }
+	}
+
+  } until (ret == `next || ret == `back || ret == `cancel);
+
+    if ( inetd_status != `on_custom )
+	return `finish;
+    else
+	return ret;
+}
+
+
+
