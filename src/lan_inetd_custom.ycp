@@ -55,12 +55,13 @@
 */
 
 {
+    textdomain "lan_inetd"; 
     ////////////////////////////////////////////////////////////
     // Test, if the user wants the inetd.conf custom configuration
     // (this in normally set in inst_inetd_start)
 
-  // warning todo no comment
-  //if (lookup(user_settings, "inetd_status", "off") != "on_custom")  return `auto;
+    // warning todo no comment
+    //if (lookup(user_settings, "inetd_status", "off") != "on_custom")  return `auto;
 
     ////////////////////////////////////////////////////////////
     // Testmode, for example fo screenshots
@@ -96,8 +97,8 @@
               // helptext for popup create inetd-service
               string helptextCR = _("
 <p>To create a valid entry i.e. service for the inetd you
-have to enter</p> 
-<ul>
+have to enter</p> ")+
+_("<ul>
 <li>service name            
 <li>socket type		    
 <li>protocol		    
@@ -105,10 +106,10 @@ have to enter</p>
 <li>user[.group]	    
 <li>server program	    
 <li>server program arguments
-</ul>
-<p>To specify an Sun-RPC based service, the entry would contain these
-fields:</p>
-<ul>
+</ul>")+
+_("<p>To specify an Sun-RPC based service, the entry would contain these
+fields:</p>")+
+_("<ul>
 <li>service name/version    
 <li>socket type		    
 <li>rpc/protocol	    
@@ -116,38 +117,38 @@ fields:</p>
 <li>user[.group]	    
 <li>server program	    
 <li>server program arguments
-</ul>
+</ul>")+
 
-<p>Here a short description, for details see <b>info inetd.conf</b>
-</p>
+_("<p>Here a short description, for details see <b>info inetd.conf</b>
+</p>")+
 
-<p>The <b>service-name</b> entry is the name of a valid service
-</p>
+_("<p>The <b>service-name</b> entry is the name of a valid service
+</p>")+
 
-<p>The <b>socket-type</b> should be one of stream, dgram, raw, rdm,
+_("<p>The <b>socket-type</b> should be one of stream, dgram, raw, rdm,
 or seqpacket, depending on whether the socket is a stream, datagram,
 raw, reliably delivered message, or sequenced packet socket.
 
-</p>
-<p>The <b>protocol</b> must be a valid protocol as given in /etc/protocols. 
+</p>")+
+_("<p>The <b>protocol</b> must be a valid protocol as given in /etc/protocols. 
 Examples might be <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i> or <i>rpc/udp</i>.
-</p>
+</p>")+
 
-<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
+_("<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
 The optional <i>max</i> suffix specifies the maximum number of
 server instances that may be spawned from inetd within an interval of 60
 seconds. 
-</p>
+</p>")+
 
-<p>The <b>user</b> entry should contain the user name of the user as whom the 
+_("<p>The <b>user</b> entry should contain the user name of the user as whom the 
 server should run.
-</p>
+</p>")+
 
-<p>The <b>server-program</b> entry should contain the pathname of the program which
+_("<p>The <b>server-program</b> entry should contain the pathname of the program which
 is to be executed by inetd when a request is found on its socket. 
 
-</p>
-<p>---</p> ");
+</p>")+
+_("<p>---</p>");
 
 
 		 
@@ -164,7 +165,7 @@ is to be executed by inetd when a request is found on its socket.
 				   `HBox(
 					 `HSpacing(1),
 			     `VBox(
-				   `Left( `CheckBox( `id(`status), _("service is active"),
+				   `Left( `CheckBox( `id(`status), _("service is &active"),
 							     status == `active )),
 				   `HBox( 
 					   `HWeight( 3,`VBox(

@@ -1,3 +1,20 @@
+/**
+ * File:
+ *   menuentry_lan_inetd.ycp
+ *
+ * Module:
+ *   lan_inetd
+ *
+ * Summary:
+ *   lan_inetd menuentry
+ *
+ * Authors:
+ *   Michael Mager <mike@suse.de>
+ *
+ * $Id$
+ *
+ *
+ */ 
 {
   ////////////////////////////////////////////////////////////////////////////////////////
   // set the textdomain, (generally the name of the module for example "lan" for y2c_lan

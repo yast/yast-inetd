@@ -26,7 +26,8 @@
 
 */
 {
-  
+    textdomain "lan_inetd";
+    
     symbol  ret         = `next;
     symbol inetd_status = lookup( user_settings, "inetd_status", `off);
 
