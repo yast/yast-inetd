@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar  2 13:03:52 CET 2005 - gizo@suse.de
+
+- 2.11.10
+- fixed bug 67093 (enabled admind)
+- updated default_conf_xinetd.ycp
+
+-------------------------------------------------------------------
 Fri Feb 25 09:52:35 CET 2005 - mlazar@suse.cz
 
 - fixed Bug 66508 - error in log when configuring uninstalled service
