@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 10 18:07:36 CET 2004 - lslezak@suse.cz
+
+- removed *.y2cc files
+- agent testsuite fix (mvidner)
+- version 2.9.3
+
+-------------------------------------------------------------------
 Mon Feb  9 15:50:35 CET 2004 - lslezak@suse.cz
 
 - testsuite: NI fixes, enabled agent testing

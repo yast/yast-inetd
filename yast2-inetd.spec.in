@@ -1,5 +1,5 @@
 @HEADER-COMMENT@
-# neededforbuild  yast2-devel-packages yast2-packager yast2-users yast2-perl-bindings yast2-security yast2-pam
+# neededforbuild  yast2-devel-packages yast2-packager yast2-users yast2-perl-bindings yast2-security yast2-pam perl-gettext
 
 @HEADER@
 Requires:	yast2
@@ -32,7 +32,6 @@ Summary:	Configuration of inetd
 @clientdir@/inetd*.ycp
 @moduledir@/Inetd.ycp
 @moduledir@/Inetd.ybc
-@configdir@/inetd.y2cc
 @desktopdir@/inetd.desktop
 @scrconfdir@/etc_inetd.scr
 @scrconfdir@/etc_xinetd.scr
