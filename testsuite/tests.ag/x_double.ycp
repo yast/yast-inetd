@@ -1,0 +1,22 @@
+// re-reading used to keep the old list :-(
+{
+    integer old = WFM::SCRGetDefault ();
+
+    integer h = WFM::SCROpen ("ag_netd", false);
+    if (h < 1)
+    {
+	return;
+    }
+    WFM::SCRSetDefault (h);
+    SCR::Xinetd (WFM::Args (0));
+
+    list s = [];
+    // read it twice
+    s = SCR::Read (.services);
+    s = SCR::Read (.services);
+
+    WFM::SCRClose (h);
+    WFM::SCRSetDefault (old);
+
+    return s;
+}
