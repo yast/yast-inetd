@@ -1,0 +1,168 @@
+/**
+ * File:
+ *   include/inet/helps.ycp
+ *
+ * Package:
+ *   Configuration of inet
+ *
+ * Summary:
+ *   Help texts of all the dialogs.
+ *
+ * Authors:
+ *   Michael Hager <mike@suse.de>
+ *
+ * $Id$
+ *
+ * The help texts.
+ *
+ */
+
+{
+    textdomain "lan_inetd";
+
+
+    global define ConfigureHelp()``{
+
+	return
+	    _("<p>In the list, see all services preconfigured by SuSE</p>")
+	+
+_("<p>All services marked with \"#\" are <i>inactive</i> (locked).
+All services marked with \"Active!\" are <i>active</i> (unlocked).</p>") +
+
+_("<p>Inactive means these services are preconfigured in the configuration
+file of inetd (/etc/inetd.conf), but they are locked.</p>
+") +
+_("<p>To lock or unlock a service, click the respective
+entry then press the <b>activate/deactivate</b> button.
+</p>
+") +
+_("<p>With the <b>Edit</b> button, change the parameters of a service.
+</p>
+");
+    }
+
+    
+    /**
+     * Help for the EditOrCreateServiceDlg () dialog.
+     * @return The help text.
+     */
+    global define string EditCreateHelp () ``{
+	
+	return _("
+<p>To create a valid entry (service) for inetd,
+enter</p> 
+")+
+	    
+_("<ul>
+<li>service name            
+<li>socket type		    
+<li>protocol		    
+<li>wait/nowait[.max]	    
+<li>user[.group]	    
+<li>server program	    
+<li>server program arguments
+</ul>")+
+
+_("<p>Here is a short description. For details, see <b>info inetd.conf</b>
+</p>
+")+
+
+_("<p>The <b>service name</b> entry is the name of a valid service
+</p>
+")+
+
+_("<p>The <b>socket type</b> should be one of stream, dgram, raw, rdm,
+or seqpacket, depending on whether the socket is a stream, datagram,
+raw, reliably delivered message, or sequenced packet socket.
+
+</p>
+")+
+_("<p>The <b>protocol</b> must be a valid protocol as given in /etc/protocols. 
+Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, or <i>rpc/udp</i>.
+</p>
+")+
+
+_("<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
+The optional <i>max</i> suffix specifies the maximum number of
+server instances that may be spawned from inetd within an interval of 60
+seconds.
+</p>")+
+
+_("<p>The server will be run with the permissions of the user entered in
+the <b>user</b> field. This is useful to make services run with permissions
+less than root.
+</p>")+
+
+_("<p>The <b>server program</b> entry should contain the path name of the program which
+is executed by inetd when a request is found on its socket. 
+
+</p>
+")+
+_("<p>---</p>");
+
+    }
+
+
+    
+    /**
+     * Help for the ReadDialog () dialog.
+     * @return The help text.
+     */
+    global define string ReadDialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
+	return
+	    // For translators: inet read dialog help, part 1 of 2
+_("<P><B><BIG>Initializing Inetd</BIG></B><BR>
+Please wait for a while...
+<BR></P>") +
+	    // For translators: inet read dialog help, part 2 of 2
+_("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
+You can safely abort the configuration utility by pressing the <B>Abort</B>
+button now.
+</P>");
+    }
+
+    /**
+     * Help for the WriteDialog () dialog.
+     * @return The help text.
+     */
+    global define string WriteDialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
+	return
+	    // For translators: inet write dialog help, part 1 of 2
+_("<P><B><BIG>Saving Inetd configuration</BIG></B><BR>
+Please wait for a while...
+<BR></P>") +
+	    // For translators: inet write dialog help, part 2 of 2
+_("<P><B><BIG>Aborting the saving:</BIG></B><BR>
+You can abort the saving by pressing the <B>Abort</B> button.
+An additional dialog will inform you whether it is safe to do so or not.
+</P>");
+    }
+
+    /**
+     * Help for the MainDialog () dialog.
+     * @return The help text.
+     */
+    global define string MainDialogHelp () ``{	
+	return
+_("<p>Starting inetd will enable \"others\" to connect
+to network services installed on your server
+(e.g., telnet, finger, ftp). 
+Do you want inetd to be started at boot time?
+</p>
+") +
+    // helptext inetd configuration
+_("	
+<p>
+If you want to start the inetd, you can choose
+the SuSE default configuration. If you choose
+the custom configuration, you can edit the default
+configuration for your needs in the next step.
+</p>");
+    }
+
+
+
+
+}

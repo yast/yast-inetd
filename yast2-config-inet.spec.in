@@ -1,55 +1,30 @@
-#
-# spec file for package @RPMNAME@
-# 
-# Copyright  (c)  2000  SuSE GmbH  Nuernberg, Germany.
-#
-# please send bugfixes or comments to @MAINTAINER@
-#
+@HEADER-COMMENT@
+# neededforbuild  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools
 
-# neededforbuild  autoconf automake ydoc
+@HEADER@
+Requires:	yast2 yast2-trans-inet yast2-lib-wizard yast2-lib-sequencer
+BuildArchitectures:	noarch
 
-Vendor:       SuSE GmbH, Nuernberg, Germany
-Distribution: SuSE Linux 6.4 (i386)
-Name:         @RPMNAME@
-Release:      1
-Copyright:    (c) 2000 SuSE GmbH
-Group:        System Environment/YaST
-Requires:	yast2-trans-inet perl yast2
-BuildArchitectures: noarch
-
-Packager:     @MAINTAINER@
-
-Summary:      YaST2 Modules for installation
-Version:      @VERSION@
-Source0:      @RPMNAME@-@VERSION@.tar.bz2
-Provides:     y2c_inet
-Obsoletes:    y2c_inet
+Summary:	Configuration of inetd
 
 %description
--
+This package is a part of YaST2. It contains the necessary scripts to
+configure inet.
 
-%prep
+@PREP@
 
-%setup -n @RPMNAME@-@VERSION@
+@BUILD-YCP@
 
-%build
+@INSTALL-YCP@
 
-./configure
-make
-
-%install
-
-make install
-
-%{?suse_check}
+@CLEAN@
 
 %files
-
-%dir @YAST2DIR@/bin
-%dir @YAST2DIR@/clients
-%dir @YAST2DIR@/menuentries
-@YAST2DIR@/menuentries/menuentry_lan_inetd.y2cc
-@YAST2DIR@/clients/lan_inetd_start.ycp
-@YAST2DIR@/clients/lan_inetd_custom.ycp
+%defattr(-,root,root)
+%dir @YAST2DIR@/include/lan_inetd
+@YAST2DIR@/include/lan_inetd/*
 @YAST2DIR@/clients/lan_inetd.ycp
-@YAST2DIR@/bin/build_inetd_conf_ycp.pl
+@YAST2DIR@/clients/inetd_*.ycp
+@YAST2DIR@/modules/Inetd.ycp
+@YAST2DIR@/menuentries/menuentry_lan_inetd.y2cc
+%doc @DOCDIR@

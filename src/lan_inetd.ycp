@@ -1,205 +1,40 @@
-/*
+/**
+ * File:
+ *   clients/lan_inetd.ycp
  *
- * Module:             lan_inetd.ycp
+ * Package:
+ *   Configuration of inet
  *
- * Author:             Michael Hager(mike@suse.de)
+ * Summary:
+ *   Main file
  *
- * Submodules:
- *
- *            lan_inetd_start.ycp    start module configuration network services
- *            lan_inetd_custom.ycp   custom configuration of /etc/inetd.conf
- *
- * ------ this module contains parts for workflow control and popups --------
- *        from module lan.ycp ( originally located in installation.ycp )
- *
- * Purpose:
- * - rc.config:  START_INTETD to "yes" or "no"
- * - inetd.conf: enable/disable services due to custom configuration
- *
- * Modify:
- *   /etc/rc.config  (START_INETD)
- *   /etc/inetd.conf
- *
- * Run SuSEconfig to generate /etc/hosts, /etc/host.conf, /etc/resolv.conf
+ * Authors:
+ *   Michael Hager <mike@suse.de>
  *
  * $Id$
  *
- * Strings ok. Proofread 2001/08/01 <cstein@suse.de>
+ * Main file for inet configuration. Uses all other files.
+ *
  */
 
 {
-  textdomain "lan_inetd"; 
-  include "ui/wizard_dialog.ycp";
-  include "ui/common_popups.ycp";
-  include "ui/common_messages.ycp";
-  
-  // definition of map user_settings 
-  map user_settings = $[];
-  
-  user_settings = add(user_settings, "inetd_status", `off);
-   
-  UI(``{
-    
-    // The main dialog. Copied from installation.ycp.
-    OpenDialog(`opt(`defaultsize),
-	       `VBox(`Image(`suseheader, "SuSE"),
-		     `HBox(`HWeight(30, `VBox( `HSpacing(30),`RichText(`id(`help), ""))),
-			   `HWeight(70, `VBox(
-					      `Left(`Heading(`id(`title), _("YaST2\nInitializing ..."))),
-					      `HVCenter(`ReplacePoint(`id(`contents), `Empty())),
-					      `HBox(
-						    // back pushbutton: the user input is ignored and the last dialog is called
-						    `PushButton(`id(`back), `opt(`disabled),BackButtonLabel()  ),
-						    
-						    `HStretch(),
+    /***
+     * <h3>Configuration of the inet</h3>
+     */
 
-                                                    // next pushbutton: finish the configuration
-						    `PushButton(`id(`next), `opt(`disabled), FinishButtonLabel() )
-						    )
-					      )
-				    )
-			   )
-		     )
-	       );
-      
-    
-    global define SetContents(string title, term contents, string helptext,
-		       boolean has_back, boolean has_next) ``{
-      ChangeWidget(`id(`next), `Enabled, has_next);
-      ChangeWidget(`id(`back), `Enabled, has_back);
-      ChangeWidget(`id(`help), `Value, helptext);
-      ChangeWidget(`id(`title), `Value, title);
-      ReplaceWidget(`id(`contents), contents);
-      // ControlWidget(TheWizardDialog(), `id(`next), `SetFocus());
-    };
+    textdomain "lan_inetd";
 
+    include "lan_inetd/ui.ycp";
 
-    /*
-    // This is a popup dialog for displaying (usually) error messages      
-    global define DisplayMessage(string message) ``{
-	    // ok pushbutton: confirm the dialog
-	OpenDialog(
-	    `opt(`decorated),
-	    `HBox(
-		`HSpacing(1),
-		`VBox(
-		    `VSpacing(0.2),
-		    `Label(message),
-			// "OK" button: User confirmation
-		    `PushButton(`opt(`default), _("&OK")),
-		    `VSpacing(0.2)
-		    ),
-		`HSpacing(1)
-		)
-	    );
-	UserInput();
-	CloseDialog();
-    };
-  
-    global define DisplayMessage2(string message, integer code, string stack) ``{
-      // ok pushbutton: confirm the dialog
-      term t = `VBox();
-      t = add(t, `Left(`Label(message)));
-      if (code != 0)
-	// optional warning dialog text
-	t = add(t, `Left(`Label(sformat(_("Error code %1"), code))));
-      if (stack != "") 
-	t = add(t, `Left(`Label(stack)));
-	  // "OK" button: User confirmation
-      OpenDialog(`opt(`decorated), add(t, `PushButton(_("&OK"))));
-      UserInput();
-      CloseDialog();
-    }; 
+    /* The main () */
+    y2milestone ("Inet module started");
+    y2milestone ("----------------------------------------");
 
-    
-	// This is a popup dialog with Yes/No question
-    global define DisplayYesNo(string message, boolean d) ``{
-	
-	term t = `VBox();
-	t = add(t, `Left(`Label(message)));
-	term b = `HBox();
-	if (d) {
-		// "Yes" button: Answer to the dialog question
-	    b = add (b, `PushButton(`id(`yes), `opt (`default), _("&Yes")));
-		// "No" button: Answer to the dialog question
-	    b = add (b, `PushButton(`id(`no), _("&No")));
-	}
-	else {
-		// "No" button: Answer to the dialog question
-	    b = add (b, `PushButton(`id(`no), `opt (`default), _("&No")));
-		// "Yes" button: Answer to the dialog question
-	    b = add (b, `PushButton(`id(`yes), _("&Yes")));
-	}
-	
-	OpenDialog(`opt(`decorated), add(t, b));
-	any ui = UserInput();
-	CloseDialog();
-	
-	return (ui == `yes);
-	
-    };
+    /* main ui function */
+    any ret = InetSequence ();
+    y2debug ("ret == %1", ret);
 
-    
-    global define YesOrNo(any message, string yes_button_message, string no_button_message) ``{
-      OpenDialog(`opt(`decorated),
-	`HBox(`HSpacing(1),
-	      `VBox(`VSpacing(0.2),
-		    `Label(message),
-		    `HBox(`PushButton(`id(`yes), `opt(`default), yes_button_message),
-			  `HSpacing(2),
-			  `PushButton( no_button_message )),
-		    `VSpacing(0.2)),
-	      `HSpacing(1)
-	));
-      any ret = UserInput();
-      CloseDialog();
-      return (ret == `yes);
-    };
-    */
-  });
-    
-  
-
-  integer arg_n = size(Args()) - 1;
-  boolean test_mode = false;
-  
-  while (arg_n >= 0) {
-      if (Args(arg_n) == .test) {
-	  test_mode = true;
-      }            
-      arg_n = arg_n - 1;
-  }
-
-  user_settings = add( user_settings, "test_mode", test_mode );
-  
-  /*
-   * Main dialog cycle
-   *
-   */
-
-  list dialog = [
-                ``(CallFunction (`lan_inetd_start() )),
-                ``(CallFunction (`lan_inetd_custom() ))
-  ];
-
-  integer id = 0;
-  any result = `next;
-
-  while ((id >= 0) && (id < size (dialog))) {
-    
-    result = eval(select(dialog, id, `none));
-    
-    if (result == `cancel)
-      break;
-    else if (result == `next)
-      id = id + 1;
-    else if (result == `back)
-      id = id - 1;
-    else if ( result == `finish )
-	break;
-
-  }
-  
-  return UI(`CloseDialog());
-
+    /* Finish */
+    y2milestone ("Inet module finished");
+    return ret;
 }

@@ -1,4 +1,4 @@
-## configure.in.in for yast2-config-inetd
+## configure.in.in for yast2-config-inet
 ##
 ## 'y2tool y2autoconf' should be called
 ## from Makefile.cvs to get configure.in

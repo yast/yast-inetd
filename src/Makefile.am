@@ -1,18 +1,32 @@
 #
 # Makefile.am for y2c_inet/src
 #
+# $Id$
+#
 
-modulesdir = $(YAST2DIR)/clients
+clientsdir = $(YAST2DIR)/clients
+includedir = $(YAST2DIR)/include/lan_inetd
 menudir = $(YAST2DIR)/menuentries
+modulesdir = $(YAST2DIR)/modules
 
-modules_SCRIPTS = lan_inetd_start.ycp	\
-		  lan_inetd_custom.ycp	\
-		  lan_inetd.ycp
+clients_DATA =			\
+	lan_inetd.ycp		\
+	inetd_auto.ycp		\
+	inetd_summary.ycp	\
+	inetd_write.ycp
+
+include_DATA =			\
+	helps.ycp		\
+	ui.ycp
+
+menu_DATA =			\
+	menuentry_lan_inetd.y2cc
+
+modules_DATA =			\
+	Inetd.ycp
 
 bindir = $(YAST2DIR)/bin
-bin_SCRIPTS = build_inetd_conf_ycp.pl 
+bin_SCRIPTS = 			\
+	build_inetd_conf_ycp.pl
 
-
-menu_SCRIPTS = menuentry_lan_inetd.y2cc
-
-EXTRA_DIST = $(modules_SCRIPTS) $(menu_SCRIPTS) $(bin_SCRIPTS)
+EXTRA_DIST = $(bin_SCRIPTS) $(clients_DATA) $(include_DATA) $(menu_DATA) $(modules_DATA)
