@@ -21,16 +21,20 @@ import "Label";
 include "inetd/helps.ycp";
 include "inetd/routines.ycp";
 
+global define string CheckInstallable (string id);
+global define term IidToTerm (string selected_item);
+global define map EditOrCreateServiceDlg(string title, map line);
+
 /**
  * local users and groups are stored here
  * We create both lists only once - during first EditOrCreateServiceDlg() call.
  */
-global list(string) local_users  = nil;
+global list<string> local_users  = nil;
 
 /**
  * see local_users.
  */
-global list(string) local_groups = nil;
+global list<string> local_groups = nil;
 
 /**
  * This map is used for (re)selecting table items. This is new inetd GUI improvement! :o)
@@ -48,7 +52,7 @@ global map index_to_iid          = $[];
 /**
  * used for conversion netd_conf to table's format
  */
-global list table_data           = [];
+global list<term> table_data           = [];
 
 /**
  * Detect installed packages.
@@ -98,13 +102,13 @@ global define symbol PackageDialog() ``{
 	{
 	    ret = `back;
 	}
-	boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
-	boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
+	boolean install_inetd  = (boolean) UI::QueryWidget(`id(`inetd),  `Value);
+	boolean install_xinetd = (boolean) UI::QueryWidget(`id(`xinetd), `Value);
 	UI::CloseDialog();
 	Wizard::RestoreScreenShotName();
 	// user press Cancel
 	if(ret == `back) {
-	    return ret;
+	    return (symbol) ret;
 	}
 	// User will continue
 	else {
@@ -202,12 +206,12 @@ global define symbol PackageAutoDialog() ``{
 	{
 	    ret = `back;
 	}
-	boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
-	boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
+	boolean install_inetd  = (boolean) UI::QueryWidget(`id(`inetd),  `Value);
+	boolean install_xinetd = (boolean) UI::QueryWidget(`id(`xinetd), `Value);
 	UI::CloseDialog();
 	// user press Cancel
 	if(ret == `back) {
-	    return ret;
+	    return (symbol) ret;
 	}
 	ret = `back;
 	if(install_inetd) {
@@ -230,7 +234,7 @@ global define symbol PackageAutoDialog() ``{
 	    Inetd::xinetd_installed = -1;
 	if(install_inetd && install_xinetd)
 	    Inetd::netd_service = `both;
-	return ret;
+	return (symbol) ret;
     }
     return `next;
 }
@@ -295,7 +299,7 @@ global define symbol WhatToConfigureDialog() ``{
 
     // and exit
     Wizard::RestoreScreenShotName();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -305,11 +309,11 @@ global define void indexTable() ``{
     integer index = 0;   // (re)set index
     iid_to_index  = $[]; // clear data
     index_to_iid  = $[]; //   maps are not empty!
-    foreach(`line, Inetd::netd_conf, ``{
+    foreach(map<string, any> line, Inetd::netd_conf, ``{
 	// Skip deleted entries
 	if (line["deleted"]:false == false) {
 	    index        = index + 1;
-	    string iid   = lookup(line, "iid", "");
+	    string iid   = line["iid"]:"";
 	    iid_to_index = add(iid_to_index, iid, index);
 	    index_to_iid = add(index_to_iid, index, iid);
 	}
@@ -327,16 +331,16 @@ global define list GetProvidedPackage(term service_info) ``{
     list packages = [];
 
     // yuck, using numbers instead of names, this should be cleaned up
-    map table_s = $[
-	"service": select(service_info, 3, ""),
-	"protocol": select(service_info, 5, ""),
-	"server": select(service_info, 8, ""),
-	"server_args": select(service_info, 9, ""),
+    map<string, any> table_s = $[
+	"service": service_info[3]:"",
+	"protocol": service_info[5]:"",
+	"server": service_info[8]:"",
+	"server_args": service_info[9]:"",
 	// can't compare "script" here, it is not in the table.
 	// is it a problem?
 	];
 
-    foreach(map default_s, GetDefaults (), ``{
+    foreach(map<string, any> default_s, GetDefaults (), ``{
 	if (ServicesMatch (default_s, table_s))
 	{
 	    packages = add (packages, default_s["package"]:"");
@@ -356,7 +360,7 @@ global define list GetProvidedPackage(term service_info) ``{
  * `none: cancelled or install error
  * </pre>
  */
-global define symbol InstallProvidedPackage(any selected_item) ``{
+global define symbol InstallProvidedPackage(string selected_item) ``{
     symbol ret       = `next;
     // possibly nil it out
     selected_item = CheckInstallable (selected_item);
@@ -410,7 +414,7 @@ global define symbol InstallProvidedPackage(any selected_item) ``{
 	    y2milestone("Rereading xinetd configuration");
 	    list old_conf = Inetd::netd_conf;
 	    // Reread configuration!
-	    Inetd::netd_conf = SCR::Read(.etc.xinetd_conf.services);
+	    Inetd::netd_conf = (list) SCR::Read(.etc.xinetd_conf.services);
 	    Inetd::netd_conf = Inetd::MergeEditedWithSystem(Inetd::netd_conf, old_conf);
 	    /* Translators: The package name is stored in %1 */
 	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
@@ -432,7 +436,7 @@ global define term IidToTerm (string selected_item) ``{
     {
 	return nil;
     }
-    return find (`line, table_data, ``(
+    return (term) find (term line, table_data, ``(
 		     select(select(line, 0, `id ("oops")), 0, "NI") == selected_item));
 }
 
@@ -448,7 +452,7 @@ global define string CheckInstallable (string id) ``{
     if (Inetd::auto_mode)
     {
 	// must get to the "package" field
-	map service = find (map s, Inetd::netd_conf, ``( s["iid"]:"" == id ));
+	map<string, any> service = (map<string, any>) find (map<string, any> s, Inetd::netd_conf, ``( s["iid"]:"" == id ));
 	if (IsInstalled (service["package"]:""))
 	{
 	    return nil;
@@ -562,7 +566,7 @@ global define symbol InetdDialog () ``{
 	// ask user
 	ret = WhatToConfigureDialog();
 	if(ret != `next) {
-	    return ret;
+	    return (symbol) ret;
 	}
     }
     else {
@@ -623,7 +627,7 @@ global define symbol InetdDialog () ``{
 	// skip time critical calculations if need_rebuild == false (don't call CreateTableData())
 	boolean need_rebuild = true;
 
-	if(UI::QueryWidget(`id(`editable), `Value))
+	if((boolean) UI::QueryWidget(`id(`editable), `Value))
 	    UI::SetFocus(`id(`table));
 	else
 	    UI::SetFocus(`id(`stop));
@@ -635,7 +639,7 @@ global define symbol InetdDialog () ``{
 	}
 
 	if((ret == `editable) || (ret == `stop)) {
-	    boolean new_state = UI::QueryWidget(`id(`editable), `Value);
+	    boolean new_state = (boolean) UI::QueryWidget(`id(`editable), `Value);
 	    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
 	    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
@@ -652,8 +656,8 @@ global define symbol InetdDialog () ``{
 	}
 	// create new entry
 	else if (ret == `create) {
-	    any selected_item   = UI::QueryWidget(`id(`table), `CurrentItem);
-	    any return_val      = [];
+	    string selected_item   = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    map return_val      = $[];
 	    Inetd::last_created = Inetd::last_created + 1; // need uniq
 	    // default parameters for new service
 	    // TODO is "script: mandatory?
@@ -686,7 +690,7 @@ global define symbol InetdDialog () ``{
 	}
 	// delete new entry
 	else if (ret == `delete) {
-	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 
 	    // one line must be selected
 	    if (selected_item != nil) {
@@ -719,7 +723,7 @@ global define symbol InetdDialog () ``{
 	// switch service status
 	else if (ret == `switch_active) {
 	    // get selected line iid
-	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    // notify a line is selected
 	    if (selected_item != nil) {
 		any result = InstallProvidedPackage(selected_item);
@@ -733,14 +737,14 @@ global define symbol InetdDialog () ``{
 		else
 		{
 		    // look for the selected line
-		    map current_line = find (`line, Inetd::netd_conf,
+		    map<string, any> current_line = (map<string, any>) find (map<string, any> line, Inetd::netd_conf,
 			``( line["iid"]:"0" == selected_item ));
 		    // change status of line
-		    if (lookup(current_line, "enabled", true) == true) {
-			current_line = add(current_line, "enabled", false);
+		    if (current_line["enabled"]:true == true) {
+			current_line = (map<string, any>) add(current_line, "enabled", false);
 		    }
 		    else {
-			current_line = add(current_line, "enabled", true);
+			current_line = (map<string, any>) add(current_line, "enabled", true);
 		    }
 		    // change line in database
 		    Inetd::changeLine(current_line, selected_item);
@@ -759,64 +763,64 @@ global define symbol InetdDialog () ``{
 	}
 	// activate all services
 	else if (ret == `all_on) {
-	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
-		if(lookup(line, "deleted", false) != true) {
-		    line = add(line, "changed", true);
-		    line = add(line, "enabled", true);
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", true);
+		    line = (map<string, any>) add(line, "enabled", true);
 		}
 		return line;
 	    });
 	    Inetd::modified = true;
 	    need_reindex    = true;
 	    need_rebuild    = true;
-	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	}
 	// deactivate all services
 	else if (ret == `all_off) {
-	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
-		if(lookup(line, "deleted", false) != true) {
-		    line = add(line, "changed", true);
-		    line = add(line, "enabled", false);
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", true);
+		    line = (map<string, any>) add(line, "enabled", false);
 		}
 		return line;
 	    });
 	    Inetd::modified = true;
 	    need_reindex    = true;
 	    need_rebuild    = true;
-	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	}
 	// invert status for all services
 	else if (ret == `all_rev) {
-	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
-		if(lookup(line, "deleted", false) != true) {
-		    line = add(line, "changed", true);
-		    line = add(line, "enabled", !(line["enabled"]:false));
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", true);
+		    line = (map<string, any>) add(line, "enabled", !(line["enabled"]:false));
 		}
 		return line;
 	    });
 	    Inetd::modified = true;
 	    need_reindex    = true;
 	    need_rebuild    = true;
-	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	}
 	// clear changed flag
 	else if (ret == `clear_changed) {
-	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
-		if(lookup(line, "deleted", false) != true) {
-		    line = add(line, "changed", false);
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", false);
 		}
 		return line;
 	    });
 	    Inetd::modified = true;
 	    need_reindex    = true;
 	    need_rebuild    = true;
-	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	}
 	// edit service
 	else if (ret == `edit) {
 	    // get selected line in table
 	    need_reindex = false;
-	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    // line must be selected
 	    if (selected_item != nil) {
 		any result = InstallProvidedPackage(selected_item);
@@ -829,10 +833,10 @@ global define symbol InetdDialog () ``{
 		}
 		else
 		{
-		    map current_line = select(filter(`line, Inetd::netd_conf,
-			``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
+		    map current_line = (map) select(filter(map<string, any> line, Inetd::netd_conf,
+			``(line["iid"]:"0" == selected_item)), 0, $[]);
 		    /* Translators: Caption of EditOrCreateServiceDlg() */
-		    any return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
+		    map return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
 		    // check for changes
 		    if (return_val != nil) {
 			Inetd::changeLine(return_val, selected_item);
@@ -884,7 +888,7 @@ Internet super-server will be disabled."));
     }
 
     Wizard::RestoreScreenShotName();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -899,7 +903,7 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
     term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
     term    xinetd_specific  = `Empty();                                     // xinetd specific widgets
     boolean input_failed     = false;                                        // for all required widgets filled check
-    symbol  user_choice      = `back;                                        // for UserInput() loop
+    any     user_choice      = `back;                                        // for UserInput() loop
     term    inetd_protocols  = `opt(`hstretch, `editable);
     term    xinetd_protocols = `opt(`hstretch);
 
@@ -1060,7 +1064,7 @@ Enter valid values.
 	    // YES (input is OK) --- so save settings!
 	    else {
 		input_failed = false;
-		if (UI::QueryWidget(`id(`status), `Value)) {
+		if ((boolean) UI::QueryWidget(`id(`status), `Value)) {
 		    line = add(line, "enabled", true);
 		}
 		else {
@@ -1078,7 +1082,7 @@ Enter valid values.
 		line = add(line, "socket_type", UI::QueryWidget(`id(`type),        `Value));
 		line = add(line, "protocol",    UI::QueryWidget(`id(`protocol),    `Value));
 		line = add(line, "user",        UI::QueryWidget(`id(`user),        `Value));
-		group = UI::QueryWidget(`id(`group), `Value);
+		group = (string) UI::QueryWidget(`id(`group), `Value);
 		if (group == _("--default--")) {
 		    group = "";
 		}

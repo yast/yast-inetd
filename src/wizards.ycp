@@ -61,7 +61,7 @@ global define symbol InetdSequence() ``{
 
     UI::CloseDialog();
     Wizard::RestoreScreenShotName();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -77,7 +77,7 @@ global define symbol InetdAutoSequence() ``{
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 
-    any ret = InetdDialog ();
+    symbol ret = InetdDialog ();
 
     y2milestone("%1", ret);
     UI::CloseDialog();

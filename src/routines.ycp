@@ -19,12 +19,16 @@ import "Popup";
 import "Require";
 import "UsersCache";
 
+global define term ServiceToTableItem (map service, integer ni_index);
+global define boolean ServicesMatch (map<string, any> a, map<string, any> b);
+global define boolean IsInstalled (string rpm);
+
 /**
  * Return rpm -q status for inetd package
  * @return rpm -q exit code
  */
 global define integer GetInetdInstalled() ``{
-    return SCR::Execute(.target.bash, "/bin/rpm -q inetd 2>&1 > /dev/null", []);
+    return (integer) SCR::Execute(.target.bash, "/bin/rpm -q inetd 2>&1 > /dev/null", []);
 }
 
 /**
@@ -32,7 +36,7 @@ global define integer GetInetdInstalled() ``{
  * @return rpm -q exit code
  */
 global define integer GetXinetdInstalled() ``{
-    return SCR::Execute(.target.bash, "/bin/rpm -q xinetd 2>&1 > /dev/null", []);
+    return (integer) SCR::Execute(.target.bash, "/bin/rpm -q xinetd 2>&1 > /dev/null", []);
 }
 
 /**
@@ -52,24 +56,6 @@ global define integer GetXinetdStatus() ``{
 }
 
 /**
- * Return a modification status
- * @return true if data was modified
- */
-global define boolean Modified() ``{
-    return Inetd::Modified();
-}
-
-/**
- * Abort function
- * @return If AbortFunction not defined, returnes false
- */
-global define boolean Abort() ``{
-    if(AbortFunction != nil)
-	return eval(AbortFunction) == true;
-    return false;
-}
-
-/**
  * Check for pending Abort press
  * @return true if pending abort
  */
@@ -82,7 +68,7 @@ global define boolean PollAbort() ``{
  * @return true if abort is confirmed
  */
 global define boolean ReallyAbort() ``{
-    return !Modified() || Popup::ReallyAbort(true);
+    return !Inetd::Modified() || Popup::ReallyAbort(true);
 }
 
 /**
@@ -118,8 +104,8 @@ global define string GetServerBasename (string server, string server_args) ``{
 	// program only
 	result = select (splitstring (result, " \t"), 0, "");
 	// basename
-	list comp = splitstring (result, "/");
-	result = select (comp, size (comp) - 1, "");
+	list<string> comp = splitstring (result, "/");
+	result = comp[size (comp) - 1]:"";
     }
     return result;
 }
@@ -174,8 +160,8 @@ global define boolean struct_match_sparse (map a, map b, list fields) ``{
  * @param s a @ref service
  * @return match found
  */
-global define boolean isServiceMatchPresent (list netd_conf, map s) ``{
-    map match = find (map i, netd_conf, ``(
+global define boolean isServiceMatchPresent (list<map> netd_conf, map<string, any> s) ``{
+    map match = find (map<string, any> i, netd_conf, ``(
 			  ServicesMatch (i, s)
 			  ));
     return match != nil;
@@ -214,7 +200,7 @@ global define list AddNotInstalled (list netd_conf, list table_data) ``{
     list defaults = GetDefaults ();
 
     integer index = 0;
-    foreach(`line, defaults, ``{
+    foreach(map<string, any> line, defaults, ``{
 	if(! isServiceMatchPresent (netd_conf, line)) {
 	    index = index + 1;
 	    term entry = ServiceToTableItem (line, index);
@@ -302,7 +288,7 @@ global define term ServiceToTableItem (map service, integer ni_index) ``{
  * @param netd_conf netd_conf handles whole configuration of configured service
  * @return returnes table data
  */
-global define list(term) CreateTableData(list netd_conf) ``{
+global define list<term> CreateTableData(list netd_conf) ``{
     list    table_input     = [];
 
     foreach(map service, netd_conf, ``{
@@ -335,7 +321,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
  * @return list users
  */
 global define list CreateLocalUsersList() ``{
-    list(string) users = merge(UsersCache::usernamelists["local"]:[], UsersCache::usernamelists["system"]:[]);
+    list<string> users = (list<string>) merge(UsersCache::usernamelists["local"]:[], UsersCache::usernamelists["system"]:[]);
     users = sort(users);
     y2debug("users: %1", users);
 
@@ -352,7 +338,7 @@ global define list CreateLocalUsersList() ``{
  * @return list groups
  */
 global define list CreateLocalGroupsList() ``{
-    list(string) groups = merge(UsersCache::groupnamelists["local"]:[], UsersCache::groupnamelists["system"]:[]);
+    list<string> groups = (list<string>) merge(UsersCache::groupnamelists["local"]:[], UsersCache::groupnamelists["system"]:[]);
     groups = sort(groups);
     y2debug("groups: %1", groups);
 
@@ -368,11 +354,11 @@ global define list CreateLocalGroupsList() ``{
  * @return returnes if found `yes, otherwise `no
  */
 global define symbol IsAnyServiceEnabled(list ready_conf) ``{
-    any ret = `no;
+    symbol ret = `no;
 
-    foreach(`line, ready_conf, ``{
-	if(lookup(line, "deleted", false) == false) {
-	    if(lookup(line, "enabled", false) != false) {
+    foreach(map line, ready_conf, ``{
+	if(line["deleted"]:false == false) {
+	    if(line["enabled"]:false != false) {
 		ret = `yes;
 	    }
 	}
@@ -390,16 +376,16 @@ global define symbol IsAnyServiceEnabled(list ready_conf) ``{
  * @param b other map
  * @return match?
  */
-global define boolean ServicesMatch (map a, map b) ``{
+global define boolean ServicesMatch (map<string, any> a, map<string, any> b) ``{
     if (struct_match_sparse (a, b, ["script", "service", "protocol"]))
     {
 	// Compare whether the server matches
 	// Watch out for tcpd, use basenames
 	// because the 8.2 UI produced server="in.ftpd (ftpd)"
-	string a_serverbn = GetServerBasename (a["server"]:nil,
-					       a["server_args"]:nil);
-	string b_serverbn = GetServerBasename (b["server"]:nil,
-					       b["server_args"]:nil);
+	string a_serverbn = GetServerBasename ((string) (a["server"]:nil),
+					       (string) (a["server_args"]:nil));
+	string b_serverbn = GetServerBasename ((string) (b["server"]:nil),
+					       (string) (b["server_args"]:nil));
 	if (a_serverbn == nil ||
 	    b_serverbn == nil ||
 	    a_serverbn == b_serverbn)
@@ -417,11 +403,12 @@ global define boolean ServicesMatch (map a, map b) ``{
  */
 global define string getenv(string environment) ``{
     string command = sformat("echo $%1", environment);
-    map result     = SCR::Execute(.target.bash_output, command, []);
-    if(result["stdout"]:"" == "")
+    map result     = (map) SCR::Execute(.target.bash_output, command, []);
+    if(result["stdout"]:"" == "") {
 	return nil;
-    else
-	return result["stdout"]:"";
+    } else {
+	return (string) (result["stdout"]:"");
+    }
 }
 
 /**

@@ -8,7 +8,7 @@
      * cache:
      * server -> package
      */
-    map package_cache = $[
+    map<string, string> package_cache = $[
 	// no package specified => assume it is already installed
 	"": "",			// internal services for xinetd
 	"internal": "",		// internal services for inetd
@@ -45,7 +45,7 @@
      * @param delimiters where to split
      * @return first element
      */
-    global define any first_of_split (string whole, string delimiters) ``{
+    global define string first_of_split (string whole, string delimiters) ``{
 	return select (splitstring (whole, delimiters), 0, "");
     }
 
@@ -53,13 +53,13 @@
      * @param query will be substituted to --filter '%1'
      * @return a list of packages that match
      */
-    global define list (string) PdbQuery (string query) ``{
+    global define list<string> PdbQuery (string query) ``{
 	string cmd = sformat (
 	    "/usr/bin/pdb query --filter '%1' --attribs packname 2>/dev/null",
 	    query);
-	string out = lookup (SCR::Execute (.target.bash_output, cmd),
+	string out = lookup ((map) SCR::Execute (.target.bash_output, cmd),
 			     "stdout", "");
-	list (string) lines = filter (string l, splitstring (out, "\n"),
+	list<string> lines = filter (string l, splitstring (out, "\n"),
 				      ``( l != ""));
 	// pdb adds trailing spaces
 	return maplist (string l, lines, ``( first_of_split (l, " ")));
@@ -70,11 +70,11 @@
      * @param xinetd is this xinetd
      * @return services list with "package" determined
      */
-    global define list (map) DeterminePackages (list (map) services,
+    global define list<map> DeterminePackages (list<map> services,
 						boolean xinetd) ``{
 	y2milestone ("%1", xinetd? "xinetd": "inetd");
-	return maplist (map service, services, ``{
-	    string sname = service["service"]:nil;
+	return maplist (map<string, any> service, services, ``{
+	    string sname = (string) (service["service"]:nil);
 	    string server = service["server"]:"";
 	    if (server == "/usr/sbin/tcpd")
 	    {
@@ -88,14 +88,14 @@
 	    // Xinetd should go first as it can provide more info
 
 	    // /usr/sbin for packages run via tcpd
-	    string package = package_cache[server]: package_cache["/usr/sbin/"+server]: nil;
+	    string package = (string) (package_cache[server]: package_cache["/usr/sbin/"+server]: nil);
 	    if (package == nil)
 	    {
-		list (string) packages = PdbQuery ("rpmfile:*" + server);
+		list<string> packages = PdbQuery ("rpmfile:*" + server);
 		if (size (packages) > 1)
 		{
 		    y2milestone ("Resorting to init script");
-		    string script = "xinetd.d/" + service["script"]:nil;
+		    string script = "xinetd.d/" + (string) (service["script"]:nil);
 		    packages =  PdbQuery ("rpmfile:*" + script);
 		}
 
@@ -114,10 +114,10 @@
 
     // needs ycp.pm,v 1.6
     SCR::RegisterAgent (.aaa.inetd, `ag_netd (`Inetd ("etc/inetd.conf")));
-    list dc_inetd = SCR::Read (.aaa.inetd.services);
+    list dc_inetd = (list) SCR::Read (.aaa.inetd.services);
 
     SCR::RegisterAgent (.aaa.xinetd, `ag_netd (`Xinetd ("all-services.conf")));
-    list dc_xinetd = SCR::Read (.aaa.xinetd.services);
+    list dc_xinetd = (list) SCR::Read (.aaa.xinetd.services);
 
     y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
 

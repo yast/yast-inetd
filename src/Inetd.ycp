@@ -78,13 +78,45 @@ import "Report";
 import "Summary";
 import "Directory";
 
-include "inetd/routines.ycp";
+global define void EnsureDefaultConfLoaded ();
+global define list mergeAfterInstall(list system_c, list user_c);
+global define list MergeAyProfile (list target, list changes);
+
+/**
+ * What service is in configuration process?
+ * Same values as netd_service except `both
+ */
+global symbol configured_service = `none;
+
+/**
+ * Default configuration for inetd (all services in the distro)
+ */
+global map default_conf_inetd = nil;
+
+/**
+ * Default configuration for xinetd (all services in the distro)
+ */
+global map default_conf_xinetd = nil;
 
 /**
  * Abort function
  * return boolean return true if abort
  */
-global block AbortFunction = nil;
+global block<boolean> AbortFunction = nil;
+
+global define boolean Modified();
+
+include "inetd/routines.ycp";
+
+/**
+ * Abort function
+ * @return If AbortFunction not defined, returnes false
+ */
+global define boolean Abort() ``{
+    if(AbortFunction != nil)
+	return eval(AbortFunction) == true;
+    return false;
+}
 
 /**
  * Configuration was changed
@@ -142,12 +174,6 @@ global integer xinetd_installed  = -1;
  * @see configured_service
  */
 global symbol netd_service       = `none;
-
-/**
- * What service is in configuration process?
- * Same values as netd_service except `both
- */
-global symbol configured_service = `none;
 
 /**
  * <pre>
@@ -224,16 +250,6 @@ global symbol module_status      = `not_configured;
 global integer last_created      = 0;
 
 /**
- * Default configuration for inetd (all services in the distro)
- */
-global map default_conf_inetd = nil;
-
-/**
- * Default configuration for xinetd (all services in the distro)
- */
-global map default_conf_xinetd = nil;
-
-/**
  * Read default_conf_{inetd,xinetd}, if not already done
  */
 global define void EnsureDefaultConfLoaded () ``{
@@ -286,14 +302,14 @@ global define boolean Read() ``{
 	return false;
 
     if(netd_service == `both) {
-	inetd_conf  = SCR::Read(.etc.inetd_conf.services);
-	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
+	inetd_conf  = (list) SCR::Read(.etc.inetd_conf.services);
+	xinetd_conf = (list) SCR::Read(.etc.xinetd_conf.services);
     }
     else if(netd_service == `inetd) {
-	inetd_conf = SCR::Read(.etc.inetd_conf.services);
+	inetd_conf = (list) SCR::Read(.etc.inetd_conf.services);
     }
     else if(netd_service == `xinetd) {
-	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
+	xinetd_conf = (list) SCR::Read(.etc.xinetd_conf.services);
     }
 
     sleep(sl);
@@ -335,9 +351,9 @@ global define list MergeEditedWithSystem (list system_conf, list edited_conf) ``
     // and replace most of them with their edited counterparts
     // that also takes care of deleted services
     // but not of added ones
-    system_conf = maplist(map system_s, system_conf, ``{
+    system_conf = maplist(map<string, any> system_s, system_conf, ``{
 	new_entry = system_s;
-	foreach(map edited_s, edited_conf, ``{
+	foreach(map<string, any> edited_s, edited_conf, ``{
 	    if (ServicesMatch (system_s, edited_s))
 	    {
 		new_entry = edited_s;
@@ -391,7 +407,7 @@ global define boolean Write() ``{
 	    SCR::Write(.etc.inetd_conf.services, netd_conf);
 	}
 	else if (configured_service == `xinetd) {
-	    new_conf  = SCR::Read(.etc.xinetd_conf.services);
+	    new_conf  = (list) SCR::Read(.etc.xinetd_conf.services);
 	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("xinetd", "enable");
@@ -563,7 +579,7 @@ global define map SafeRemove (map m, list keys) ``{
  */
 global define list MergeAyProfile (list target, list changes) ``{
     // for each change in the patch list:
-    foreach (map change_s, changes, ``{
+    foreach (map<string, any> change_s, changes, ``{
 	integer matches = 0;
 	// For compatibility and as a hook for workarounds
 	// if the matching turns out to be too clever:
@@ -577,7 +593,7 @@ global define list MergeAyProfile (list target, list changes) ``{
 	else
 	{
 	    // apply the change to the target list:
-	    target = maplist(map target_s, target, ``{
+	    target = maplist(map<string, any> target_s, target, ``{
 		map new_entry = target_s;
 		if (ServicesMatch (change_s, target_s))
 		{
@@ -684,7 +700,7 @@ global define boolean Import (map settings) ``{
  * @return Returnse list of changes only
  */
 global define list getChanged(list config) ``{
-    list defaults = [];
+    list<map> defaults = [];
     list changes  = [];
     map  def_line = $[];
 
@@ -701,7 +717,7 @@ global define list getChanged(list config) ``{
     // Deleted services: so far they are exported
     // But maybe better to allow only deleting added services (~ undo)
     // and thus not export them.
-    foreach(`line, config, ``{
+    foreach(map<string, any> line, config, ``{
 	// only changed ones...
 	if (line["changed"]:false) {
 	    // now trim the fields that are not necessary, because
@@ -719,7 +735,7 @@ global define list getChanged(list config) ``{
 	    // Could use iid here because we started editing
 	    // with the defaults list
 	    // but it broke the testsuite.
-	    def_line = find (map default_s, defaults, ``(
+	    def_line = find (map<string, any> default_s, defaults, ``(
 				 ServicesMatch (line, default_s)
 				 ));
 
@@ -737,7 +753,7 @@ global define list getChanged(list config) ``{
 	    {
 		string s = select (splitstring (line["server_args"]:"", " \t"),
 				   0, "");
-		line = add (line, "server", s);
+		line = (map<string, any>) add (line, "server", s);
 	    }
 
 	    // for each item of the map
@@ -750,18 +766,18 @@ global define list getChanged(list config) ``{
 				"enabled"], name))
 
 		{
-		    line = remove(line, name);
+		    line = (map<string, any>) remove(line, name);
 		}
 	    });
 
 	    // "changed" is implicitly true for all Exported/Imported services
-	    line = remove (line, "changed");
+	    line = (map<string, any>) remove (line, "changed");
 	    // "enabled" defaults to true in _Import_, so it would
 	    // have been wrong above (*) to match it against the
 	    // _system_ default of false.
 	    if (line["enabled"]:false)
 	    {
-		line = remove (line, "enabled");
+		line = (map<string, any>) remove (line, "enabled");
 	    }
 
 	    changes = add(changes, line);
@@ -794,7 +810,7 @@ global define map Export () ``{
  */
 global define string mkeServiceSummary() ``{
     string S = "";
-    foreach(`line, netd_conf, ``{
+    foreach(map<string, any> line, netd_conf, ``{
 	//"enabled" defaults to true
 	if(line["enabled"]:true && !line["deleted"]:false) {
 	    S = sformat("%1<li>%2 <i>(%3)</i>",
@@ -812,7 +828,7 @@ global define string mkeServiceSummary() ``{
  * Create a textual summary and a list of unconfigured cards
  * @return summary of the current configuration
  */
-global define list Summary() ``{
+global define string Summary() ``{
     string S = "";
     if(module_status == `not_configured) {
 	/*
@@ -840,13 +856,13 @@ global define list Summary() ``{
  */
 global define void deleteLine(any line_number) ``{
     // delete
-    map current_line = select(filter(`line, netd_conf,
-	``(lookup(line, "iid", "0") == line_number)), 0, $[]);
+    map current_line = (map) select(filter(map<string, any> line, netd_conf,
+	``(line["iid"]:"0" == line_number)), 0, $[]);
     // set "deleted" flag to true
     current_line = add(current_line, "changed", true);
     current_line = add(current_line, "deleted", true);
-    netd_conf    = maplist(`line, netd_conf, ``{
-	if (lookup(line, "iid", "0") == line_number) {
+    netd_conf    = maplist(map<string, any> line, netd_conf, ``{
+	if (line["iid"]:"0" == line_number) {
 	    return(current_line);
 	}
 	else {
@@ -875,8 +891,8 @@ global define void addLine(map new_line) ``{
 global define void changeLine(map new_line, any line_number) ``{
     // entry was changed - so set "changed" flag to true
     new_line  = add(new_line, "changed", true);
-    netd_conf = maplist(`line, netd_conf, ``{
-	if (lookup(line, "iid", "0") == line_number) {
+    netd_conf = maplist(map<string, any> line, netd_conf, ``{
+	if (line["iid"]:"0" == line_number) {
 	    return(new_line);
 	}
 	else {
