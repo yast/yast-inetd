@@ -26,6 +26,7 @@ y2milestone("----------------------------------------");
 y2milestone("Inetd auto started");
 
 import "Inetd";
+import "Service";
 include "inetd/wizards.ycp";
 include "inetd/dialogs.ycp";
 
@@ -80,10 +81,18 @@ else if (func == "Change") {
  * return map or list
  */
 else if (func == "Read") {
+    // #45463, `both did not (ever?) work
+    Inetd::netd_service = `xinetd;
+    Inetd::configured_service = `xinetd;
     Progress::off();
-    Inetd::netd_service = `both;
     ret = Inetd::Read();
     Progress::on();
+    Inetd::xinetd_status = Service::Status ("xinetd");
+    Inetd::netd_status = Inetd::xinetd_status;
+    Inetd::netd_conf = Inetd::xinetd_conf;
+    Inetd::netd_conf = maplist (map<string,any> s, Inetd::netd_conf, {
+	return add (s, "changed", true);
+    });
 }
 /**
  * Return list of needed packages
