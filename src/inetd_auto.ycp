@@ -43,6 +43,12 @@ if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
 y2debug("func=%1", func);
 y2debug("param=%1", param);
 
+// kind of constructor
+if (!Inetd::autoyast_initialized)
+{
+    Inetd::Import ($[]);
+    Inetd::autoyast_initialized = true;
+}
 
 /**
  * Create a summary

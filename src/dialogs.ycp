@@ -524,11 +524,14 @@ define symbol InetdDialog () ``{
     }
 
     // load configuration of selected service (ore installed service --- if only one)
-    if(Inetd::configured_service == `inetd) {
-	Inetd::netd_conf = Inetd::inetd_conf;
-    }
-    else {
-	Inetd::netd_conf = Inetd::xinetd_conf;
+    if (Inetd::netd_conf == nil || Inetd::netd_conf == [])
+    {
+	if(Inetd::configured_service == `inetd) {
+	    Inetd::netd_conf = Inetd::inetd_conf;
+	}
+	else {
+	    Inetd::netd_conf = Inetd::xinetd_conf;
+	}
     }
 
     /* Inetd configure dialog caption */

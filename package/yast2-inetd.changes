@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Thu Sep 30 19:49:24 CEST 2004 - mvidner@suse.cz
+
+- Hopefully final autoyast fixes (#45463):
+  Read defaults on first start
+  If a change in the module was canceled, it would clear the
+  modified flag and the module would not export anything even though
+  there were previous changes.
+  Summary would show Not Configured unless a change was canceled or
+  the data read from a file.
+  Changes would be lost on re-entering the module
+- 2.10.6
+
+-------------------------------------------------------------------
 Wed Sep 29 17:29:09 CEST 2004 - mvidner@suse.cz
 
 - Incremental autoyast fixes (#45463).
