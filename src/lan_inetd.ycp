@@ -2,7 +2,7 @@
  *
  * Module:             lan_inetd.ycp
  *
- * Author:             Gabriele Strattner (gs@suse.de)
+ * Author:             Michael Hager(mike@suse.de)
  *
  * Submodules:
  *
@@ -31,23 +31,8 @@
   // definition of map user_settings 
   map user_settings = $[];
   
-  //  set "inetd_status" `off	???????????
   user_settings = add(user_settings, "inetd_status", `off);
    
-  // Menuentry for the YaST2 menu
-  if (Args() == [ "get_menuentry" ]) 
-    return [ "lan_inetd", $[
-			`menuentry    : UI(_("Network/Services")),
-			`arguments    : [ ],
-			`widget       : `RichText(
-						  // 
-						  UI(_("Launch this module to configure your network services."))
-						     +
-						  UI(_("<p>You need to be logged in as <i>root</i> in order to do this.</p>"))),
-			`codefragment : nil ]
-    ];
-
-
   UI(``{
     
     // The main dialog. Copied from installation.ycp.
