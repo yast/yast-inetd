@@ -22,7 +22,7 @@ content="HTML Tidy for Linux/x86 (vers 1st April 2002), see www.w3.org" />
 <h1>(x)inetd module in Autoyast in SuSE Linux 9.0</h1>
 
 <p>Martin Vidner &lt;mvidner@suse.cz&gt; and
-Petr Hadraba &lt;phadraba@suse.cz&gt;.</p>
+Petr Hadraba.</p>
 
 <p>This document describes the format of the inetd/xinetd part of the Autoyast
 profile. It focuses on creating the profile without using the GUI Configuration
@@ -49,6 +49,9 @@ Management System.</p>
 	<server>in.ftpd</server>
 	<server_args>-A</server_args>
 	<enabled config:type="boolean">true</enabled>
+      <listentry>
+	<service>daytime</service>
+	<protocol>tcp</protocol>
       </listentry>
       ...
       <listentry>...</listentry>
@@ -60,6 +63,27 @@ Management System.</p>
 ]]>
 </pre>
 
+<p>The profile has elements to specify which superserver should be used
+(<code>netd_service</code>), whether it should be enabled
+(<code>netd_status</code>) and how the services should be configured
+(<code>netd_conf</code>).</p>
+
+<p>A service description element has conceptually two parts: key and non-key.
+When writing the configuration, services are matched using the key fields and
+to the matching service, non-key fields are applied. If no service matches, it
+is created. If more services match, a warning is reported. The key fields are
+<code>script</code>, <code>service</code>, <code>protocol</code> and
+<code>server</code>.</p>
+
+<p><code>service</code> and <code>protocol</code> are matched
+literally. <code>script</code> is the base name of the config file: usually a
+file in /etc/xinetd.d, eg. "echo-udp", or "inetd.conf". For <a
+href="#compat-82">compatibility with 8.2</a>, <code>server</code> is matched
+more loosely: if it is /usr/sbin/tcpd, the real server name is taken from
+<code>server_args</code>. After that, the basename of the first
+whitespace-sparated word is taken and these values are compared.</p>
+
+<p>TODO finish</p>
 
 <p>Legend for the tables:</p>
 <dl>
@@ -72,10 +96,9 @@ Management System.</p>
 already specified in an existing configuration.</dd>
 <dt>N/A</dt>
 <dd>Not available</dd>
-<dt>!</dt>
-<dd>Special case</dd>
 </dl>
 
+<p>Children of the <code>inetd</code> element:</p>
 <table cellpadding="2" cellspacing="2" border="1" class="c7">
 <tbody>
 <tr>
@@ -92,7 +115,7 @@ already specified in an existing configuration.</dd>
 </tr>
 
 <tr>
-<td class="c1">last_created<br />
+<td class="c1"><code>last_created</code><br />
 </td>
 <td class="c1">integer</td>
 <td class="c1">O<br />
@@ -105,7 +128,7 @@ already specified in an existing configuration.</dd>
 </tr>
 
 <tr>
-<td class="c1">netd_service<br />
+<td class="c1"><code>netd_service</code><br />
 </td>
 <td class="c1">symbol<br />
 </td>
@@ -119,7 +142,7 @@ already specified in an existing configuration.</dd>
 </tr>
 
 <tr>
-<td class="c1">netd_status<br />
+<td class="c1"><code>netd_status</code><br />
 </td>
 <td class="c1">integer<br />
 </td>
@@ -127,14 +150,14 @@ already specified in an existing configuration.</dd>
 </td>
 <td class="c1">M<br />
 </td>
-<td class="c1">The value 0 means the server ((x)inetd) will be
+<td class="c1">The value 0 (zero) means the server ((x)inetd) will be
 started, any other value means the server will be stopped and
 disabled.<br />
 </td>
 </tr>
 
 <tr>
-<td class="c1">netd_conf<br />
+<td class="c1"><code>netd_conf</code><br />
 </td>
 <td class="c1">list<br />
 </td>
@@ -150,7 +173,7 @@ in the following table.
 </tbody>
 </table>
 
-<p></p>
+<p>Children of a <code>netd_conf/listentry</code> element:</p>
 
 <table id="netd_conf_item" cellpadding="2" cellspacing="2" border="1" class="c7">
 <tbody>
@@ -168,7 +191,7 @@ in the following table.
 </tr>
 
 <tr>
-<td class="c1">changed<br />
+<td class="c1"><code>changed</code><br />
 </td>
 <td class="c1">boolean</td>
 <td class="c1">M<br />
@@ -177,11 +200,13 @@ in the following table.
 </td>
 <td class="c1">This should be set to <tt>true</tt>, otherwise the
 rest of the service info will be ignored. (In some cases it is not
-necessary, but it is too complex to explain.)</td>
+necessary, but it is too complex to explain.)
+TODO now optional and defaults to true
+</td>
 </tr>
 
 <tr>
-<td class="c1">comment<br />
+<td class="c1"><code>comment</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -194,7 +219,7 @@ multiple lines, initial hashes (#) will be added.</td>
 </tr>
 
 <tr>
-<td class="c1">created<br />
+<td class="c1"><code>created</code><br />
 </td>
 <td class="c1">boolean<br />
 </td>
@@ -206,7 +231,7 @@ multiple lines, initial hashes (#) will be added.</td>
 </tr>
 
 <tr>
-<td class="c1">enabled<br />
+<td class="c1"><code>enabled</code><br />
 </td>
 <td class="c1">boolean<br />
 </td>
@@ -216,11 +241,12 @@ multiple lines, initial hashes (#) will be added.</td>
 </td>
 <td class="c1">If <span class="c5">true</span>, service will be
 activated.<br />
+TODO now defaults to true
 </td>
 </tr>
 
 <tr>
-<td class="c1">group<br />
+<td class="c1"><code>group</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -233,7 +259,7 @@ activated.<br />
 </tr>
 
 <tr>
-<td class="c1">iid<br />
+<td class="c1"><code>iid</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -246,7 +272,7 @@ activated.<br />
 </tr>
 
 <tr>
-<td class="c1">max<br />
+<td class="c1"><code>max</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -259,7 +285,7 @@ activated.<br />
 </tr>
 
 <tr>
-<td class="c1">protocol<br />
+<td class="c1"><code>protocol</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -274,7 +300,7 @@ service.</td>
 </tr>
 
 <tr>
-<td class="c1">rpc_version<br />
+<td class="c1"><code>rpc_version</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -287,7 +313,7 @@ For xinetd, <tt>type = RPC</tt> is automatically added.</td>
 </tr>
 
 <tr>
-<td class="c1">server<br />
+<td class="c1"><code>server</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -304,7 +330,7 @@ service.</td>
 </tr>
 
 <tr>
-<td class="c1">server_args<br />
+<td class="c1"><code>server_args</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -317,7 +343,7 @@ service.</td>
 </tr>
 
 <tr>
-<td class="c1">service<br />
+<td class="c1"><code>service</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -327,11 +353,13 @@ service.</td>
 </td>
 <td class="c1">Service name.<br />
 Part of the (service,protocol,server) triple that identifies a
-service.</td>
+service.
+<!--(rpc_version is separate which may be a bug)-->
+</td>
 </tr>
 
 <tr>
-<td class="c1">socket_type<br />
+<td class="c1"><code>socket_type</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -344,7 +372,7 @@ service.</td>
 </tr>
 
 <tr>
-<td class="c1">unparsed<br />
+<td class="c1"><code>unparsed</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -360,7 +388,7 @@ Eg. <pre
 </tr>
 
 <tr>
-<td class="c1">user<br />
+<td class="c1"><code>user</code><br />
 </td>
 <td class="c1">string<br />
 </td>
@@ -373,7 +401,7 @@ Eg. <pre
 </tr>
 
 <tr>
-<td class="c1">wait<br />
+<td class="c1"><code>wait</code><br />
 </td>
 <td class="c1">boolean<br />
 </td>
@@ -387,6 +415,9 @@ Eg. <pre
 
 </tbody>
 </table>
+
+<!--
+applies to 8.2
 
 <h3 id="xinetd">Xinetd</h3>
 
@@ -453,10 +484,15 @@ vsftpd, that's a bug.)
 <h4>Adding a service</h4>
 
 <p>Works like <a href="#add_srv">adding a service for xinetd</a>.</p>
+end of 8.2 stuff
+-->
+
 
 <h3>Compatibility with previous versions</h3>
 
-<h4>SL 8.2</h4>
+<h4 id="compat-82">SL 8.2</h4>
+
+<p>TODO, explain "server (package)", iid=inst, iid=new</p>
 
 <h4>SLES 8, SL 8.1</h4>
 
