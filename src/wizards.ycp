@@ -16,8 +16,7 @@ import "Directory";
 import "Wizard";
 import "Popup";
 import "Label";
-
-include "wizard/sequencer.ycp";
+import "Sequencer";
 
 include "inetd/complex.ycp";
 include "inetd/dialogs.ycp";
@@ -58,7 +57,7 @@ define symbol InetdSequence() ``{
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("inetd");
     
-    any ret = WizardSequencer(aliases, sequence);
+    any ret = Sequencer::Run (aliases, sequence);
 
     UI::CloseDialog();
     Wizard::RestoreScreenShotName();
