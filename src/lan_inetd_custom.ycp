@@ -1092,9 +1092,12 @@ on the button edit you can change parameters of this service
 	    if ( ret == `next )
 	    {
 		// todo SCR ...
-		_debug ("WHOLLLLLLEa", ret );
+		
 		writeInetdConfx( inetd_conf );
-		_debug ("WHOLLLLLLEb", ret );
+
+                // todo error message if a failure occur
+		Shell("/sbin/init.d/inetd restart");
+
 	    }
 
 	    if ( ret == `back )

@@ -149,14 +149,16 @@ configuration for your needs in the next step.
 		    config_map = add( config_map, "START_INETD", ["no", comment] );
 		    _debug( "Writing START_INETD no" );
 		    SCR(`Write(.etc.rcconfig, config_map));
-		    //SCR(Write(.etc.rcconfig.START_INETD, "no"));
+		    Shell("/sbin/init.d/inetd stop");
 		}
 		else
 		{
 		    config_map = add( config_map, "START_INETD", ["yes", comment] );
 		    _debug( "Writing START_INETD yes" );
 		    SCR(`Write(.etc.rcconfig, config_map));
-		    //SCR(Write(.etc.rcconfig.START_INETD, "yes"));
+		    
+		    _debug( "Shell restart inetd" );
+		    if ( inetd_status == `on_default)  Shell("/sbin/init.d/inetd restart");
 		}
 	    }
 
