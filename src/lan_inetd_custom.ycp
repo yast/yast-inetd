@@ -157,8 +157,9 @@ is to be executed by inetd when a request is found on its socket.
 	      `RichText( helptextCR ),
 	      /// right side
 	      `VBox(
-		    // popup create edit servive: Framedescription (at the moment empty)
-		    `VWeight( 4,`Top( `Frame ( _(""),
+		    // popup create edit service: Framedescription
+		    // here values for the inetd service can be set
+		    `VWeight( 4,`Top( `Frame ( _("Edit service"),
 			     `VBox(
 				   `VWeight( 50, `Left( `CheckBox( `id(`status), "service is active",
 							     status == `active ))),
