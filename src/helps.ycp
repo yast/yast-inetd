@@ -109,7 +109,7 @@ _("<p>Enter a valid service name into the <b>service</b> field.
 ")+
 
 _("<p>The <b>socket type</b> should be stream, dgram, raw, or seqpacket,
-depending on whether the service is a stream-based, datagram-based,
+depending on whether the service is stream-based, is datagram-based,
 requires direct access to IP, or requires reliable sequential datagram
 transmission.</p>
 ")+
