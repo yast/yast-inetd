@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep  2 23:19:40 EDT 2002 - nashif@suse.de
+
+- use Directory module for bin files
+- Activate service in WriteOnly mode
+- 2.6.5
+
+-------------------------------------------------------------------
 Fri Aug 30 13:13:39 CEST 2002 - mike@suse.de
 
 - bugfixes  15501 16420 16132 18266
