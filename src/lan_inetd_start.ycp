@@ -107,9 +107,10 @@
     // helptext inetd configuration
     help_text =  UI(_("<p>Starting inetd will enable \"others\" to connect
 to network services installed on your server
-(e.g telnet, finger, ftp). 
-Do you wish inetd to be started at boot time?
-</p>")) +
+(e.g., telnet, finger, ftp). 
+Do you want inetd to be started at boot time?
+</p>
+")) +
     // helptext inetd configuration
 UI(_("	
 <p>

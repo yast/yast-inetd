@@ -98,8 +98,9 @@
 	      
               // helptext for popup create inetd-service
               string helptextCR = _("
-<p>To create a valid entry i.e. service for the inetd you
-have to enter</p> ")+
+<p>To create a valid entry (service) for inetd,
+enter</p> 
+")+
 _("<ul>
 <li>service name            
 <li>socket type		    
@@ -110,20 +111,24 @@ _("<ul>
 <li>server program arguments
 </ul>")+
 
-_("<p>Here is a short description, for details see <b>info inetd.conf</b>
-</p>")+
+_("<p>Here is a short description. For details, see <b>info inetd.conf</b>
+</p>
+")+
 
-_("<p>The <b>service-name</b> entry is the name of a valid service
-</p>")+
+_("<p>The <b>service name</b> entry is the name of a valid service
+</p>
+")+
 
-_("<p>The <b>socket-type</b> should be one of stream, dgram, raw, rdm,
+_("<p>The <b>socket type</b> should be one of stream, dgram, raw, rdm,
 or seqpacket, depending on whether the socket is a stream, datagram,
 raw, reliably delivered message, or sequenced packet socket.
 
-</p>")+
+</p>
+")+
 _("<p>The <b>protocol</b> must be a valid protocol as given in /etc/protocols. 
-Examples might be <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i> or <i>rpc/udp</i>.
-</p>")+
+Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, or <i>rpc/udp</i>.
+</p>
+")+
 
 _("<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
 The optional <i>max</i> suffix specifies the maximum number of
@@ -136,10 +141,11 @@ the <b>user</b> field. This is useful to make services run with permissions
 less than root.
 </p>")+
 
-_("<p>The <b>server-program</b> entry should contain the pathname of the program which
-is to be executed by inetd when a request is found on its socket. 
+_("<p>The <b>server program</b> entry should contain the path name of the program which
+is executed by inetd when a request is found on its socket. 
 
-</p>")+
+</p>
+")+
 _("<p>---</p>");
 
 
@@ -765,26 +771,27 @@ _("<p>---</p>");
 	       // main dialog: Button Edit service
 	       `PushButton(`id(`edit),   _("&Edit") ),
 	       // main dialog: Button Edit service
-	       `PushButton(`id(`switch_activate),   _("&Activate/Inactivate") )
+	       `PushButton(`id(`switch_activate),   _("&Activate/Deactivate") )
 	       )
 	);
 
     string help_text = "";
 
     // helptext  "main dialog edit inetd.conf" 
-    help_text =  UI(_("<p>In the listbox you see all services preconfigured by SuSE</p>"))
+    help_text =  UI(_("<p>In the list, see all services preconfigured by SuSE</p>"))
 	+
 UI(_("<p>All services marked with \"#\" are <i>inactive</i> (locked).
 All services marked with \"Active!\" are <i>active</i> (unlocked).</p>")) +
-UI(_("<p>Inactive means, that these services are preconfigured in the configuration
+UI(_("<p>Inactive means these services are preconfigured in the configuration
 file of inetd (/etc/inetd.conf), but they are locked.</p>
 ")) +
-UI(_("<p>To lock/unlock a service, click the respective
-entry and then press the <b>activate/deactivate</b> button.
+UI(_("<p>To lock or unlock a service, click the respective
+entry then press the <b>activate/deactivate</b> button.
 </p>
 ")) +
-UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
-</p>"));
+UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
+</p>
+"));
 
      // using SetContents (define in lan_inetd.ycp)
      UI(`SetContents(_("Enable/disable network services"), contents, help_text, true, true ));
@@ -897,7 +904,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 	    else
 	    {
               // No line is selcted:
-              UI(`MessagePopup(_("To delete a service, you have to select one in main dialog") ));
+              UI(`MessagePopup(_("To delete a service, select one in the main dialog") ));
 	    }
 
 	}
@@ -935,7 +942,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 	    else
 	    {
 		// No line is selcted:
-		UI(`MessagePopup(_("To activate/inactivate a service, you have to select one in main dialog") ));
+		UI(`MessagePopup(_("To activate/deactivate a service, select one in the main dialog") ));
 	    }
 	}
 
@@ -1063,7 +1070,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 	    else
 	    {
               // No line is selcted:
-              UI(`MessagePopup(_("To edit a service, you have to select one in main dialog") ));
+              UI(`MessagePopup(_("To edit a service, select one in the main dialog") ));
 	    }
 	}
 

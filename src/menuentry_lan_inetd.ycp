@@ -48,11 +48,21 @@
 						  // 
 						  UI(_("Launch this module to configure your network services."))
 						     +
-						  UI(_("<p>You need to be logged in as <i>root</i> in order to do this.</p>"))),
+						  UI(_("<p>You need to be logged in as <i>root</i> to do this.</p>"))),
      
       ////////////////////////////////////////////////////////////////////////////////
       // explanation in YaST2 Control Center                                         //
-      `helptext     : UI(_("Configure your network services which are started via inetd")),
+      `helptext     : UI(_("Configure your network services started via inetd
+
+Project-Id-Version: YaST2 (lilo)
+POT-Creation-Date: 2001-09-28 15:54:02+0200
+PO-Revision-Date: 2001-09-20 12:36+0200
+Last-Translator: Karl Eichwalder <ke@suse.de>
+Language-Team: English_US <i18n@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+")),
    
       ////////////////////////////////////////////////////////////////////////////////
       // leaf nil, experts only ;-)
