@@ -685,6 +685,22 @@ global define symbol InetdDialog () ``{
 		    need_rebuild = true;
 		    to_select    = selected_item;
 		}
+		else if (result == `auto) {
+		    last_created   = last_created + 1;
+		    //y2milestone("%1", selected_item);
+		    term service_info = GetSelectedService(selected_item);
+		    string n_service  = select(service_info, 3, "");
+		    string n_protocol = select(service_info, 5, "");
+		    string n_server   = select(service_info, 8, "");
+		    map  new_line  = $["enabled":true, "service":n_service, "max":"",
+			"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
+			"user":"root", "group":"", "comment":"",
+			"iid":"inst" + last_created, "created":true, "server":n_server];
+		    Inetd::addLine(new_line);
+		    need_reindex = true;
+		    need_rebuild = true;
+		    to_select = "inst" + last_created;
+		}
 		else if (result == `installed) {
 		    need_reindex = true;
 		    need_rebuild = true;

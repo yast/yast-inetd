@@ -522,19 +522,60 @@ global define map Export () ``{
 }
 
 /**
+ * Create unsorted list of enabled services
+ * @return string Returnes string with RichText-formated list
+ */
+global define string mkeServiceSummary() ``{
+    string S = "";
+    foreach(`line, netd_conf, ``{
+	if((line["enabled"]:false == true) && (line["deleted"]:false == false)) {
+	    S = sformat("%1<li>%2 <i>(%3, %4)</i>", S, line["service"]:"", line["socket_type"]:"", line["protocol"]:"");
+	}
+    });
+    if(S == "")
+	S = _("<ul><i>All services are marked as stopped.</i></ul>");
+    return S;
+}
+
+/**
+ * Create unsorted list of packages for installation
+ * @return string Returnes string with RichText-formated list
+ */
+global define string mkePackageSummary() ``{
+    string S = "";
+    foreach(`line, service_package, ``{
+	S = sformat("%1<li>%2", S, line);
+    });
+    string service = "";
+    string program = "";
+    foreach(`line, required_packages, ``{
+	string package = select(line, 0, "");
+	foreach(`pkg, xinetd_packages, ``{
+	    if(pkg["package"]:"" == package) {
+		service = pkg["service"]:"";
+		program = pkg["program"]:"";
+	    }
+	});
+	S = sformat("%1<li>%2 <i>(%3, %4)</i>", S, package, service, program);
+    });
+    return S;
+}
+
+/**
  * Create a textual summary and a list of unconfigured cards
  * // @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
 global define list Summary() ``{
     if(module_status == `not_configured)
-	return [ _("Network services was not configured"), [] ];
+	return [ _("<p><big>Network services</big></p><p>Not configured yet.</p>"), [] ];
     else {
-	string S = sformat(_("Configured as %1"), configured_service == `inetd ? "inetd" : "xinetd");
-	if (configured_service == `xinetd) { // xinetd
-	}
-	else { // inetd
-	}
+	string S = sformat(_("<p><big>Network services are managed via <b>%1</b></big></p>"),
+	    configured_service == `inetd ? "inetd" : "xinetd");
+	S = sformat("%1<p><u>%2</u>", S, _("These services will be enabled"));
+	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
+	S = sformat("%1<p><u>%2</u>", S, _("These packages will be installed"));
+	S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
 	return [ S, [], ];
     }
     //return [ _("Configuration Summary..."), [] ];
