@@ -12,11 +12,13 @@ Dump	Write --- write xinetd
 Dump	  xinetd is installed and stopped
 Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
+Log	Runlevel module is deprecated, use Service instead
 Read	.init.scripts.exists "xinetd" true
 Read	.init.scripts.exists "xinetd" true
 Read	.init.scripts.runlevel "xinetd" $["inetd":$["start":[], "stop":[]], "xinetd":$["start":[], "stop":[]]]
 Read	.init.scripts.comment "xinetd" $["inetd":$[], "xinetd":$[]]
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/xinetd" $["exit":0, "stderr":"", "stdout":""]
+Log	Runlevel module is deprecated, use Service instead
 Execute	.target.bash "/etc/init.d/xinetd start" $["TERM":"raw"] 0
 Return	true
 Dump	
@@ -36,6 +38,7 @@ Dump	Write --- write xinetd
 Dump	  xinetd is installed and running
 Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
+Log	Runlevel module is deprecated, use Service instead
 Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
 Return	true
 Dump	
@@ -73,7 +76,9 @@ Dump	Write --- write xinetd
 Dump	  xinetd is installed and running
 Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
+Log	Runlevel module is deprecated, use Service instead
 Execute	.target.bash "/etc/init.d/xinetd stop" $["TERM":"raw"] 0
+Log	Runlevel module is deprecated, use Service instead
 Read	.init.scripts.exists "xinetd" true
 Read	.init.scripts.exists "xinetd" true
 Read	.init.scripts.runlevel "xinetd" $["inetd":$["start":[], "stop":[]], "xinetd":$["start":["3", "5"], "stop":["3", "5"]]]
