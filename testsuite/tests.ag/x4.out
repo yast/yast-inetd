@@ -1,0 +1,12 @@
+(result ([$["comment":" numbers/bools bug 21804\n", "comment_inside":"", "enabled":true, "group":"", "iid":"1:./tests.ag/x4.in.test", "protocol":"tcp", "rpc_version":"", "server":"/usr/sbin/in.ftpd", "server_args":"true", "service":"ftp", "socket_type":"stream", "unparsed":"        instances       = UNLIMITED\n", "user":"0", "wait":false]]))
+# numbers/bools bug 21804
+service ftp
+{
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = 0
+	server          = /usr/sbin/in.ftpd 
+	server_args	= true
+        instances       = UNLIMITED
+}

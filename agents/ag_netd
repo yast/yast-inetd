@@ -279,8 +279,10 @@ sub parse_service ($)
 	# the second variable of these pairs can be undef
 	my ($service_name, $rpc_version) = split (/\//, $service_ver);
 	$rpc_version ||= "";
-	my ($wait, $max) = split (/\./, $wait_max);
-	$max ||= "";
+	my ($wait, $nmax) = split (/\./, $wait_max);
+	# "" is wrong, but the ycp code works around it
+	# convert to numbers
+	my $max = $nmax? \$nmax : "";
 	my ($user, $group) = split (/[.:]/, $user_group);
 	$group ||= "";
 
@@ -631,7 +633,7 @@ while ( <STDIN> )
 	elsif ($path eq ".services")
 	{
 	    my @snames = map { $_->{service} } @services;
-	    ycp::Return ([ sort @snames ]);
+	    ycp::Return ([ sort @snames ], 1);
 	}
 	else
 	{
@@ -659,11 +661,11 @@ while ( <STDIN> )
     {
 	if ($path eq ".services")
 	{
-	    ycp::Return (\@services);
+	    ycp::Return (\@services, 1);
 	}
 	elsif ($path eq ".message")
 	{
-	    ycp::Return ($message);
+	    ycp::Return ($message, 1);
 	    $message = "";
 	}
 	else
