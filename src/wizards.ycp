@@ -17,6 +17,7 @@ import "Wizard";
 import "Popup";
 import "Label";
 import "Sequencer";
+import "Confirm";
 
 include "inetd/complex.ycp";
 include "inetd/dialogs.ycp";
@@ -26,6 +27,12 @@ include "inetd/dialogs.ycp";
  * @return sequence result
  */
 define symbol InetdSequence() ``{
+
+    // agents barf if not root, #35363
+    if (!Confirm::MustBeRoot ())
+    {
+	return `abort;
+    }
 
     map aliases = $[
 	"packages"	: [ ``( PackageDialog() ), true ],
