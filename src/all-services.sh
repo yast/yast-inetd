@@ -18,6 +18,8 @@ DIR=etc/xinetd.d
 pdb query --filter "rpmdir:/$DIR" --attribs packname > $SX-pkgs
 
 echo "// A mapping between all available services and rpm packages"
+echo "// Author: Martin Vidner <mvidner@suse.cz>"
+echo "// \$Id\$"
 echo -n "// Generated on "
 LANG=C date
 echo "["
