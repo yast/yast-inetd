@@ -2,22 +2,22 @@ Dump
 Dump	Checking Import()
 Dump	
 Dump	Import(EMPTY)
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.target.ycp "/var/tmp/yast2-inetd-2.11.4-build/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Return	true
 Dump	nil
 Dump	-1
 Dump	Import(GARBAGE)
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.target.ycp "/var/tmp/yast2-inetd-2.11.4-build/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Return	true
 Dump	nil
 Dump	-1
 Dump	Import(inetdOK)
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.target.ycp "/var/tmp/yast2-inetd-2.11.4-build/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Return	true
 Dump	nil
 Dump	-1
 Dump	Import(xinetdOK)
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.target.ycp "/var/tmp/yast2-inetd-2.11.4-build/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Return	true
 Dump	nil
 Dump	-1
