@@ -222,10 +222,25 @@ sub write_file ()
 
 sub services_by_package ()
 {
+    open (OUT, ">/dev/fd/3");
     foreach my $s (@services)
     {
-	print STDERR "$s->{service}\t$s->{protocol}\n";
+	# Get the program name - used to see whether a service is installed.
+	# Assumedly multiple packages providing the same service will differ
+	# in the program name.
+	my $program = $s->{server};
+	if ($program =~ m:/tcpd$:)
+	{
+	    my @args = split (/\s+/, $s->{server_args});
+	    $program = shift (@args);
+	}
+	$program =~ s:^.*/::;
+
+	# originally used TABs as delimiters,
+	# but awk then misses an empty protocol
+	print OUT "$s->{service},$s->{protocol},$program\n";
     }
+    close (OUT);
 }
 
 
@@ -683,7 +698,7 @@ while ( <STDIN> )
 	}
     }
 
-    # A special hack - write known services/protocols to stderr
+    # A special hack - write known services/protocols to fd3
     # Used for gathering a list of all available services by package
     elsif ($command eq "Execute")
     {
