@@ -85,7 +85,7 @@ global boolean modified = false;
  */
 global boolean proposal_valid = false;
 
-/*
+/**
  * For autoinstallation Write() process.
  */
 global boolean write_only = false;
@@ -214,6 +214,7 @@ global integer netd_status       = -1;
 
 /**
  * Status of inetd module if autoinstallation mode.
+ * Used in Summary.
  * This is the state of whole module. This variable is filled by Import().
  * Possible values are <br> `configured     --- imported configuration data are valid
  *                     <br> `not_configured --- configuration data are invalid
@@ -862,14 +863,6 @@ global define list Summary() ``{
 	return [ S, [], ];*/
     }
     return S;
-}
-
-/**
- * Create an overview table with all configured cards
- * @return table items
- */
-global define list Overview() ``{
-    return [];
 }
 
 /**

@@ -77,41 +77,6 @@ An additional dialog will inform you whether it is safe to do so.
 </p>
 "),
 
-    /* Summary dialog help 1/3 */
-    "summary" : _("<p><b><big>Inetd Configuration</big></b><br>
-Configure inetd here.<br></p>
-") +
-
-    /* Summary dialog help 2/3 */
-    _("<p><b><big>Adding an inetd:</big></b><br>
-Select an inetd from the list of the detected inetds.
-If your inetd was not autodetected, use <b>Other (not detected)</b>.
-Then press <b>Configure</b>.</p>
-") +
-
-    /* Summary dialog help 3/3 */
-    _("<p><b><big>Editing or Deleting:</big></b><br>
-If you press <b>Edit</b>, an additional dialog in which to change
-the configuration opens.</p>
-"),
-
-    /* Ovreview dialog help 1/3 */
-    "overview" : _("<p><b><big>Inetd Configuration Overview</big></b><br>
-Obtain an overview of installed inetds. Additionally,
-edit their configuration.<br></p>
-") +
-
-    /* Ovreview dialog help 2/3 */
-_("<p><b><big>Adding an inetd:</big></b><br>
-Press <b>Add</b> to configure an inetd.</p>
-") +
-
-    /* Ovreview dialog help 3/3 */
-_("<p><b><big>Editing or Deleting:</big></b><br>
-Choose an inetd to change or remove.
-Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
-"),
-
     /* Configure1 dialog help 1/2 */
     "c1" : _("<p><b><big>Network Services Configuration</big></b><br>
 Click <b>Enable</b> to enable network services managed by a super-server
