@@ -416,7 +416,6 @@ global define map Export () ``{
  * @return summary of the current configuration
  */
 global define list Summary() ``{
-    // TODO FIXME: your code here...
     return [ _("Configuration summary ..."), [] ];
 }
 
@@ -425,7 +424,6 @@ global define list Summary() ``{
  * @return table items
  */
 global define list Overview() ``{
-    // TODO FIXME: your code here...
     return [];
 }
 

@@ -1,0 +1,125 @@
+/**
+ * File:        testsuite/tests/Inetd_r.ycp
+ * Package:     Configuration of inetd
+ * Summary:     Testsuite for routines in Inetd.ycp
+ * Authors:     Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ *
+ * This is testsuite for Inetd.ycp source file.
+ * These tests are checking routines implemented
+ * in Inetd.ycp.
+ */
+
+{
+
+include "testsuite.ycp";
+import "Inetd.ycp";
+import "Report";
+
+Report::DisplayErrors(false, 0);
+
+map EMPTY = $[
+    ];
+
+map GARBAGE = $[
+    "netd_conf": [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": true,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w"]
+	]
+    ];
+
+map inetdOK = $[
+    "netd_conf": [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": true,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w"]
+	],
+    "netd_service": `inetd,
+    "netd_status": 0
+    ];
+
+map xinetdOK = $[
+    "netd_conf": [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": true,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w"]
+	],
+    "netd_service": `xinetd,
+    "netd_status": 0
+    ];
+
+DUMP("\nChecking Import()\n");
+
+DUMP("Import(EMPTY)");
+TEST(``(Inetd::Import(EMPTY)), [], nil);
+DUMP(Inetd::inetd_conf);
+DUMP(Inetd::xinetd_conf);
+DUMP(Inetd::netd_conf);
+DUMP(Inetd::inetd_status);
+DUMP(Inetd::xinetd_status);
+DUMP(Inetd::netd_service);
+Inetd::inetd_conf  = [];
+Inetd::xinetd_conf = [];
+
+DUMP("Import(GARBAGE)");
+TEST(``(Inetd::Import(GARBAGE)), [], nil);
+DUMP(Inetd::inetd_conf);
+DUMP(Inetd::xinetd_conf);
+DUMP(Inetd::netd_conf);
+DUMP(Inetd::inetd_status);
+DUMP(Inetd::xinetd_status);
+DUMP(Inetd::netd_service);
+Inetd::inetd_conf  = [];
+Inetd::xinetd_conf = [];
+
+DUMP("Import(inetdOK)");
+TEST(``(Inetd::Import(inetdOK)), [], nil);
+DUMP(Inetd::inetd_conf);
+DUMP(Inetd::xinetd_conf);
+DUMP(Inetd::netd_conf);
+DUMP(Inetd::inetd_status);
+DUMP(Inetd::xinetd_status);
+DUMP(Inetd::netd_service);
+Inetd::inetd_conf  = [];
+Inetd::xinetd_conf = [];
+
+DUMP("Import(xinetdOK)");
+TEST(``(Inetd::Import(xinetdOK)), [], nil);
+DUMP(Inetd::inetd_conf);
+DUMP(Inetd::xinetd_conf);
+DUMP(Inetd::netd_conf);
+DUMP(Inetd::inetd_status);
+DUMP(Inetd::xinetd_status);
+DUMP(Inetd::netd_service);
+Inetd::inetd_conf  = [];
+Inetd::xinetd_conf = [];
+
+DUMP("Calling Export()");
+DUMP(Inetd::Export());
+
+DUMP("\n  ---\n");
+
+}
