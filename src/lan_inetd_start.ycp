@@ -159,7 +159,7 @@ configuration for your needs in the next step.
 		    config_map = add( config_map, "START_INETD", ["no", comment] );
 		    _debug( "Writing START_INETD no" );
 		    SCR(`Write(.etc.rcconfig, config_map));
-		    Shell("/sbin/init.d/inetd stop");
+		    Shell("/etc/init.d/inetd stop");
 		}
 		else
 		{
@@ -171,7 +171,7 @@ configuration for your needs in the next step.
 		    if ( inetd_status == `on_default)
 		    {
 			Shell( "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );  
-			Shell( "/sbin/init.d/inetd restart");
+			Shell( "/etc/init.d/inetd restart");
 		    }
 		}
 	    }

@@ -651,7 +651,7 @@ is to be executed by inetd when a request is found on its socket.
 	   scr_output = [$["comment":" See \"man 8 inetd\" for more information."], 
             $[], 
             $["comment":" If you make changes to this file, either reboot your machine or send the"], 
-            $["comment":" inetd a HUP signal with \"/sbin/init.d/inetd reload\" or by hand:"], 
+            $["comment":" inetd a HUP signal with \"/etc/init.d/inetd reload\" or by hand:"], 
             $[], 
             $["comment":" <service_name> <sock_type> <proto> <flags> <user> <server_path> <args>"], 
             $[], 
@@ -1104,7 +1104,7 @@ on the button edit you can change parameters of this service
 		writeInetdConfx( inetd_conf );
 
                 // todo error message if a failure occur
-		Shell("/sbin/init.d/inetd restart");
+		Shell("/etc/init.d/inetd restart");
 
 	    }
 
