@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Feb 27 11:22:08 CET 2003 - mvidner@suse.de
+
+- Fix skipping consecutive modified services when writing (#24379).
+- 2.7.7
+
+-------------------------------------------------------------------
 Wed Feb 26 10:39:58 CET 2003 - mvidner@suse.de
 
 - includedir was lost after adding and removing a xinetd service (#24270).
