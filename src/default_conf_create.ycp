@@ -56,7 +56,7 @@
      */
     define list<string> PdbQuery (string query) ``{
 	string cmd = sformat (
-	    "/usr/bin/pdb query --filter '%1' --attribs packname 2>/dev/null",
+	    "/usr/bin/pdb query --release stable-i386 --filter '%1' --attribs packname 2>/dev/null",
 	    query);
 	string out = lookup ((map) SCR::Execute (.target.bash_output, cmd),
 			     "stdout", "");

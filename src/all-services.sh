@@ -39,7 +39,7 @@ extract xinetd etc/xinetd.conf
 
 # no leading slash
 DIR=etc/xinetd.d
-pdb query --filter "rpmdir:/$DIR" --attribs packname > $SX-pkgs
+pdb query --release stable-i386 --filter "rpmdir:/$DIR" --attribs packname > $SX-pkgs
 
 mv -f $DIR/* $DIR.bak
 sort $SX-pkgs | while read pkg; do
