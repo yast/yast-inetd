@@ -1,0 +1,43 @@
+(result (true))
+##
+## Now the definitions of the different services
+##
+##
+
+service ftp
+{
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = root
+	server          = /usr/sbin/in.ftpd 
+#	server_args	= -a
+        instances       = UNLIMITED
+}
+
+
+
+service telnet
+{
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = root
+	server          = /usr/sbin/in.telnetd
+	server_args	= -n
+#	only_from	= localhost
+	no_access	=
+}
+# Dys is mai servis
+service sgi_fam
+{
+	rpc_version     = 1-2
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = root
+	group           = bin
+	server          = /usr/sbin/fam
+	server_args     = fam
+	type            =  RPC
+}
