@@ -80,7 +80,8 @@ proc run_case { run ag } {
 
   if {$oops != 0} {
     fail "Test case failed for $run:\n$catched"
-    return -1
+#    don't let the included-services diff hide the agent errors
+#    return -1
   }
 
   # check return code - ???
