@@ -109,28 +109,31 @@ global define symbol PackageDialog() ``{
 	}
     }
 
-    // obtain status of inetd and xinetd
-    Inetd::inetd_status  = GetInetdStatus();
-    Inetd::xinetd_status = GetXinetdStatus();
+    //fillup global variables and obtain services status
 
-    // booth services are installed
+    //booth services are installed
     if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
-	Inetd::netd_service = `both;
+	Inetd::netd_service  = `both;
+	Inetd::inetd_status  = GetInetdStatus();
+	Inetd::xinetd_status = GetXinetdStatus();
     }
     // only inetd is installed
     else if(Inetd::inetd_installed == 0) {
 	Inetd::netd_service = `inetd;
+	Inetd::inetd_status = GetInetdStatus();
 	Inetd::netd_status  = Inetd::inetd_status;
     }
     // only xinetd is installed
     else if(Inetd::xinetd_installed == 0) {
-	Inetd::netd_service = `xinetd;
-	Inetd::netd_status  = Inetd::xinetd_status;
+	Inetd::netd_service  = `xinetd;
+	Inetd::xinetd_status = GetXinetdStatus();
+	Inetd::netd_status   = Inetd::xinetd_status;
     }
     // none is installed
     else {
 	Inetd::netd_service = `none;
     }
+    
     return `next;
 }
 
@@ -247,14 +250,17 @@ global define symbol InetdDialog () ``{
 	    return ret;
 	}
     }
+    else {
+	Inetd::configured_service = Inetd::netd_service;
+    }
+
     if(Inetd::configured_service == `inetd) {
 	Inetd::netd_conf = Inetd::inetd_conf;
     }
     else {
 	Inetd::netd_conf = Inetd::xinetd_conf;
     }
-    //y2milestone("%1", Inetd::netd_conf);
-
+    
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
 	    BackButtonLabel(), NextButtonLabel());
