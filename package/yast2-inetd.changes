@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Feb 24 18:10:47 CET 2003 - mvidner@suse.de
+
+- updated installable packages list
+- autoinstallation: (phadraba)
+ * now uses Require.ycp
+ * service package dialog - updated text
+ * now exports only changed services
+- screenshots for documentation are now smaller (phadraba)
+- 2.7.5
+
+-------------------------------------------------------------------
 Mon Feb 17 17:04:01 CET 2003 - mvidner@suse.de
 
 - Autoinstallation fixes (phadraba).
