@@ -13,6 +13,8 @@ textdomain "inetd";
 
 import "Inetd";
 
+import "Require";
+
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
@@ -108,8 +110,8 @@ global define symbol PackageDialog() ``{
 		packages = add(packages, "xinetd");
 	    }
 	    if(size(packages) > 0) {
-		include "require.ycp";
-		DoInstallAndRemove(packages, []);
+		//include "require.ycp";
+		Require::DoInstallAndRemoveTarget(packages, []);
 	    }
 	    // Check for installed packages
 	    Inetd::inetd_installed  = GetInetdInstalled();
@@ -162,7 +164,7 @@ global define symbol PackageAutoDialog() ``{
 	    `VSpacing(0.5),
 	    `HBox(
 		`HSpacing(2),
-		`Left(`Label(HELPS["install_query"]:"")),
+		`Left(`Label(HELPS["install_auto_query"]:"")),
 		`HSpacing(2)
 	    ),
 	    `VSpacing(0.5),
@@ -242,6 +244,7 @@ global define symbol PackageAutoDialog() ``{
 	    //include "require.ycp";
 	    //DoInstallAndRemove(packages, []);
 	    Inetd::service_package  = packages;
+	    Require::DoInstallAndRemoveTarget(packages, []);
 	}
 	else {
 	    /* Translators: MessagePopup */
@@ -390,15 +393,16 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     if (service_info == nil) {
 	return ret;
     }
-    
+
     // Now, the package doesn't exists. We must tell user, the package is required...
     // But, the fisrt, we must extract requested package name
     list package_name = GetProvidedPackage(service_info);
-    
+
     // if Autoinstallation mode --- we do not want to install packages yet...
     if (Inetd::auto_mode) {
 	// Add requested package into list...
 	Inetd::required_packages = add(Inetd::required_packages, package_name);
+	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
 	                The package name is stored in %1. This is MessagePopup. */
 	UI::MessagePopup(sformat(_("Package %1 will be installed during the write process."),

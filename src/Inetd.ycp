@@ -340,14 +340,14 @@ global define boolean Write() ``{
 	""
     );
 
-    if(size(required_packages) != 0) {
+/*    if(size(required_packages) != 0) {
 	y2milestone("Installing required packages...");
 	include "require.ycp";
 	DoInstallAndRemove(required_packages, []);
 	list old_conf = netd_conf;
 	netd_conf     = SCR::Read(.etc.xinetd_conf.services); // Refresh configuration
 	netd_conf     = mergeAfterInstall(netd_conf, old_conf);
-	} // done
+	} // done*/
 
     y2milestone("Calling write:\n");
     // write settings
