@@ -529,8 +529,8 @@ is to be executed by inetd when a request is found on its socket.
 	      // not tested yet!
 	      string send_line = "";
 	      _debug( "WriteLine: ", send_line );
-		Shell( "mv /etc/inetd.conf /etc/inetd.conf.sic" );
-		Shell( "rm /etc/inetd.conf " );  // if i have not the permission to move
+		Shell( "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" );
+		Shell( "/bin/rm /etc/inetd.conf " );  // if i have not the permission to move
 
 		list scr_write_input = maplist(`line, inetd_conf,
 		   ``{
@@ -742,7 +742,7 @@ is to be executed by inetd when a request is found on its socket.
 
     Shell ("/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl");
     inetd_conf = Read( "/tmp/inetd_conf.ycp");
-    Shell ("rm /tmp/inetd_conf.ycp");
+    Shell ("/bin/rm /tmp/inetd_conf.ycp");
     
     list table_data = convertInternalToList( inetd_conf );
 
