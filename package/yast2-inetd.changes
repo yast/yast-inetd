@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Mar 14 17:42:15 CET 2003 - mvidner@suse.de
+
+- Autoinstallation fixes (phadraba, #25317).
+ * server path
+ * multiple services in a package
+ * editing an added service
+- 2.7.10
+
+-------------------------------------------------------------------
 Tue Mar 11 12:51:53 CET 2003 - mvidner@suse.de
 
 - Updated the installable packages list, final for 8.2 (#24671-24693).
