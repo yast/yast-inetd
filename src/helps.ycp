@@ -149,7 +149,7 @@ _("
 <p>
 If you want to start the inetd, you can choose
 the SuSE default configuration. If you choose
-the custom configuration, you can edit the default
+the custom configuration, edit the default
 configuration for your needs in the next step.
 </p>");
     }
