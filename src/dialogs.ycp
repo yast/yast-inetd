@@ -504,7 +504,7 @@ define symbol InetdDialog () ``{
     /* Main dialog contents */
     term contents =
 	`VBox(
-	    `VSpacing(1),
+	    `VSpacing(0.5),
 	    `Left(
 		`RadioButtonGroup(
 		    `VBox(
@@ -514,7 +514,7 @@ define symbol InetdDialog () ``{
 		    )
 		)
 	    ),
-	    `VSpacing(1),
+	    `VSpacing(0.5),
 	      // Main dialog edit inetd.conf
 	    /* Translators: Name of table with services (echo, chargen, ...) */
 	    `Left(`Label(_("Currently Available Services"))),
@@ -559,7 +559,7 @@ define symbol InetdDialog () ``{
 		    )
 		)
 	    ),
-	    `VSpacing(2)
+	    `VSpacing(0.5)
 	);
 
     any ret = nil;
@@ -935,7 +935,7 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 		    `HSpacing(1),
 		    // service status (running or stopped)
 		    `Bottom(`CheckBox(`id(`status), _("Service is acti&ve."),
-			lookup(line, "enabled", false)))
+			line["enabled"]:false))
 		)
 	    ),
 	    `HBox(
@@ -996,24 +996,24 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
      * inetd has special widget max - we must check it
      */
     if (Inetd::configured_service == `inetd) {
-	any max_value = lookup(line, "max", "0");
+	any max_value = line["max"]:"0";
 	if (max_value == "") {
 	    max_value = "0";
 	}
 	UI::ChangeWidget(`id(`max), `Value, tointeger(max_value));
     }
-    UI::ChangeWidget(`id(`service),     `Value, lookup(line, "service",     ""));
-    UI::ChangeWidget(`id(`rpc_version), `Value, lookup(line, "rpc_version", ""));
-    UI::ChangeWidget(`id(`type),        `Value, lookup(line, "socket_type", ""));
-    UI::ChangeWidget(`id(`protocol),    `Value, lookup(line, "protocol",    ""));
-    if (lookup(line, "wait", true) == true) {
+    UI::ChangeWidget(`id(`service),     `Value, line["service"]:"");
+    UI::ChangeWidget(`id(`rpc_version), `Value, line["rpc_version"]:"");
+    UI::ChangeWidget(`id(`type),        `Value, line["socket_type"]:"");
+    UI::ChangeWidget(`id(`protocol),    `Value, line["protocol"]:"");
+    if (line["wait"]:true == true) {
 	UI::ChangeWidget(`id(`flags), `Value, "wait");
     }
     else {
 	UI::ChangeWidget(`id(`flags), `Value, "nowait");
     }
-    UI::ChangeWidget(`id(`user),      `Value, lookup(line, "user",        ""));
-    string group = lookup(line, "group", "");
+    UI::ChangeWidget(`id(`user),      `Value, line["user"]:"");
+    string group = line["group"]:"";
     if (group == "") {
 	/* Translators: Please BE CAREFUL! This text is often used in code! This Translation must be the same. */
 	UI::ChangeWidget(`id(`group), `Value, _("--default--"));
@@ -1021,9 +1021,9 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
     else {
 	UI::ChangeWidget(`id(`group), `Value, group);
     }
-    UI::ChangeWidget(`id(`server),    `Value, lookup(line, "server",      ""));
-    UI::ChangeWidget(`id(`servargs),  `Value, lookup(line, "server_args", ""));
-    UI::ChangeWidget(`id(`comment),   `Value, lookup(line, "comment",     ""));
+    UI::ChangeWidget(`id(`server),    `Value, line["server"]:"");
+    UI::ChangeWidget(`id(`servargs),  `Value, line["server_args"]:"");
+    UI::ChangeWidget(`id(`comment),   `Value, line["comment"]:"");
 
     Wizard::HideAbortButton();
 
