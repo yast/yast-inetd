@@ -17,6 +17,7 @@ import "Runlevel";
 import "Directory";
 import "Popup";
 import "Require";
+import "UsersCache";
 
 /**
  * Return rpm -q status for inetd package
@@ -334,9 +335,10 @@ global define list(term) CreateTableData(list netd_conf) ``{
  * @return list users
  */
 global define list CreateLocalUsersList() ``{
-    list(map) passwd   = SCR::Read(.etc.passwd);
-    list(string) users = maplist(map entry, passwd, ``(entry["username"]:""));
-    users              = sort(filter(string u, users, ``(u != "+")));
+    list(string) users = merge(UsersCache::usernamelists[`local]:[], UsersCache::usernamelists[`system]:[]);
+    users = sort(users);
+    y2debug("users: %1", users);
+
     if(Inetd::configured_service == `xinetd) {
 	users = add(users, _("--default--"));
     }
@@ -350,11 +352,12 @@ global define list CreateLocalUsersList() ``{
  * @return list groups
  */
 global define list CreateLocalGroupsList() ``{
-    list(map) group     = SCR::Read(.etc.group);
-    list(string) groups = maplist(map entry, group, ``(entry["groupname"]:""));
-    groups              = sort(filter(string u, groups, ``(u != "+")));
-    // group entry in inetd_conf can be also empty
+    list(string) groups = merge(UsersCache::groupnamelists[`local]:[], UsersCache::groupnamelists[`system]:[]);
+    groups = sort(groups);
+    y2debug("groups: %1", groups);
+
     groups              = add(groups, _("--default--"));
+
     return groups;
 }
 

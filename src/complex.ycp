@@ -12,6 +12,7 @@
 textdomain "inetd";
 
 import "Wizard";
+import "Users";
 
 import "Inetd";
 
@@ -35,6 +36,7 @@ global define symbol ReadDialog() ``{
     Wizard::SetScreenShotName("inetd-3-read");
     Inetd::AbortFunction = ``{ return PollAbort();};
     boolean ret = Inetd::Read();
+    Users::Read (``{ return false;}, false);
     Wizard::RestoreScreenShotName();
     return ret ? `next : `abort;
 }

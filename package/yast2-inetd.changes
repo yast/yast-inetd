@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 27 08:58:23 CEST 2003 - lslezak@suse.de
+
+- use users module for reading users/groups
+- version 2.8.6
+
+-------------------------------------------------------------------
 Wed Aug 20 15:14:41 CEST 2003 - jsuchome@suse.de
 
 - removed redundant "initialization dialog" (#28779)

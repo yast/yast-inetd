@@ -1,9 +1,9 @@
 @HEADER-COMMENT@
-# neededforbuild  yast2-devel-packages yast2-packager
+# neededforbuild  yast2-devel-packages yast2-packager yast2-users
 
 @HEADER@
 Requires:	yast2
-Requires:	yast2-packager
+Requires:	yast2-packager yast2-users
 
 Provides:	yast2-config-inet y2c_inet
 Obsoletes:	yast2-config-inet y2c_inet
