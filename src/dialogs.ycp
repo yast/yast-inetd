@@ -302,22 +302,6 @@ global define void indexTable() ``{
 }
 
 /**
- * @param server "server" field of a service
- * @param server_args "server_args" field of a service
- * @return server, or first word of server_args if server is /usr/sbin/tcpd
- */
-global define string GetRealServer (string server, string server_args) ``{
-    if (server == "/usr/sbin/tcpd")
-    {
-	return select (splitstring (server_args, " \t"), 0, "");
-    }
-    else
-    {
-	return server;
-    }
-}
-
-/**
  * This function extracts provided packages (from Inetd::xinetd_packages)
  * for selected service.
  * Matches by (service, protocol,"program (package)")
@@ -328,21 +312,19 @@ global define list GetProvidedPackage(term service_info) ``{
     list packages = [];
 
     // yuck, using numbers instead of names, this should be cleaned up
-    string sname = select(service_info, 3, "");
-    string protocol = select(service_info, 5, "");
-    string server = select(service_info, 8, "");
-    string server_args = select(service_info, 9, "");
-    server = GetRealServer (server, server_args);
-
-    foreach(map service, GetDefaults (), ``{
+    map table_s = $[
+	"service": select(service_info, 3, ""),
+	"protocol": select(service_info, 5, ""),
+	"server": select(service_info, 8, ""),
+	"server_args": select(service_info, 9, ""),
 	// can't compare "script" here, it is not in the table.
 	// is it a problem?
-	if (service["service"]:"" == sname &&
-	    service["protocol"]:"" == protocol &&
-	    GetRealServer (service["server"]:"", service["server_args"]:"")
-	    == server)
+	];
+
+    foreach(map default_s, GetDefaults (), ``{
+	if (ServicesMatch (default_s, table_s))
 	{
-	    packages = add (packages, service["package"]:"");
+	    packages = add (packages, default_s["package"]:"");
 	}
     });
     return packages;
