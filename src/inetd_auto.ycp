@@ -59,6 +59,7 @@ if(func == "Summary") {
 else if (func == "Reset") {
     // We can load default during first "Change" call :o)
     Inetd::Import($[]);
+    Inetd::modified = false;
     ret = $[];
 }
 /**
