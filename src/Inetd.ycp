@@ -83,6 +83,12 @@ global boolean proposal_valid = false;
 global boolean write_only = false;
 
 /**
+ * If autoinstallation mode (true), we do not want to install RPMs.
+ * Otherwise (false) we allow all.
+ */
+global boolean auto_mode = false;
+
+/**
  * Data was modified?
  * @return true if modified
  */
@@ -127,7 +133,12 @@ global list netd_conf            = [];
 /**
  * Holds package names which provides xinetd services (like ftp, ...)
  */
-global list xinetd_defaults      = [];
+global list xinetd_packages      = [];
+
+/**
+ * Required packages for Autoinstallation write
+ */
+global list required_packages    = [];
 
 /**
  * Is inetd (or xinetd) running?
@@ -180,7 +191,7 @@ global define boolean Read() ``{
     else if(netd_service == `xinetd) {
 	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
     }
-    xinetd_defaults = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
+    xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
 //    y2milestone("%1", xinetd_defaults);
     // in future: catch error
     //if(false) Report::Error(_("Can not read the database1!"));
@@ -289,6 +300,9 @@ global define boolean Write() ``{
 			Runlevel::RunInitScript("inetd", "stop");
 		    Runlevel::ServiceAdjust("inetd", "disable");
 		} // else --- leave stopped
+		else {
+		    y2milestone("inetd was stopped --- leaving unchanged");
+		}
 	    }
 	    else { // want to start
 		// if inetd is running - only reload
@@ -320,6 +334,7 @@ global define boolean Write() ``{
 	    }
 	    y2milestone("writing xinetd cnfiguration");
 	    SCR::Write(.etc.xinetd_conf.services, netd_conf);
+//	    y2milestone("%1", netd_conf);
 	    // So, Restart service
 	    if (netd_status != 0) { // want to stop
 		if (xinetd_status == 0) {
@@ -327,6 +342,9 @@ global define boolean Write() ``{
 		    if (!write_only)
 			Runlevel::RunInitScript("xinetd", "stop");
 		    Runlevel::ServiceAdjust("xinetd", "disable");
+		}
+		else {
+		    y2milestone("xinetd was stopped --- leaving unchanged");
 		}
 	    }
 	    else { // want to start

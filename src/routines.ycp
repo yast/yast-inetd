@@ -89,6 +89,53 @@ global define void ProgressNextStage(string title) ``{
 }
 
 /**
+ * isServiceInstalled
+ */
+global define symbol isServiceInstalled(list netd_conf, map which) ``{
+    symbol ret = `no;
+    foreach(`line, netd_conf, ``{
+	if(line["service"]:"" == which["service"]:"!") {
+	    if(line["protocol"]:"" == which["protocol"]:"!") {
+		if(find(line["server"]:"", which["program"]:"!") != -1) {
+		    ret = `yes;
+		    return ret;
+		}
+	    }
+	}
+    });
+    return ret;
+}
+
+/**
+ * This function merges real xinetd configuration (read by agent) and
+ * available services packages generated for SuSE distribution (Inetd::xinetd_packages).
+ * This function is automaticaly calld by CreateTableData() if Inetd::configured_service
+ * is `xinetd.
+ * @param table_data Table data structure used as source data
+ * @return list New table data
+ */
+global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
+    integer index = 0;
+    foreach(`line, Inetd::xinetd_packages, ``{
+	if(isServiceInstalled(netd_conf, line) == `no) {
+	    index = index + 1;
+	    term entry = `item(`id("NI" + index),
+		"",                  // Change entry
+		"NI",                // Status entry
+		line["service"]:"",  // Service
+		"",                  // Socket type
+		line["protocol"]:"", // Protocol
+		"",                  // Wait
+		"",                  // User
+		line["program"]:"" + " (" + line["package"]:"---" + ")",  // Server
+		"");                 // Server/Args
+	    table_data = add(table_data, entry);
+	}
+    });
+    return table_data;
+}
+
+/**
  * Converts configuration format from agent to table data structures
  * @param netd_conf netd_conf handles whole configuration of configured service
  * @return returnes table data
@@ -153,6 +200,9 @@ global define list(term) CreateTableData(list netd_conf) ``{
 	});
     }
     //table_input = sort(table_input);
+    if (Inetd::configured_service == `xinetd) {
+	table_input = mergeXinetdConfs(netd_conf, table_input);
+    }
     return table_input;
 };
 

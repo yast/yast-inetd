@@ -34,7 +34,7 @@ string func  = WFM::Args(0);
 map    param = WFM::Args(1);
 
 // we do not want to install RPMs in autoinstallation mode...
-Inetd::write_only = false;
+Inetd::auto_mode = true;
 
 /**
  * Create a summary
