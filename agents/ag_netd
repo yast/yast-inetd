@@ -1,0 +1,201 @@
+#!/usr/bin/perl -w
+#
+# $Id$
+# Author: Martin Vidner <mvidner@suse.cz>
+#
+
+use ycp;
+use strict;
+use Errno qw(ENOENT);
+
+my $debug = defined ($ARGV[0]) && $ARGV[0] eq "-d";
+print STDERR "DEBUG\n" if $debug;
+
+my @services;
+
+my $filename;
+
+sub to_bool ($)
+{
+    my $b = shift;
+    return $b? \ "true" : \ "false";
+}
+
+sub parse_file ()
+{
+    @services = ();
+    my $debugmax = 0;
+
+    if (!open (FILE, $filename))
+    {
+	return 1 if ($! == ENOENT); # ok if it is not there
+	y2error ("$filename: $!");
+	return 0;
+    }
+
+    my $comment = "";
+    while (<FILE>)
+    {
+	chomp;
+	# Try parsing also commented out lines
+	my $enabled = 1;
+	# TODO
+	# empty lines?
+	# spaces before #
+
+	if (s/^#//)
+	{
+	    $enabled = 0;
+	}
+	# leave $c intact for comment
+	my $c = $_;
+	s/^\s+//;
+
+	# TODO test a truncated line
+	my @fields = split (/\s+/);
+	my ($service_ver, $socket_type, $protocol, $wait_max, $user_group,
+	    $server, @server_args) = @fields;
+	if (!defined ($server) ||
+	    $socket_type !~ /dgram|stream|raw|rdm|seqpacket/)
+	{
+	    if (!$enabled)
+	    {
+		# tried to parse a disabled service, did not work out
+		$comment .= "$c\n";
+	    }
+	    else
+	    {
+		# TODO error? it is a damaged entry
+	    }
+	    next;
+	}
+	# the second variable of these pairs can be undef
+	my ($service, $rpc_version) = split (/\//, $service_ver);
+	$rpc_version ||= "";
+	my ($wait, $max) = split (/\./, $wait_max);
+	$max ||= 0;
+	my ($user, $group) = split (/[.:]/, $user_group);
+	$group ||= "";
+
+	# convert to booleans
+	$enabled = to_bool ($enabled);
+	$wait = to_bool ($wait eq "wait");
+
+	push (@services, {
+			  "enabled" => $enabled,
+			  "comment" => $comment,
+			  "service" => $service,
+			  "rpc_version" => $rpc_version,
+			  "socket_type" => $socket_type,
+			  "protocol" => $protocol,
+			  "wait" => $wait,
+			  "max" => $max,
+			  "user" => $user,
+			  "group" => $group,
+			  "server" => $server,
+			  "server_args" => join (" ", @server_args),
+			 });
+	$comment = "";
+	# TODO
+	# ...
+#	last if ($debug && $debugmax++ > 9);
+    }
+
+    close (FILE);
+    return 1;
+}
+
+sub write_file ()
+{
+    die "TODO";
+}
+
+#
+# MAIN cycle
+#
+
+# read the agent arguments
+$_ = <STDIN>;
+# no input at all - simply exit
+exit if ! defined $_;
+# reply to the client (this actually gets eaten by the ScriptingAgent)
+ycp::Return (undef);
+print "\n";
+
+my ($symbol, $fn, undef) = ycp::ParseTerm ($_);
+if ($symbol ne "Netd")
+{
+    y2error ("The first command must be the configuration.(Seen '$_')");
+    exit;
+}
+else
+{
+    $filename = $fn || "/etc/inetd.conf";
+}
+
+# if reading fails, defaulting to no exports
+parse_file ();
+
+while ( <STDIN> )
+{
+    my ($command, $path, $argument) = ycp::ParseCommand ($_);
+
+    if ($command eq "Dir")
+    {
+	if ($path eq ".")
+	{
+	    ycp::Return (["services"]);
+	}
+	elsif ($path eq ".services")
+	{
+	    my @snames = map { $_->{service} } @services;
+	    ycp::Return ([ sort @snames ]);
+	}
+	else
+	{
+	    ycp::Return ([]);
+	}
+    }
+
+    elsif ($command eq "Write")
+    {
+	my $result = 1;
+	if ($path eq ".services" && ref ($argument) eq "ARRAY")
+	{
+	    @services = @{$argument};
+	    $result = write_file ();
+	}
+	else
+	{
+	    y2error ("Wrong path $path or argument: ", ref ($argument));
+	    $result = 0;
+	}
+	ycp::Return (to_bool ($result));
+    }
+
+    elsif ($command eq "Read")
+    {
+	if ($path eq ".services")
+	{
+	    ycp::Return (\@services);
+	}
+	else
+	{
+	    y2error ("Unrecognized path! '$path'");
+	    ycp::Return (undef);
+	}
+    }
+
+    elsif ($command eq "result")
+    {
+	exit;
+    }
+
+    # Unknown command
+    else
+    {
+	y2error ("Unknown instruction $command or argument: ", ref ($argument));
+	ycp::Return (undef);
+    }
+    print "\n";
+}
