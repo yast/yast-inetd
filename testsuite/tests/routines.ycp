@@ -16,10 +16,9 @@
  */
 
 {
+    // testedfiles: routines.ycp Testsuite.ycp
 
-include "testsuite.ycp";
 import "Inetd";
-include "inetd/routines.ycp";
 import "Report";
 import "Directory";
 
@@ -35,6 +34,9 @@ Directory::datadir = y2dir + "/data";
 
 // do it now, because during TEST we do not have a live SCR
 Inetd::EnsureDefaultConfLoaded ();
+
+include "testsuite.ycp";
+include "inetd/routines.ycp";
 
 services_t netd_conf = [
 	$["iid": "whatever",
