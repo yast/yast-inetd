@@ -1,4 +1,5 @@
 Makefile
 Makefile.in
 all-services-pkgs
+default_conf-pkgs
 etc
