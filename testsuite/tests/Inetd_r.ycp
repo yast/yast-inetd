@@ -16,9 +16,9 @@
 import "Directory";
 import "Inetd";
 // make it respect Y2DIR
-string y2dir = (string) (lookup ((map) SCR::Execute (.target.bash_output,
-				     "echo -n ${Y2DIR-/usr/share/YaST2}"),
-		       "stdout", ""));
+map exe = (map) SCR::Execute (.target.bash_output,
+			      "echo -n ${Y2DIR-/usr/share/YaST2}");
+string y2dir = exe["stdout"]:"";
 Directory::datadir = y2dir + "/data";
 
 // do it now, because during TEST we do not have a live SCR
