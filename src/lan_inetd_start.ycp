@@ -120,9 +120,6 @@ the custom configuration, you can edit the default
 configuration for your needs in the next step.
 </p>"));
 
-    help_text = help_text + "<p>(.12)</p>";
-
-
 
     // Main dialog: Header
      UI(`SetContents(_("Network services"), contents, help_text, true, true));
