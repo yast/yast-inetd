@@ -74,6 +74,16 @@ else if (func == "Change") {
  * Return list of needed packages
  * return map or list
  */
+else if (func == "Read") {
+    Progress::off();
+    Inetd::netd_service = `both;
+    ret = Inetd::Read();
+    Progress::on();
+}
+/**
+ * Return list of needed packages
+ * return map or list
+ */
 else if (func == "Packages") {
     ret = Inetd::AutoPackages();
 }
