@@ -109,7 +109,7 @@ map<string,any> opts2mask(map<string,string> opts)
 boolean SetHandler(map<string,string> opts) {
     if (opts["id"]:nil == nil) {
 	// translators: error message for command line
-	CommandLine::Error(_("You have to specify service id."));
+	CommandLine::Error(_("You must specify a service ID."));
 	return false;
     }
     Inetd::ServiceChange(opts["id"]:"", opts2mask(opts));
@@ -119,7 +119,7 @@ boolean SetHandler(map<string,string> opts) {
 boolean AddHandler(map<string,string> opts) {
     if (size(opts)==0) {
 	// translators: error message for command line
-	CommandLine::Error(_("You have to specify service by options."));
+	CommandLine::Error(_("Specify the service using a 'service' option."));
 	return false;
     }
     Inetd::ServiceAdd(opts2mask(opts));
@@ -130,7 +130,7 @@ boolean DeleteHandler(map<string,string> opts) {
     if (opts["id"]:nil != nil) {
 	if (size(opts)>1) {
 	    // translators: error message for command line
-	    CommandLine::Error(_("'id' option cannot by combined with other options."));
+	    CommandLine::Error(_("The 'id' option cannot be combined with other options."));
 	    return false;
 	}
 	service_ids = [ opts["id"]:"" ];
@@ -149,7 +149,7 @@ boolean SummaryHandler(map<string,string> opts) {
     if (opts["id"]:nil != nil) {
 	if (size(opts)>1) {
 	    // translators: error message for command line
-	    CommandLine::Error(_("'id' option cannot by combined with other options."));
+	    CommandLine::Error(_("The 'id' option cannot be combined with other options."));
 	    return false;
 	}
 	service_ids = [ opts["id"]:"" ];
@@ -215,7 +215,7 @@ map mini = $[
     "options": $[
 	"id" : $[
 	    // translators: command line help text for "id" option
-	    "help": _("Uniquely identificator"),
+	    "help": _("Unique identifier"),
 	    "type": "string",
 	],
 	"service" : $[
