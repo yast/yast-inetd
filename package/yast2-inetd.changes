@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Sep 28 17:12:45 CEST 2004 - mvidner@suse.cz
+
+- Autoyast: 
+  Fixed cloning (#45463).
+  Do not choose between inetd and xinetd.
+- 2.10.4
+
+-------------------------------------------------------------------
 Mon Sep 20 16:22:14 CEST 2004 - mvidner@suse.cz
 
 - Autoyast:
