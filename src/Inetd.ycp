@@ -370,7 +370,7 @@ global define services_t MergeEditedWithSystem (services_t system_conf, services
     });
 
     // now the added services
-    list added = filter (map edited_s, edited_conf,
+    services_t added = filter (service_t edited_s, edited_conf,
 			 ``( find (edited_s["iid"]:"", "new") == 0 ));
     return flatten ([system_conf, added]);
 }
@@ -859,7 +859,7 @@ global define string Summary() ``{
  */
 global define void deleteLine(any line_number) ``{
     // delete
-    map current_line = (map) select(filter(map<string, any> line, netd_conf,
+    service_t current_line = (service_t) select(filter(service_t line, netd_conf,
 	``(line["iid"]:"0" == line_number)), 0, $[]);
     // set "deleted" flag to true
     current_line = add(current_line, "changed", true);
@@ -891,7 +891,7 @@ global define void addLine(service_t new_line) ``{
  * @param new_line new_line contains changes for entry in netd_conf
  * @param line_number line_number contains iid of changed entry in netd_conf
  */
-global define void changeLine(map new_line, any line_number) ``{
+global define void changeLine(service_t new_line, any line_number) ``{
     // entry was changed - so set "changed" flag to true
     new_line  = add(new_line, "changed", true);
     netd_conf = maplist(map<string, any> line, netd_conf, ``{
