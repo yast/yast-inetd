@@ -536,7 +536,7 @@ global define symbol InetdDialog () ``{
 
     /* Inetd configure dialog caption */
     /* Translators: Main caption. %1 handles current super-server name (inetd, xinetd) in rounded brackets. */
-    string caption = sformat(_("Network services configuration %1"), Inetd::configured_service == `inetd ? "(inetd)" : "(xinetd)");
+    string caption = sformat(_("Network Services Configuration %1"), Inetd::configured_service == `inetd ? "(inetd)" : "(xinetd)");
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",

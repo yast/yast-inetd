@@ -117,14 +117,14 @@ To stop the super-server, click <b>Disable</b>.</p>
 "<p><br></p>" +
     _("<p><b><big>Configuration Service Status:</big></b><br>
 All services marked with <b>X</b> in column <b>Ch</b> were edited
-and will be changed in system configuration.</p>
+and will be changed in the system configuration.</p>
 ") +
     _("<p><b><big>Services Status:</big></b><br>
 All services marked with <b>---</b> are inactive (locked).
 All services marked with <b>On</b> are active (unlocked).
 All services marked with <b>NI</b> are not installed and cannot be configured.</p>") +
     _("<p><b><big>Changing Service Status:</big></b><br>
-Select the service to enable or disable and press <b>Toggle status (On or Off)</b>.</p>
+Select the service to enable or disable and press <b>Toggle Status (On or Off)</b>.</p>
 ") +
     _("<p><b><big>Editing Services:</big></b><br>
 Select the service to edit and press <b>Edit</b>.</p>
@@ -199,7 +199,7 @@ less than root.
 
 _("<p>In <b>Server</b>, enter the path name of the program to
 be executed by the super-server when a request reaches its socket.
-Parameters for this program can be specified in <b>Server arguments</b>.
+Parameters for this program can be specified in <b>Server Arguments</b>.
 
 </p>
 ");
