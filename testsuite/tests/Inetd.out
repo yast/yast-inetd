@@ -1,6 +1,3 @@
 Dump	Read
-Read	.init.scripts.exists "inetd" true
-Read	.init.scripts.runlevel "inetd" nil
-Read	.target.size "/etc/inetd.conf.default" -1
-Execute	.target.bash "/usr/bin/diff /etc/inetd.conf /etc/inetd.conf.default" 0
+Read	.test.netd.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
 Return	true

@@ -3,6 +3,19 @@
 include "testsuite.ycp";
 import "Inetd.ycp";
 
+map s = $[
+    "iid": "whatever",
+    "comment": "My service",
+    "enabled": true,
+    "service": "finger",
+    "socket_type": "stream",
+    "protocol": "tcp",
+    "wait": false,
+    "user": "nobody",
+    "server": "/usr/sbin/tcpd",
+    "server_args": "in.fingerd -w",
+    ];
+
 map READ = $[
     "target" : $[
 	"size" : -1,
@@ -12,9 +25,15 @@ map READ = $[
 	    "exists" : true,
 	]
     ],
+    "test" : $[
+	"netd" : $[
+	    "services" : [ s ],
+	    ],
+	],
 ];
 
 DUMP("Read");
+Inetd::netd_service = `inetd;
 TEST(``(Inetd::Read(nil)), [READ], nil);
 
 }
