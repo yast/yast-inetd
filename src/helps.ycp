@@ -45,7 +45,7 @@ An additional dialog will inform you whether it is safe to do so.
 "),
 
     /* Configure1 dialog help 1/2 */
-    "c1" : _("<p><b><big>Network Services Configuration</big></b><br>
+    "c1" : _("<p><b><big>Network Service Configuration</big></b><br>
 Click <b>Enable</b> to enable network services managed by a super-server
 configuration. To stop the super-server, click <b>Disable</b>.</p>
 ") +
@@ -108,10 +108,11 @@ _("<p>Enter a valid service name into the <b>service</b> field.
 </p>
 ")+
 
-_("<p>The <b>socket type</b> should be stream, dgram, raw or seqpacket,
-depending on whether the sorvice is a stream-based, datagram-based,
-requires direct access to IP or requires reliable sequential datagram
-transmission.</p>")+
+_("<p>The <b>socket type</b> should be stream, dgram, raw, or seqpacket,
+depending on whether the service is a stream-based, datagram-based,
+requires direct access to IP, or requires reliable sequential datagram
+transmission.</p>
+")+
 
 _("<p>The <b>protocol</b> must be a valid protocol as specified in /etc/protocols.
 Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
@@ -119,17 +120,18 @@ Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
 ")+
 
 _("<p>The <b>wait/nowait</b> entry determines if the service is
-single-threaded or multi-threaded and whether or not xinetd accepts the
+single-threaded or multithreaded and whether xinetd accepts the
 connection or the server program accepts the connection. If its value is
-<b>yes</b>, the service is single-threaded; this means that xinetd will
-start the server and then it will stop handling requests for the service
-until the server dies and that the server software will accept the
+<b>yes</b>, the service is single-threaded. This means that xinetd 
+starts the server then stops handling requests for the service
+until the server dies and that the server software accepts the
 connection. If the attribute value is <b>no</b>, the service is
-multi-threaded and xinetd will keep handling new service requests and
-xinetd will accept the connection. It should be noted that
-<i>udp/dgram</i> services normally expect the value to be <b>yes</b>
-since udp is not connection oriented, while <i>tcp/stream</i> servers
-normally expect the value to be <b>no</b>.</p>")+
+multithreaded and xinetd keeps handling new service requests and
+xinetd accepts the connection. 
+<i>udp/dgram</i> services normally expect the value to be <b>yes</b>,
+because udp is not connection oriented. <i>tcp/stream</i> servers
+normally expect the value to be <b>no</b>.</p>
+")+
 
 _("<p>The server will be run with the permissions of the user selected in
 <b>User</b>. This is useful to make services run with permissions

@@ -193,7 +193,7 @@ map mini = $[
     "actions": $[
 	"summary": $[
 	    // translators: command line help text for "summary" action
-	    "help": _("Show a list of current sestem service status"),
+	    "help": _("Show the status of current system services"),
 	    "handler": SummaryHandler,
 	],
 /*	"add": $[
@@ -264,7 +264,7 @@ map mini = $[
 	],
 	"server" : $[
 	    // translators: command line help text for "server" option
-	    "help": _("Path name of program to be executed"),
+	    "help": _("Path name of program to execute"),
 	    "type": "string",
 	],
 	"server_args" : $[
