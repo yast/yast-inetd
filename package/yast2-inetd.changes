@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep  9 00:49:54 CEST 2003 - nashif@suse.de
+
+- #30291: Added function Packages to auto client to return 
+  list of required packages
+
+-------------------------------------------------------------------
 Wed Aug 27 08:58:23 CEST 2003 - lslezak@suse.de
 
 - use users module for reading users/groups
