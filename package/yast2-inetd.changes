@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Sep 20 16:22:14 CEST 2004 - mvidner@suse.cz
+
+- Autoyast:
+  Export in current data format, not the imported one.
+  Don't import when creating summary (nashif).
+- 2.10.3
+
+-------------------------------------------------------------------
 Wed Sep 15 15:32:20 CEST 2004 - mvidner@suse.cz
 
 - Disable installing inetd, it's dropped.
