@@ -16,6 +16,7 @@ import "Progress";
 import "Runlevel";
 import "Directory";
 import "Popup";
+import "Require";
 
 /**
  * Return rpm -q status for inetd package
@@ -174,8 +175,7 @@ global define boolean struct_match_sparse (map a, map b, list fields) ``{
  */
 global define boolean isServiceMatchPresent (list netd_conf, map s) ``{
     map match = find (map i, netd_conf, ``(
-			  struct_match (i, s, ["script", "service",
-					       "protocol", "server"])
+			  ServicesMatch (i, s)
 			  ));
     return match != nil;
 }
@@ -210,7 +210,7 @@ global define list GetDefaults () ``{
  * @param table_data Table data structure used as source data
  * @return list New table data
  */
-global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
+global define list AddNotInstalled (list netd_conf, list table_data) ``{
     //y2milestone("in function mergeXinetdConfs()");
 
     list defaults = GetDefaults ();
@@ -248,10 +248,11 @@ global define term ServiceToTableItem (map service, integer ni_index) ``{
     }
 
     // HACK:
-    // Only distinguish non-installed packages for xinetd, like before.
-    // No time to do it also for inetd.
-    // LATER move this to the new isInstalled function or its ui part
-    if (Inetd::configured_service == `xinetd && ni_index != nil)
+    // our data structures kinda suck, so we have no quick way of determining
+    // what package a service belongs to.
+    // But IsInstalled returns true for "" so we don't get to install an
+    // unknown package.
+    if (! IsInstalled (service["package"]:""))
     {
 	/* Translators: This is used for status "Not Installed".
 	   Please, make the
@@ -276,6 +277,7 @@ global define term ServiceToTableItem (map service, integer ni_index) ``{
 	user_group = service["user"]:"";
     }
     else {
+	// TODO switch to ":" as separator
 	user_group = service["user"]:"" + "." + user_group;
     }
     // create line for table structure
@@ -316,9 +318,11 @@ global define list(term) CreateTableData(list netd_conf) ``{
 
     // now can do it for both superservers
     // ... not yet
+    // because in the system data, we do not have the "package" field
+
     if (Inetd::configured_service == `xinetd)
     {
-	table_input = mergeXinetdConfs(netd_conf, table_input);
+	table_input = AddNotInstalled (netd_conf, table_input);
     }
     // table_input = find out which are installed
     // but that would require a better data model.
@@ -426,6 +430,37 @@ global define string getenv(string environment) ``{
 	return nil;
     else
 	return result["stdout"]:"";
+}
+
+/**
+ * Cache for @ref IsInstalled.
+ */
+global map is_installed_cache = $[];
+
+/**
+ * Clears cache for @ref IsInstalled .
+ * This is too wasteful. Later, when it works, optimize for single packages.
+ */
+global define void IsInstalledClearCache () ``{
+     is_installed_cache = $[];
+}
+
+/**
+ * Queries RPM or autoyast list whether a package is installed.
+ * Results are cached in @ref is_installed_cache
+ * @param rpm eg. "finger-server", "" has special significance:
+ * package unknown, so it cannot be installed
+ * @return installed?
+ */
+global define boolean IsInstalled (string rpm) ``{
+    boolean result = rpm == ""? true: is_installed_cache[rpm]:nil;
+    if (result == nil)
+    {
+	result = Require::IsPackageInstalledTarget (rpm);
+	is_installed_cache = add (is_installed_cache, rpm, result);
+    }
+    y2debug ("%1: %2", rpm, result);
+    return result;
 }
 
 /* EOF */
