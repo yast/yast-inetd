@@ -48,7 +48,7 @@ make install
 %dir @YAST2DIR@/bin
 %dir @YAST2DIR@/clients
 %dir @YAST2DIR@/menuentries
-@YAST2DIR@/menuentries/menuentry_lan_inetd.ycp
+@YAST2DIR@/menuentries/menuentry_lan_inetd.y2cc
 @YAST2DIR@/clients/lan_inetd_start.ycp
 @YAST2DIR@/clients/lan_inetd_custom.ycp
 @YAST2DIR@/clients/lan_inetd.ycp
