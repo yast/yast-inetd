@@ -1,5 +1,10 @@
 -------------------------------------------------------------------
-Wed Mar  2 13:03:52 CET 2005 - gizo@suse.de
+Thu Mar  3 14:46:00 CET 2005 - locilka@suse.cz
+
+- merged proofed texts
+
+-------------------------------------------------------------------
+Wed Mar  2 13:03:52 CET 2005 - mlazar@suse.cz
 
 - 2.11.10
 - fixed bug 67093 (enabled admind)
