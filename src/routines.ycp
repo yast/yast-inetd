@@ -156,6 +156,8 @@ global define list(term) CreateTableData(list netd_conf) ``{
     string  wait_text       = "";
     integer numberOfEntries = size(netd_conf);
 
+    //y2milestone("%1", netd_conf);
+
     if (numberOfEntries != 0) {
 
 	foreach(`line, netd_conf, ``{
@@ -173,6 +175,8 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		    /* Translators: This string you can leave unchanged */
 		    status_text = _("---");
 		}
+		if (lookup(line, "package", "!") != "")
+		    status_text = _("NI");
 		// determine wait mode (convert to string)
 		status = lookup(line, "wait", true);
 		if (status == true) {
@@ -210,9 +214,13 @@ global define list(term) CreateTableData(list netd_conf) ``{
 	});
     }
     //table_input = sort(table_input);
-    if (Inetd::configured_service == `xinetd) {
+    /*
+     * NOT NEEDED YET!
+     * Packages are handled in xinetd.conf.
+     */
+    /*if (Inetd::configured_service == `xinetd) {
 	table_input = mergeXinetdConfs(netd_conf, table_input);
-    }
+    }*/
     return table_input;
 };
 
@@ -294,6 +302,11 @@ global define map findiidMapinList(list data, string iid) ``{
     return $[];
 }
 
+/**
+ * Get contents of environment variable.
+ * @param environment name of requested variable
+ * @return environment variable contents
+ */
 global define string getenv(string environment) ``{
     string command = sformat("echo $%1", environment);
     map result     = SCR::Execute(.target.bash_output, command, []);

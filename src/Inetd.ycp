@@ -69,6 +69,8 @@ import "Directory";
 include "inetd/routines.ycp";
 include "inetd/default_conf_inetd.ycp";
 include "inetd/default_conf_xinetd.ycp";
+//include "inetd/temp_inetd_conf.ycp";
+//include "inetd/temp_xinetd_conf.ycp";
 
 /**
  * Abort function
@@ -177,6 +179,11 @@ global list netd_conf            = [];
  * <pre>  xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");</pre>
  */
 global list xinetd_packages      = [];
+
+/**
+ * Holds default configuration for currently edited superserver.
+ */
+global list default_conf         = [];
 
 /**
  * This variable holds informations about main package (inetd or xinetd)
@@ -517,19 +524,60 @@ global define boolean WriteOnly () ``{
  * @return complete configuration with user changes
  */
 global define list mergeWithDefaults(list changes) ``{
-    list defaults = [];
+    list defaults = default_conf;
     list new_conf = [];
 
-    if(netd_service == `inetd) {
+/*    if(netd_service == `inetd) {
 	defaults = default_conf_inetd["netd_conf"]:[];
     }
     else if(netd_service == `xinetd) {
 	defaults = default_conf_xinetd["netd_conf"]:[];
-    }
+    }*/
 
     map new_entry = nil;
 
     foreach(`line, changes, ``{
+	string service  = line["service"]:"";
+	string server   = line["server"]:"";
+	string protocol = line["protocol"]:"";
+	string script   = line["script"]:"";
+	boolean found   = false;
+	defaults = maplist(`default, defaults, ``{
+	    /*
+	     * Options are not required. So, we test non-empty string
+	     * with non-empty string or empty string with empty string.
+	     */
+	    if((default["service"]:""  == service)   &&
+		(default["server"]:""   == server)   &&
+		(default["protocol"]:"" == protocol) &&
+		(default["script"]:""   == script)) {
+		new_entry = default;
+		foreach(`key, `val, line, ``{
+		    new_entry = add(new_entry, key, val);
+		});
+		new_entry = add(new_entry, "changed", true);
+		found     = true;
+	    }
+	    else {
+		new_entry = default;
+	    }
+	    return new_entry;
+	});
+	/*
+	 * Not found in defaults? Three states happened:
+	 *  - Service is new (user wants forEx. telnet on port #53;-)
+	 *  - Service is from non-SuSE package
+	 *  - Service name or description is invalid
+	 */
+	if(!found) {
+	    defaults = add(defaults, line);
+	}
+    });
+
+    //y2milestone("%1", changes);
+    //y2milestone("%1", defaults);
+
+/*    foreach(`line, changes, ``{
 	// installed service (package; forEx.: bootp, amanda, ...)
 	if(find(line["iid"]:"!", "inst") == 0) {
 	    defaults = add(defaults, line);
@@ -558,7 +606,7 @@ global define list mergeWithDefaults(list changes) ``{
 		return new_entry;
 	    });
 	}
-    });
+    });*/
 /*    foreach(`line, changes, ``{
 	defaults = maplist(`default, defaults, ``{
 	    if(default["iid"]:"" == line["iid"]:"!") {
@@ -597,6 +645,8 @@ global define boolean Import (map settings) ``{
 	module_status = `not_configured;
     else
 	module_status = `configured;
+
+    //y2milestone("settings = %1", settings);
     /*
      * if map contains "netd_service", whole configuration is filled from this map.
      * if "netd_service" is not found, configuration is generated from default values
@@ -605,6 +655,7 @@ global define boolean Import (map settings) ``{
     // service is inetd
     if (settings["netd_service"]:`none == `inetd) {
 	netd_service  = `inetd;
+	default_conf  = default_conf_inetd;
 	inetd_conf    = mergeWithDefaults(settings["netd_conf"]:[]);
         inetd_status  = 0;
 	netd_status   = settings["netd_status"]:-1;
@@ -613,6 +664,7 @@ global define boolean Import (map settings) ``{
     // service is xinetd
     else if (settings["netd_service"]:`none == `xinetd) {
 	netd_service  = `xinetd;
+	default_conf  = default_conf_xinetd;
 	xinetd_conf   = mergeWithDefaults(settings["netd_conf"]:[]);
         xinetd_status = 0;
 	netd_status   = settings["netd_status"]:-1;
@@ -633,6 +685,7 @@ global define boolean Import (map settings) ``{
     configured_service = netd_service;
 //    required_packages  = [];
 //    service_package    = [];
+    //y2milestone("%1", netd_conf);
     return true;
 }
 
@@ -693,7 +746,7 @@ global define list getChanged(list config) ``{
 	}
     });
 
-    y2milestone("%1", changes);
+    //y2milestone("%1", changes);
     return changes;
 }
 
