@@ -17,6 +17,7 @@
      * New SCR interface:
      * A service map looks like this:
      * $[
+     ** as seen on TV^H^H (x)inetd.conf:
      *   "service": string      // * different from equally named field above
      *   "rpc_version": string
      *   "socket_type": string
@@ -38,9 +39,14 @@
      *                          //   see changeLine() and see addLine() for more details
      *   "deleted": boolean     // when deleting, this is set to TRUE and changed
      *                          // must be set too (see deleteLine())
-     * ]
+     *   "script": string	// which configuration file this comes from
+     *   "package": string	// which rpm it is in
+     ** other fields:
      * When handling existing maps, take care to preserve any other fields
      * that may be present!
+     *
+     *  "unparsed": string	// what the agent could not parse
+     * ]
      *
      * path netd = .whatever.inetd or .whatever.xinetd;
      *
@@ -49,12 +55,16 @@
      * SCR::Write (.etc.inetd_conf.services, list) -> boolean
      * SCR::Write (.etc.xinetd_conf.services, list) -> boolean
      *
-     * "iid" handling
-     * The standard situation is something like "iid": "1:/etc/xinetd.d/chargen"
-     * If user adds new service, inetd module creates new unique iid based on word "new"
-     * and incremented number started with "1".
-     * The similar situation is, when managing xinetd and service packages are not installed.
-     * The "iid" has the same rules, but the word is "inst".
+     * "iid" handling:
+     * The agent (ag_netd) uses it to locate the service in the config
+     * files.  Its value should be considered opaque, except that
+     * ag_netd will check whether it contains a colon (:) and if not,
+     * consider it a new service.
+     * Thus new services get "new"+number.
+     * Non-installed services:
+     *   in normal ui they appear only in the table and get "NI"+number
+     *   in autoyast ui they get "inst"+number
+     * Where number is last_created
      * </pre>
      */
 
@@ -87,6 +97,9 @@ global boolean proposal_valid = false;
 
 /**
  * For autoinstallation Write() process.
+ * Write_only means that the service will not be actually started,
+ * because it is done by init later.
+ * But also that the service data are only a patch to be applied to the system.
  */
 global boolean write_only = false;
 
@@ -124,6 +137,8 @@ global integer xinetd_installed  = -1;
  * <br> `both   means the selection dialog will be displayed (only one service can run)
  * <br> `inetd  inetd will be configured
  * <br> `xinetd xinetd will be configured
+ * <br> in autoinst used in the sense of configured_service???
+ * @see configured_service
  */
 global symbol netd_service       = `none;
 
@@ -320,9 +335,46 @@ global define boolean Read() ``{
  * take the system services
  *   if it matches a service in the ui (service,protocol,server substring)
  *     use the ui data
- * (it seems that not installed ones are not a part of netd_conf, they
+ * (not-installed ones are not a part of netd_conf, they
  * only enter the table in mergexinetdconfs)
- *
+ * Deleted services: OK.
+ * Added services: a separate pass needed
+ * </pre>
+ * TODO reduce the quadratic complexity.
+ * @param system_conf holds new configuration (on the system)
+ * @param edited_conf holds old configuration (UI)
+ * @return list Returnes new solved xinetd configuration (ready for Write()).
+ */
+global define list MergeEditedWithSystem (list system_conf, list edited_conf) ``{
+    map new_entry = nil;
+
+    // Take system services as the basis
+    // (they include the newly installed ones)
+    // and replace most of them with their edited counterparts
+    // that also takes care of deleted services
+    // but not of added ones
+    system_conf = maplist(map system_s, system_conf, ``{
+	new_entry = system_s;
+	foreach(map edited_s, edited_conf, ``{
+	    if (struct_match (system_s, edited_s,
+			      ["script", "service", "protocol"]) &&
+		// substring because ...?
+		find(system_s["server"]:"", edited_s["server"]:"!") != -1) {
+		new_entry = edited_s;
+	    }
+	});
+	return new_entry;
+    });
+
+    // now the added services
+    list added = filter (map edited_s, edited_conf,
+			 ``( find (edited_s["iid"]:"", "new") == 0 ));
+    return flatten ([system_conf, added]);
+}
+/**
+ * This function solves differences between new (after installing requested packages)
+ * xinetd configuration and old small configuration created by user.
+ * <pre>
  * <b>In auto mode</b>:
  * for each user's service:
  *   if its iid contains "inst",
@@ -336,28 +388,13 @@ global define boolean Read() ``{
  * So for xinetd AY UI, only toggling works
  * </pre>
  * @param netd_conf holds new configuration (on the system)
- * @param old_conf  holds old configuration (normal: UI, auto: profile + defaults)
+ * @param old_conf  holds old configuration (auto: profile + defaults)
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 
     map new_entry = nil;
 
-    if(!auto_mode) {
-    netd_conf = maplist(`new_line, netd_conf, ``{
-	new_entry = new_line;
-	foreach(`old_line, old_conf, ``{
-	    if((new_line["service"]:"" == old_line["service"]:"!") &&         // service
-		(new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
-		(find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
-		new_entry = old_line;
-	    }
-	});
-	return new_entry;
-    });
-    return netd_conf;
-    }
-    else {
     old_conf = maplist(`old_line, old_conf, ``{
 	new_entry = old_line;
 	// find all new lines for installed packages...
@@ -378,7 +415,6 @@ global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 	return new_entry;
     });
     return old_conf;
-    }
 }
 
 /**
@@ -547,6 +583,8 @@ global define boolean WriteOnly () ``{
 /**
  * merges imported changes with services defaults
  * <br>
+ * TODO updated description!
+ *
  * Each change is a service map. If its iid: <dl>
  * <dt> starts with "inst" or "new"
  *  <dd> it is added to the list
@@ -560,100 +598,54 @@ global define boolean WriteOnly () ``{
  * @return complete configuration with user changes
  */
 global define list mergeWithDefaults(list changes) ``{
-    list defaults = default_conf["netd_conf"]:[];
+    list target = default_conf["netd_conf"]:[];
 
     map new_entry = nil;
 
-    foreach(`line, changes, ``{
+    // for each change in the patch list:
+    foreach (map line, changes, ``{
 	string service  = line["service"]:"";
 	string server   = line["server"]:"";
 	string protocol = line["protocol"]:"";
 	string script   = line["script"]:"";
-	boolean found   = false;
-	defaults = maplist(`default, defaults, ``{
-	    /*
-	     * Options are not required. So, we test non-empty string
-	     * with non-empty string or empty string with empty string.
-	     */
-	    if((default["service"]:""  == service)   &&
-		(default["server"]:""   == server)   &&
-		(default["protocol"]:"" == protocol) &&
-		(default["script"]:""   == script)) {
-		new_entry = default;
-		foreach(`key, `val, line, ``{
-		    new_entry = add(new_entry, key, val);
-		});
-		new_entry = add(new_entry, "changed", true);
-		found     = true;
-	    }
-	    else {
-		new_entry = default;
+	integer matches = 0;
+	target = maplist(map target_s, target, ``{
+	    new_entry = target_s;
+	    // TODO: make target_s["real_server"]
+	    if (struct_match_sparse (
+		    line, target_s,
+		    ["script", "service", "protocol", "server"]))
+	    {
+		matches = matches + 1;
+
+		// line has priority
+		new_entry = union (new_entry, line);
+		new_entry = add (new_entry, "changed", true);
+		// "enabled" is true - if not present
+		new_entry = add (new_entry, "enabled", line["enabled"]:true);
 	    }
 	    return new_entry;
 	});
 	/*
-	 * Not found in defaults? Three states happened:
+	 * Not found in target? Three states happened:
 	 *  - Service is new (user wants forEx. telnet on port #53;-)
 	 *  - Service is from non-SuSE package
 	 *  - Service name or description is invalid
 	 */
-	if(!found) {
-	    defaults = add(defaults, line);
+	if (matches == 0)
+	{
+	    target = add(target, line);
+	}
+	else if (matches > 1)
+	{
+	    y2warning ("Ambiguous match (%1): %2", matches, line);
 	}
     });
 
     //y2milestone("%1", changes);
-    //y2milestone("%1", defaults);
+    //y2milestone("%1", target);
 
-/*    foreach(`line, changes, ``{
-	// installed service (package; forEx.: bootp, amanda, ...)
-	if(find(line["iid"]:"!", "inst") == 0) {
-	    defaults = add(defaults, line);
-	}
-	//
-	else if(find(line["iid"]:"!", "new") == 0) {
-	    defaults = add(defaults, line);
-	}
-	// no `iid' means internal (or other default) service
-	else if(line["iid"]:"!" == "!") {
-	    defaults = maplist(`default, defaults, ``{
-		if((default["server"]:""    == line["server"]:"!")   &&
-		    (default["protocol"]:"" == line["protocol"]:"!") &&
-		    (default["service"]:""  == line["service"]:"!")) {
-
-		    new_entry = default;
-
-		    foreach(`key, `val, line, ``{
-			new_entry = add(new_entry, key, val);
-		    });
-		    new_entry = add(new_entry, "changed", true);
-		}
-		else {
-		    new_entry = default;
-		}
-		return new_entry;
-	    });
-	}
-    });*/
-/*    foreach(`line, changes, ``{
-	defaults = maplist(`default, defaults, ``{
-	    if(default["iid"]:"" == line["iid"]:"!") {
-		new_entry =  line;
-	    }
-	    else {
-		new_entry = default;
-	    }
-	    return new_entry;
-	});
-    });
-    foreach(`line, changes, ``{
-	if((find(line["iid"]:"", "inst") != -1) &&
-	    (line["created"]:false == true)) {
-	    defaults = add(defaults, line);
-	}
-    });*/
-
-    return defaults;
+    return target;
 }
 
 /**
@@ -676,9 +668,9 @@ global define boolean Import (map settings) ``{
 
     //y2milestone("settings = %1", settings);
     /*
-     * if map contains "netd_service", whole configuration is filled from this map.
-     * if "netd_service" is not found, configuration is generated from default values
-     * stored if default_conf_*.ycp.
+     * if map contains "netd_service", whole configuration is filled
+     * from this map.  if "netd_service" is not found, configuration is
+     * generated from default values stored if default_conf_*.ycp.
      */
     // service is inetd
     if (settings["netd_service"]:`none == `inetd) {
@@ -737,16 +729,26 @@ global define list getChanged(list config) ``{
     if(defaults == [])
 	return config;
 
+    // Deleted services: so far they are exported
+    // But maybe better to allow only deleting added services (~ undo)
+    // and thus not export them.
     foreach(`line, config, ``{
-	if(line["changed"]:false == true) {
-	    // skip new or installed services (iid is `new.*' or `inst.*')
+	// only changed ones...
+	if (line["changed"]:false) {
+	    // now trim the fields that are not necessary, because
+	    // they are a part of the defaults
+
+	    // new or installed services (iid is `^new.*' or `^inst.*')
+	    // are not trimmed
 	    string line_iid = line["iid"]:"";
-	    if((find(line_iid, "new") != -1) || (find(line_iid, "inst") != -1)) {
+	    if (find(line_iid, "new") == 0 || find(line_iid, "inst") == 0) {
 		changes = add(changes, line);
 		return; // skip the following code
 	    }
 
-	    // find coresponding entry in `defaults'
+	    // Find coresponding entry in `defaults'.
+	    // Can use iid here because we started editing
+	    // with the defaults list
 	    def_line = findiidMapinList(defaults, line_iid);
 
 	    // def_line is empty --- possibly item not found
@@ -756,21 +758,30 @@ global define list getChanged(list config) ``{
 		return; // skip the following code
 	    }
 
-	    // for each key in map line
-	    foreach(`key, `val, line, ``{
-		if((key == "protocol") || (key == "service") || (key == "server"))
-		    return; // don't remove values used for identification...
-		if(val == def_line[key]:"!#!")
-		    line = remove(line, key);
+	    // for each item of the map
+	    foreach(string name, any val, line, ``{
+		// Remove it if its value is the default
+		// and it's not a key field or "enabled" (*).
+		// In particular, iid is trimmed here.
+		if (val == def_line[name]:nil &&
+		    !contains (["script", "protocol", "service", "server",
+				"enabled"], name))
+
+		{
+		    line = remove(line, name);
+		}
 	    });
-	    if(line["unparsed"]:false != false)
-		line = remove(line, "unparsed");
-	    if(line["changed"]:false != false)
-		line = remove(line, "changed");
-/*	    if(line["comment"]:false != false)
-		line = remove(line, "comment");
-	    if(line["comment_inside"]:false != false)
-		line = remove(line, "comment_inside");*/
+
+	    // "changed" is implicitly true for all Exported/Imported services
+	    line = remove (line, "changed");
+	    // "enabled" defaults to true in _Import_, so it would
+	    // have been wrong above (*) to match it against the
+	    // _system_ default of false.
+	    if (line["enabled"]:false)
+	    {
+		line = remove (line, "enabled");
+	    }
+
 	    changes = add(changes, line);
 	}
     });
@@ -804,8 +815,13 @@ global define map Export () ``{
 global define string mkeServiceSummary() ``{
     string S = "";
     foreach(`line, netd_conf, ``{
-	if((line["enabled"]:false == true) && (line["deleted"]:false == false)) {
-	    S = sformat("%1<li>%2 <i>(%3, %4)</i>", S, line["service"]:"", line["socket_type"]:"", line["protocol"]:"");
+	//"enabled" defaults to true
+	if(line["enabled"]:true && !line["deleted"]:false) {
+	    S = sformat("%1<li>%2 <i>(%3, %4)</i>",
+			S,
+			line["service"]:"",
+			line["socket_type"]:"",
+			line["protocol"]:"");
 	}
     });
     if(S == "")
