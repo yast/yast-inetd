@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 31 12:58:40 CET 2003 - mvidner@suse.cz
+
+- Fixed retrieving the lists of users and groups (#32783).
+- Handling the window close button properly.
+- 2.9.0
+
+-------------------------------------------------------------------
 Sun Sep 14 20:46:03 CEST 2003 - adrian@suse.de
 
 - make it working in kcontrol
