@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Dec 19 14:18:24 CET 2002 - phadraba@suse.de
+
+- Updated source code to default YaST2 module skeleton
+- New UI uses new SCR
+- Module handles inetd and xinetd configuration
+- SCR by mvidner, UI by phadraba
+
+-------------------------------------------------------------------
 Tue Dec 10 16:00:43 CET 2002 - mvidner@suse.de
 
 - Extended to work with xinetd apart from inetd
