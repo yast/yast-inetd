@@ -77,7 +77,7 @@
     string help_text = "";
 
     // helptext expert partitioning. 1 of 16
-    help_text =  UI(_("<p>Starting inetd will enable \"others\" to connect
+    help_text =  UI(_("<p>Starting inetd will enable <em>others</em> to connect
 to network services installed on your server
 (e.g telnet, finger, ftp). Inetd is also
 needed for printing, as well as formatting the
