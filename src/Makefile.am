@@ -1,27 +1,25 @@
 #
-# Makefile.am for y2c_inet/src
-#
-# $Id$
+# Makefile.am for devtools/devtools/skeletons/config/src
 #
 
 yncludedir = @yncludedir@/inetd
 
 client_DATA =			\
 	inetd.ycp		\
-	inetd_auto.ycp		\
-	inetd_summary.ycp	\
+	inetd_auto.ycp	\
+	inetd_proposal.ycp	\
 	inetd_write.ycp
 
 ynclude_DATA =			\
 	helps.ycp		\
-	ui.ycp
+	wizards.ycp		\
+	dialogs.ycp		\
+	routines.ycp
 
-config_DATA = inetd.y2cc
+config_DATA =			\
+	inetd.y2cc
 
 module_DATA =			\
 	Inetd.ycp
 
-ybin_SCRIPTS = 			\
-	build_inetd_conf_ycp.pl
-
-EXTRA_DIST = $(ybin_SCRIPTS) $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA)
+EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA)

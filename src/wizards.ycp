@@ -1,0 +1,89 @@
+/**
+ * File:	include/inetd/wizards.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Wizards definitions
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "inetd";
+
+import "Wizard";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+include "wizard/sequencer.ycp";
+
+include "inetd/complex.ycp";
+include "inetd/dialogs.ycp";
+
+/**
+ * Whole configuration of inetd
+ * @return sequence result
+ */
+global define symbol InetdSequence() ``{
+
+    map aliases = $[
+	"packages"	: [ ``( PackageDialog() ), true ],
+	"read"		: [ ``( ReadDialog() ), true ],
+	"main"		:   ``( InetdDialog() ),
+	"write"		: [ ``( WriteDialog() ), true ]
+    ];
+
+    map sequence = $[
+	"ws_start" : "packages",
+	"packages" : $[
+	    `abort	: `abort,
+	    `next	: "read"
+	],
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	]
+    ];
+
+    string caption = _("Inetd configuration");
+    term contents = `Label(_("Initializing ..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetContentsButtons(caption, contents, "",
+	    BackButtonLabel(), NextButtonLabel());
+
+    any ret = WizardSequencer(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of inetd but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+global define symbol InetdAutoSequence() ``{
+    string caption = _("Inetd configuration");
+    term contents = `Label(_("Initializing ..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetContentsButtons(caption, contents, "",
+	    BackButtonLabel(), NextButtonLabel());
+
+    any ret = InetdDialog ();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/* EOF */
+}

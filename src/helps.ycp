@@ -1,39 +1,109 @@
 /**
  * File:	include/inetd/helps.ycp
  * Package:	Configuration of inetd
- * Summary:	Help texts of all the dialogs.
- * Authors:	Michael Hager <mike@suse.de>
+ * Summary:	Help texts of all the dialogs
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
  *
  * $Id$
- *
- * The help texts.
  */
 
 {
 
-    textdomain "inetd";
+textdomain "inetd";
 
+/**
+ * All helps are here
+ */
+global map HELPS = $[
 
-    global define ConfigureHelp()``{
+    "packages" : _("<p><b><big>Searching for installed packages</big></b><br>
+Please wait for a while...<br></p>
+If no packages will be found, you will be asked for installing them.<br></p>") +
 
-	return
-	    _("<p>See all services preconfigured by SuSE in the list.</p>")
-	+
-_("<p>All services marked with \"#\" are <i>inactive</i> (locked).
-All services marked with \"Active!\" are <i>active</i> (unlocked).</p>") +
+    _("<p><b><big>Aborting the initialization:</big></b><br>
+Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
 
-_("<p>Inactive means these services are preconfigured in the configuration
-file of inetd (/etc/inetd.conf), but are locked.</p>
-") +
-_("<p>To lock or unlock a service, click the respective
-entry then press the <b>activate or deactivate</b> button.
-</p>
-") +
-_("<p>Use the <b>Edit</b> button to change the parameters of a service.
-</p>
-");
-    }
+    "install_query" : _("inetd or xinetd packages was not found.
+Do you want to install them now?"),
 
+    "no_install" : _("No packages was selected. Configuration aborted."),
+
+    "install_packages" : _("Selected packages will be installed"),
+
+    /* Read dialog help 1/2 */
+    "read" : _("<p><b><big>Initializing inetd configuration</big></b><br>
+Please wait for a while...<br></p>") +
+
+    /* Read dialog help 2/2 */
+    _("<p><b><big>Aborting the initialization:</big></b><br>
+Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
+
+    "service_selection" : _("<p><b><big>Both services (inetd and xinetd) are installed.</big></b>
+Please select, which service you want to configure...<br></p>") +
+
+    _("<p><b><big>Aborting the initialization:</big></b><br>
+Safely abort the configuration utility by pressing the <b>Cancel</b> now.</p>"),
+
+    /* Write dialog help 1/2 */
+    "write" : _("<p><b><big>Saving inetd configuration</big></b><br>
+Please wait for a while...<br></p>") +
+
+    /* Write dialog help 2/2 */
+_("<p><b><big>Aborting the saving:</big></b><br>
+You can abort the saving by pressing the <b>Abort</b> button.
+An additional dialog will inform you whether it is safe to do so or not.
+</p>"),
+
+    /* Summary dialog help 1/3 */
+    "summary" : _("<p><b><big>Inetd configuration</big></b><br>
+Configure inetd here.<br></p>") +
+
+    /* Summary dialog help 2/3 */
+    _("<p><b><big>Adding a inetd:</big></b><br>
+Choose inetd from the list of the detected inetds.
+If your inetd was not autodetected, use <b>Other (not detected)</b>.
+Then press <b>Configure</b>.</p>") +
+
+    /* Summary dialog help 3/3 */
+    _("<p><b><big>Editing or deleting:</big></b><br>
+If you press <b>Edit</b>, an additional dialog in which to change
+the configuration opens.</p>"),
+
+    /* Ovreview dialog help 1/3 */
+    "overview" : _("<p><b><big>Inetd configuration overview</big></b><br>
+Obtain an overview about installed inetds. Additionally
+edit their configuration.<br></p>") +
+
+    /* Ovreview dialog help 2/3 */
+_("<p><b><big>Adding a inetd:</big></b><br>
+Press <b>Add</b> to configure a inetd.</p>") +
+
+    /* Ovreview dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+Choose a inetd to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>"),
+
+    /* Configure1 dialog help 1/2 */
+    "c1" : _("<p><b><big>Configure, part one</big></b><br>
+Please press the <b>Next</b> button.
+<br></p>") +
+
+    /* Configure1 dialog help 2/2 */
+_("<p><b><big>Selecting something:</big></b><br>
+It is not possible, you must code it first :-)
+</p>"),
+
+    /* Configure2 dialog help 1/2 */
+    "c2" : _("<p><b><big>Configure, part two</big></b><br>
+Please press the <b>Next</b> button.
+<br></p>") +
+
+    /* Configure2 dialog help 2/2 */
+_("<p><b><big>Selecting something:</big></b><br>
+It is not possible, you must code it first :-)
+</p>"),
+
+];
 
     /**
      * Help for the EditOrCreateServiceDlg () dialog.
@@ -95,84 +165,5 @@ _("<p>---</p>");
 
     }
 
-
-    /**
-     * Help for the DetectDialog () dialog.
-     * @return The help text.
-     */
-    global define string DetectDialogHelp () ``{
-	// TODO FIXME: Modify it to your needs!
-	return
-	    // For translators: inet read dialog help, part 1 of 2
-_("<P><B><BIG>Detecting installed services</BIG></B><BR>
-Both services (inetd and xinetd) was found in your system. Please choose which you want to configure.
-<P><I>Note: </I>xinetd service is default for SuSE Linux</P>
-") +
-	    // For translators: inet read dialog help, part 2 of 2
-_("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
-You can safely abort the configuration utility by pressing the <B>Abort</B>
-button now.
-</P>");
-    }
-
-
-    /**
-     * Help for the ReadDialog () dialog.
-     * @return The help text.
-     */
-    global define string ReadDialogHelp () ``{
-	// TODO FIXME: Modify it to your needs!
-	return
-	    // For translators: inet read dialog help, part 1 of 2
-_("<P><B><BIG>Initializing Inetd</BIG></B><BR>
-Please wait for a while...
-<BR></P>") +
-	    // For translators: inet read dialog help, part 2 of 2
-_("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
-You can safely abort the configuration utility by pressing the <B>Abort</B>
-button now.
-</P>");
-    }
-
-    /**
-     * Help for the WriteDialog () dialog.
-     * @return The help text.
-     */
-    global define string WriteDialogHelp () ``{
-	// TODO FIXME: Modify it to your needs!
-	return
-	    // For translators: inet write dialog help, part 1 of 2
-_("<P><B><BIG>Saving Inetd configuration</BIG></B><BR>
-Please wait for a while...
-<BR></P>") +
-	    // For translators: inet write dialog help, part 2 of 2
-_("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button.
-An additional dialog will inform you whether it is safe to do so or not.
-</P>");
-    }
-
-    /**
-     * Help for the MainDialog () dialog.
-     * @return The help text.
-     */
-    global define string MainDialogHelp () ``{
-	return
-_("<p>Starting inetd will allow outside connections
-to network services installed on your server,
-such as telnet, finger, or ftp.
-Should inetd be started at boot?
-</p>\n") +
-    // helptext inetd configuration
-_("
-<p>
-If you want to start the inetd, you can choose
-the SuSE default configuration. If you choose
-the custom configuration, edit the default
-configuration for your needs in the next step.
-</p>");
-    }
-
-
-
+/* EOF */
 }
