@@ -589,12 +589,8 @@ global define list<map> MergeAyProfile (list<map> target, list<map> changes) ``{
 	// if the matching turns out to be too clever:
 	// skip matching
 	string change_iid = change_s["iid"]:"";
-	if (find (change_iid, "new") == 0
-	    /* || find (change_iid, "inst") == 0*/ )
-	{
-	    // do nothing, matches is 0 and we add the service
-	}
-	else
+	if (find (change_iid, "new") != 0
+	    /* || find (change_iid, "inst") == 0*/ ) // do nothing if matches is 0 and we add the service
 	{
 	    // apply the change to the target list:
 	    target = maplist(map<string, any> target_s, target, ``{

@@ -1,16 +1,8 @@
 // adding a service to a multi-file config, #26999
 {
-    integer old = WFM::SCRGetDefault ();
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
 
-    integer h = WFM::SCROpen ("ag_netd", false);
-    if (h < 1)
-    {
-	return;
-    }
-    WFM::SCRSetDefault (h);
-    SCR::Xinetd (WFM::Args (0));
-
-    list r = SCR::Read (.services);
+    list r = (list) SCR::Read (.test.inetd.services);
     map service = $[
 	"changed": true,
 	"enabled": true,
@@ -24,10 +16,7 @@
         "server_args": "--foo",
 	];
     r = add (r, service);
-    boolean result = SCR::Write (.services, r);
-
-    WFM::SCRClose (h);
-    WFM::SCRSetDefault (old);
+    boolean result = (boolean) SCR::Write (.test.inetd.services, r);
 
     return result;
 }

@@ -1,19 +1,8 @@
 //
 {
-    integer old = WFM::SCRGetDefault ();
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
 
-    integer h = WFM::SCROpen ("ag_netd", false);
-    if (h < 1)
-    {
-	return;
-    }
-    WFM::SCRSetDefault (h);
-    SCR::Xinetd (WFM::Args (0));
-
-    list r = SCR::Read (.services);
-
-    WFM::SCRClose (h);
-    WFM::SCRSetDefault (old);
+    list r = (list) SCR::Read (.test.inetd.services);
 
     return r;
 }
