@@ -271,7 +271,7 @@ define symbol InetdDialog () ``{
 	    `HBox(
 		/* Translators: Table Header: The "Ch" label is short of "Changed". Please, make the
 				translation as short as possible. */
-		`Table(`id(`table), `opt(`notify),
+		`Table(`id(`table),// `opt(`notify),
 		//`opt(`keepSorting),
 		`header(`Center(_("Ch")), `Center(_("Status")),
 		    _("Service"), _("Type "), `Center(_("Protocol")), _("Wait"),
