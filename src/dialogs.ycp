@@ -200,9 +200,9 @@ global define indexTable() ``{
     integer index = 0;
     iid_to_index  = $[];
     index_to_iid  = $[];
-    foreach(`line, Inetd::inetd_conf, ``{
-	index = index + 1;
+    foreach(`line, Inetd::netd_conf, ``{
 	if (line["deleted"]:false == false) {
+	    index = index + 1;
 	    string iid   = lookup(line, "iid", "");
 	    iid_to_index = add(iid_to_index, iid, index);
 	    index_to_iid = add(index_to_iid, index, iid);
@@ -224,7 +224,7 @@ global define symbol InetdDialog () ``{
 		`RadioButtonGroup(
 		    `VBox(
 			`RadioButton(`id(`stop),     `opt(`notify), _("Super-server &off"), true),
-			`RadioButton(`id(`editable), `opt(`notify), _("&Super-server on"), false)
+			`RadioButton(`id(`editable), `opt(`notify), _("S&uper-server on"), false)
 		    )
 		)
 		//`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)
@@ -301,6 +301,7 @@ global define symbol InetdDialog () ``{
     UI::ChangeWidget(`id(`switch_active), `Enabled, new_state);
     
     table_data = CreateTableData(Inetd::netd_conf);
+    indexTable();
     UI::ChangeWidget(`id(`table),         `Items,   table_data);
     
     //used for new iid "generator"
@@ -365,10 +366,10 @@ global define symbol InetdDialog () ``{
 
 	    // one line must be selected
 	    if (selected_item != nil) {
-		Inetd::deleteLine(selected_item);
 		need_reindex = true;
 		need_rebuild = true;
 		integer old_index = iid_to_index[selected_item]:0;
+		Inetd::deleteLine(selected_item);
 		if (old_index == size(iid_to_index)) {
 		    to_select = index_to_iid[old_index - 1]:"";
 		}
