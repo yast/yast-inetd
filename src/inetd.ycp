@@ -21,8 +21,6 @@ textdomain "inetd";
 import "Inetd";
 import "CommandLine";
 
-typedef integer service_id_t;
-
 
 /* The main () */
 y2milestone ("----------------------------------------");
@@ -36,24 +34,6 @@ list args = WFM::Args();
 if ( size(args)>0 && is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
     y2milestone("Using PROPOSE mode");
     propose = true;
-}
-
-boolean AddHandler(map<string,string> opts) {
-    if (nil == CommandLine::UniqueOption( opts, ["service"])) 
-	return false;
-    return true;
-}
-
-boolean DeleteHandler(map<string,string> opts) {
-    if (nil == CommandLine::UniqueOption( opts, ["service"])) 
-	return false;
-    return true;
-}
-
-boolean SetHandler(map<string,string> opts) {
-    if (nil == CommandLine::UniqueOption( opts, ["service"])) 
-	return false;
-    return true;
 }
 
 void CommandLineTableDump(list<list> table)
@@ -126,11 +106,59 @@ map<string,any> opts2mask(map<string,string> opts)
     return mask;
 }
 
-boolean SummaryHandler(map<string,string> opts) {
-    list<service_id_t> service_ids = Inetd::GetServicesId(opts2mask(opts));
-    list<list> services = [[_("Status"),_("Service"),_("Type"),_("Prot."),_("Wait"),_("User"),_("Server")],[]];
+boolean SetHandler(map<string,string> opts) {
+    if (opts["id"]:nil == nil) {
+	// translators: error message for command line
+	CommandLine::Error(_("You have to specify service id."));
+	return false;
+    }
+    Inetd::ServiceChange(opts["id"]:"", opts2mask(opts));
+    return true;
+}
 
-    foreach(service_id_t id, service_ids, {
+boolean AddHandler(map<string,string> opts) {
+    if (size(opts)==0) {
+	// translators: error message for command line
+	CommandLine::Error(_("You have to specify service by options."));
+	return false;
+    }
+    Inetd::ServiceAdd(opts2mask(opts));
+}
+
+boolean DeleteHandler(map<string,string> opts) {
+    list<string> service_ids = [];
+    if (opts["id"]:nil != nil) {
+	if (size(opts)>1) {
+	    // translators: error message for command line
+	    CommandLine::Error(_("'id' option cannot by combined with other options."));
+	    return false;
+	}
+	service_ids = [ opts["id"]:"" ];
+    } else {
+	service_ids = Inetd::GetServicesId(opts2mask(opts));
+    }
+    foreach(string id, service_ids, {
+	Inetd::ServiceDelete(id);
+    });
+
+    return true;
+}
+
+boolean SummaryHandler(map<string,string> opts) {
+    list<string> service_ids = [];
+    if (opts["id"]:nil != nil) {
+	if (size(opts)>1) {
+	    // translators: error message for command line
+	    CommandLine::Error(_("'id' option cannot by combined with other options."));
+	    return false;
+	}
+	service_ids = [ opts["id"]:"" ];
+    } else {
+	service_ids = Inetd::GetServicesId(opts2mask(opts));
+    }
+    list<list> services = [[/*_("Id"),*/_("Status"),_("Service"),_("Type"),_("Prot."),_("Wait"),_("User"),_("Server")],[]];
+
+    foreach(string id, service_ids, {
 	string user = Inetd::ServiceGetStr(id, "user", "");
 	if (Inetd::ServiceGetStr(id, "group", "") != "")
 	    user = user + "." + Inetd::ServiceGetStr(id, "group", "");
@@ -140,7 +168,8 @@ boolean SummaryHandler(map<string,string> opts) {
 	string service = Inetd::ServiceGetStr(id, "service", "");
 	if (Inetd::ServiceGetStr(id, "rpc_version", "") != "")
 	    service = service + "/" + tostring(Inetd::ServiceGetStr(id, "rpc_version", ""));
-	list line = [ 
+	list line = [
+	    /* id, */
 	    Inetd::ServiceEnabled(id) ? _("On") : _("Off"),
 	    service,
 	    Inetd::ServiceGetStr(id, "socket_type", ""),
@@ -167,7 +196,7 @@ map mini = $[
 	    "help": _("Show a list of current sestem service status"),
 	    "handler": SummaryHandler,
 	],
-	"add": $[
+/*	"add": $[
 	    // translators: command line help text for "add" action
 	    "help": _("Enable the service"),
 	    "handler": AddHandler,
@@ -176,9 +205,19 @@ map mini = $[
 	    // translators: command line help text for "delete" action
 	    "help": _("Disable the service"),
 	    "handler": DeleteHandler,
+	],
+	"set": $[
+	    // translators: command line help text for "set" action
+	    "help": _("Change the service"),
+	    "handler": SetHandler,
 	]
-    ],
+*/    ],
     "options": $[
+	"id" : $[
+	    // translators: command line help text for "id" option
+	    "help": _("Uniquely identificator"),
+	    "type": "string",
+	],
 	"service" : $[
 	    // translators: command line help text for "service" option
 	    "help": _("Service name"),
@@ -199,7 +238,7 @@ map mini = $[
 	    // translators: command line help text for "socket_type" option
 	    "help": _("Socket type"),
 	    "type": "enum",
-	    "typespec": ["stream", "dgram" "raw", "seqpacket"],
+	    "typespec": ["stream", "dgram", "raw", "seqpacket"],
 	],
 	"protocol" : $[
 	    // translators: command line help text for "protocol" option
@@ -229,7 +268,7 @@ map mini = $[
 	    "type": "string",
 	],
 	"server_args" : $[
-	    // translators: command line help text for "server_arguments" option
+	    // translators: command line help text for "server_args" option
 	    "help": _("Parameters for server"),
 	    "type": "string",
 	],
@@ -241,8 +280,9 @@ map mini = $[
     ],
     "mappings": $[
 	"summary": ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
-	"add":     ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
-	"delete":  ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
+//	"add":     ["service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
+//	"delete":  ["id", "service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
+//	"set":     ["id", "service", "disable", "rpc_version", "socket_type", "protocol", "wait", "user", "group", "server", "server_args", "comment"],
     ]
 ];
 
