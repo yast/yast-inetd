@@ -274,7 +274,7 @@ define symbol InetdDialog () ``{
 		`Table(`id(`table), `opt(`notify),
 		//`opt(`keepSorting),
 		`header(`Center(_("Ch")), `Center(_("Status")),
-		    _("Service"), _("Type "), `Center(_("Protocol")), _("Flags"),
+		    _("Service"), _("Type "), `Center(_("Protocol")), _("Wait"),
 		    _("User"), _("Server"), _("Server / Args")), table_data)
 	    ),
 	    `HBox(
@@ -673,8 +673,8 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 		`HSpacing(1),
 		// for flags (wait/nowait) - noneditable ComboBox
 		`HWeight(3,
-		    `ComboBox(`id(`flags), `opt(`hstretch), _("&Flags"),
-			["nowait", "wait"])
+		    `ComboBox(`id(`wait), `opt(`hstretch), _("&Wait"),
+			["yes", "no"])
 		),
 		// check for used service - if inetd, add max TextEntry
 		`HWeight(0, `Empty())
@@ -718,10 +718,10 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
     UI::ChangeWidget(`id(`type),        `Value, line["socket_type"]:"");
     UI::ChangeWidget(`id(`protocol),    `Value, line["protocol"]:"");
     if (line["wait"]:true == true) {
-	UI::ChangeWidget(`id(`flags), `Value, "wait");
+	UI::ChangeWidget(`id(`wait), `Value, "yes");
     }
     else {
-	UI::ChangeWidget(`id(`flags), `Value, "nowait");
+	UI::ChangeWidget(`id(`wait), `Value, "no");
     }
     UI::ChangeWidget(`id(`user),      `Value, line["user"]:"");
     string group = line["group"]:"";
@@ -778,7 +778,7 @@ Enter valid values.
 		    line = add(line, "enabled", false);
 		}
 		// do not add a "flags" field, it's currently in "unparsed"
-		if (UI::QueryWidget(`id(`flags), `Value) == "wait") {
+		if (UI::QueryWidget(`id(`wait), `Value) == "yes") {
 		    line = add(line, "wait", true);
 		}
 		else {

@@ -119,11 +119,18 @@ Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
 </p>
 ")+
 
-_("<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
-The optional <i>max</i> suffix specifies the maximum number of
-server instances that may be spawned from inetd within an interval of 60
-seconds. This option is inetd specific.
-</p>")+
+_("<p>The <b>wait/nowait</b> entry determines if the service is
+single-threaded or multi-threaded and whether or not xinetd accepts the
+connection or the server program accepts the connection. If its value is
+<b>yes</b>, the service is single-threaded; this means that xinetd will
+start the server and then it will stop handling requests for the service
+until the server dies and that the server software will accept the
+connection. If the attribute value is <b>no</b>, the service is
+multi-threaded and xinetd will keep handling new service requests and
+xinetd will accept the connection. It should be noted that
+<i>udp/dgram</i> services normally expect the value to be <b>yes</b>
+since udp is not connection oriented, while <i>tcp/stream</i> servers
+normally expect the value to be <b>no</b>.</p>")+
 
 _("<p>The server will be run with the permissions of the user selected in
 <b>User</b>. This is useful to make services run with permissions
