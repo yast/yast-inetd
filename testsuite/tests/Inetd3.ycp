@@ -1,5 +1,5 @@
-/
- * File:        testsuite/tests/Inetd2.ycp
+/**
+ * File:        testsuite/tests/Inetd3.ycp
  * Package:     Configuration of inetd
  * Summary:     Testsuite for Reading and Writing (x)inetd configuration
  * Authors:     Petr Hadraba <phadraba@suse.cz>

@@ -139,6 +139,93 @@ global define symbol PackageDialog() ``{
 }
 
 /**
+ * Ask user for packages to install
+ * @return `back for abort, `next for continue
+ */
+global define symbol PackageAutoDialog() ``{
+
+    term contents =
+	`VBox(
+	    `VSpacing(0.5),
+	    `HBox(
+		`HSpacing(2),
+		`Left(`Label(HELPS["install_query"]:"")),
+		`HSpacing(2)
+	    ),
+	    `VSpacing(0.5),
+	    `HBox(
+		`HSpacing(6),
+		`VBox(
+		    `Left(`CheckBox(`id(`inetd),  _("Install &inetd"))),
+		    `Left(`CheckBox(`id(`xinetd), _("Install &xinetd"), true))
+		)
+	    ),
+	    `VSpacing(0.5),
+	    `HBox(
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
+		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
+		//`HSpacing(2)
+	    ),
+	    `VSpacing(0.5)
+	);
+
+    //Wizard::RestoreHelp(HELPS["packages-auto"]:"");
+
+    // Check for installed packages has no meaning here - no packages are installed
+    //Inetd::inetd_installed  = GetInetdInstalled();
+    //Inetd::xinetd_installed = GetXinetdInstalled();
+
+    // Show Dialog
+    UI::OpenDialog(contents);
+    any ret = UI::UserInput();
+    boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
+    boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
+    UI::CloseDialog();
+    // user press Cancel
+    if(ret == `back) {
+	return ret;
+    }
+    // User will continue
+    else {
+	// Determine user selection
+	list packages = [];
+	if(install_inetd) {
+	    packages                = add(packages, "inetd");
+	    Inetd::inetd_installed  = 0;
+	}
+	if(install_xinetd) {
+	    packages                = add(packages, "xinetd");
+	    Inetd::xinetd_installed = 0;
+	}
+	if(size(packages) > 0) {
+	    include "require.ycp";
+	    DoInstallAndRemove(packages, []);
+	}
+    }
+
+    //fillup global variables and obtain services status
+
+    //booth services are installed
+    if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
+	Inetd::netd_service  = `both;
+    }
+    // only inetd is installed
+    else if(Inetd::inetd_installed == 0) {
+	Inetd::netd_service = `inetd;
+    }
+    // only xinetd is installed
+    else if(Inetd::xinetd_installed == 0) {
+	Inetd::netd_service  = `xinetd;
+    }
+    // none is installed
+    else {
+	Inetd::netd_service = `none;
+    }
+
+    return `next;
+}
+
+/**
  * Ask user which service wants to configure (if booth installed)
  * @return returns `back for abort and `next for continue
  */
@@ -291,7 +378,7 @@ global define symbol InetdDialog () ``{
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
 	    BackButtonLabel(), NextButtonLabel());
-    
+
     Wizard::ReplaceBackButton(`Empty());
 
     boolean new_state = false;
@@ -314,6 +401,8 @@ global define symbol InetdDialog () ``{
     //used for new iid "generator"
     integer last_created = 0;
     
+//    // Generate default configuration
+//    SCR::Write(.target.ycp, "/default_conf.ycp", Inetd::xinetd_conf);
     // main loop
     while(true) {
 

@@ -23,6 +23,9 @@ If no packages will be found, you will be asked for installing them.</p>") +
     _("<p><b><big>Aborting the initialization:</big></b><br>
 Safely abort the configuration utility by pressing the <b>Abort</b> now.</p>"),
 
+    "packages-auto" : _("<p><b><big>Service packages</big></b><br>
+Please select, which service packages you want to install.</p>"),
+
     "install_query" : _("inetd or xinetd packages was not found.
 Do you want to install them now?"),
 
