@@ -33,12 +33,12 @@ if(func == "MakeProposal") {
 
     if(force_reset || !Inetd::proposal_valid) {
 	Inetd::proposal_valid = true;
-	Progress::off();
+	boolean po = Progress::set(false);
 	Inetd::Read();
+	Progress::set(po);
     }
     proposal = Inetd::Summary();
     
-    Progress::on();
 
     ret = $[
 	"preformatted_proposal" : proposal,
