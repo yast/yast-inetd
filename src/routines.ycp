@@ -135,6 +135,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
 	    };
 	});
     }
+    //table_input = sort(table_input);
     return table_input;
 };
 
