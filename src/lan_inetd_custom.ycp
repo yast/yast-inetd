@@ -164,7 +164,7 @@ is to be executed by inetd when a request is found on its socket.
 				   `HBox(
 					 `HSpacing(1),
 			     `VBox(
-				   `Left( `CheckBox( `id(`status), "service is active",
+				   `Left( `CheckBox( `id(`status), _("service is active"),
 							     status == `active )),
 				   `HBox( 
 					   `HWeight( 3,`VBox(
