@@ -1,0 +1,26 @@
+//
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Inetd (WFM::Args (0))));
+
+    list s = (list) SCR::Read (.test.inetd.services);
+    map ns = $[
+	// no iid
+	"changed": true,
+	"comment": " Dys is mai servis",
+	"enabled": true,
+	"service": "sgi_fam",
+	"rpc_version": "1-2",
+	"socket_type": "stream",
+	"protocol": "rpc/tcp",
+	"wait": false,
+	"max": 42,
+	"user": "root",
+	"group": "bin",
+	"server": "/usr/sbin/fam",
+	"server_args": "fam",
+	];
+    s = add (s, ns);
+    boolean r = SCR::Write (.test.inetd.services, s);
+
+    return r;
+}

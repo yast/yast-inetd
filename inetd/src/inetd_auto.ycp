@@ -1,0 +1,157 @@
+/**
+ * File:	clients/inetd_auto.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Client for autoinstallation
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param first a map of inetd settings
+ * @return map edited settings or an empty map if canceled
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallModule ("inetd_auto", [ mm ]);
+ */
+
+{
+
+textdomain "inetd";
+
+y2milestone("----------------------------------------");
+y2milestone("Xinetd auto started");
+
+import "Inetd";
+import "Service";
+
+include "inetd/wizards.ycp";
+include "inetd/dialogs.ycp";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string)WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map)WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+// kind of constructor
+if (!Inetd::autoyast_initialized)
+{
+    Inetd::Import ($[]);
+    Inetd::autoyast_initialized = true;
+}
+
+/**
+ * Create a summary
+ * return string
+ */
+if(func == "Summary") {
+    ret = Inetd::Summary();
+    //ret = select(Inetd::Summary(), 0 , "");
+}
+/**
+ * Reset configuration
+ * return map or list
+ */
+else if (func == "Reset") {
+    // We can load default during first "Change" call :o)
+    Inetd::Import($[]);
+    Inetd::modified = false;
+    ret = $[];
+}
+/**
+ * Change configuration
+ * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
+ */
+else if (func == "Change") {
+    // we do not want to install RPMs in autoinstallation mode...
+    Inetd::auto_mode = true;
+//    Inetd::Import(param);
+    ret = InetdAutoSequence();
+}
+/**
+ * Return list of needed packages
+ * return map or list
+ */
+else if (func == "Read") {
+    boolean po = Progress::set(false);
+    ret = Inetd::Read();
+    Progress::set(po);
+    Inetd::netd_status = Service::Status ("xinetd");
+    Inetd::netd_conf = maplist (map<string,any> s, Inetd::netd_conf, {
+	return add (s, "changed", true);
+    });
+}
+/**
+ * Return list of needed packages
+ * return map or list
+ */
+else if (func == "Packages") {
+    ret = Inetd::AutoPackages();
+}
+/**
+ * Return configuration data
+ * return map or list
+ */
+else if (func == "Export") {
+    ret = Inetd::Export();
+}
+/**
+ * Return if configuration  was changed
+ * return boolean
+ */
+else if (func == "GetModified") {
+    ret = Inetd::modified;
+}
+/**
+ * Set modified flag
+ * return boolean
+ */
+else if (func == "SetModified") {
+    Inetd::modified = true;
+    ret = true;
+}
+/**
+ * Write configuration data
+ * return boolean
+ */
+else if (func == "Write") {
+	import "Progress";
+	boolean po = Progress::set(false);
+    Inetd::write_only = true;
+    ret = Inetd::Write();
+	Progress::set(po);
+}
+/**
+ * Import settings
+ * return boolean
+ */
+else if (func == "Import") {
+    ret = Inetd::Import(param);
+}
+
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+    ret = false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("Xinetd auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+}

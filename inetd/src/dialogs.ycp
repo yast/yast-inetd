@@ -1,0 +1,815 @@
+/**
+ * File:	include/inetd/dialogs.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Dialogs definitions
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "inetd";
+
+import "Inetd";
+
+import "Package";
+import "Wizard";
+import "Popup";
+import "Label";
+
+include "inetd/helps.ycp";
+include "inetd/routines.ycp";
+
+typedef map<string, any> service_t;
+typedef list<service_t> services_t;
+
+define string CheckInstallable (string id);
+define term IidToTerm (string selected_item);
+define service_t EditOrCreateServiceDlg(string title, service_t line);
+
+/**
+ * local users and groups are stored here
+ * We create both lists only once - during first EditOrCreateServiceDlg() call.
+ */
+list<string> local_users  = nil;
+
+/**
+ * see local_users.
+ */
+list<string> local_groups = nil;
+
+/**
+ * This map is used for (re)selecting table items. This is new inetd GUI improvement! :o)
+ * Indexes table items, ie. not counting deleted services.
+ */
+map iid_to_index          = $[];
+
+/**
+ * See iid_to_index.
+ * This is reverse to iid_to_index.
+ * Indexes table items, ie. not counting deleted services.
+ */
+map index_to_iid          = $[];
+
+/**
+ * used for conversion netd_conf to table's format
+ */
+list<term> table_data           = [];
+
+
+/**
+ * This function regenerates index_to_iid and iid_to_index maps
+ */
+define void indexTable() ``{
+    integer index = 0;   // (re)set index
+    iid_to_index  = $[]; // clear data
+    index_to_iid  = $[]; //   maps are not empty!
+    foreach(map<string, any> line, Inetd::netd_conf, ``{
+	// Skip deleted entries
+	if (line["deleted"]:false == false) {
+	    index        = index + 1;
+	    string iid   = line["iid"]:"";
+	    iid_to_index = add(iid_to_index, iid, index);
+	    index_to_iid = add(index_to_iid, index, iid);
+	}
+    });
+}
+
+/**
+ * This function extracts provided packages (from Inetd::default_conf_*)
+ * for selected service.
+ * Matches by (service, protocol,"program (package)")
+ * @param service_info Contains informations about selected service
+ * @return list Provided packages
+ */
+define list<string> GetProvidedPackage(term service_info) ``{
+    list<string> packages = [];
+
+    // yuck, using numbers instead of names, this should be cleaned up
+    map<string, any> table_s = $[
+	"service": service_info[3]:"",
+	"protocol": service_info[5]:"",
+	"server": service_info[8]:"",
+	"server_args": service_info[9]:"",
+	// can't compare "script" here, it is not in the table.
+	// is it a problem?
+	];
+
+    foreach(map<string, any> default_s, Inetd::default_conf, ``{
+	if (ServicesMatch (default_s, table_s))
+	{
+	    packages = add (packages, default_s["package"]:"");
+	}
+    });
+    return packages;
+}
+
+/**
+ * Ensure that a package is installed.
+ * Show dialog with packages names provided non-installed service.
+ * @param selected_item iid from table
+ * @return symbol Status of operation:<pre>
+ * `next: nothing to do, it is installed already
+ * `auto: will be installed at autoinstall time
+ * `installed: successfully installed
+ * `none: cancelled or install error
+ * </pre>
+ */
+define symbol InstallProvidedPackage(string selected_item) ``{
+    symbol ret       = `next;
+    // possibly nil it out
+    selected_item = CheckInstallable (selected_item);
+    term service_info = IidToTerm (selected_item);
+
+    // service (package) is installed and its configuration is known,
+    // so simply skip dialog
+    if (service_info == nil) {
+	y2milestone ("%1", ret);
+	return ret;
+    }
+
+    // Now, the package doesn't exists. We must tell user, the package is required...
+    // But, the fisrt, we must extract requested package name
+    // (singleton list)
+    list<string> package_name = GetProvidedPackage(service_info);
+    y2milestone ("* pkg: %1", package_name);
+
+    // if Autoinstallation mode --- we do not want to install packages yet...
+    if (Inetd::auto_mode) {
+	/* Translators: In autoinstallation mode:
+	   The package name is stored in %1. This is Popup::ContinueCancel. */
+	if (Popup::ContinueCancel (sformat (_("Package %1 will be installed during the write process."),
+	    package_name[0]:"")))
+	{
+	    // Add requested package into list...
+	    Package::DoInstallAndRemove (package_name, []);
+	    IsInstalledClearCache ();
+	    ret = `auto;
+	}
+	else
+	{
+	    ret = `none;
+	}
+    }
+    // we are in normal mode :-)))
+    else {
+	// if installation failes
+	/* Translators: The package name is stored in %1. */
+	if (!Package::InstallAll (package_name)) {
+	//if (true) { // for debugging
+	    /* Translators: The package name is stored in %1. This is Popup::Message. */
+	    Popup::Message(sformat(_("Package %1 was not installed. The service cannot be edited."),
+		package_name[0]:""));
+	    ret = `none;
+	}
+	// installation successful
+	else {
+	    IsInstalledClearCache ();
+	    y2milestone("Rereading xinetd configuration");
+	    services_t old_conf = Inetd::netd_conf;
+	    // Reread configuration!
+	    Inetd::netd_conf = (services_t) SCR::Read(.etc.xinetd_conf.services);
+	    Inetd::netd_conf = Inetd::MergeEditedWithSystem(Inetd::netd_conf, old_conf);
+	    /* Translators: The package name is stored in %1 */
+	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
+		package_name[0]:""));
+	    ret = `installed;
+	}
+    }
+    y2milestone ("%1", ret);
+    return ret;
+}
+
+/**
+ * In table_data, find the first item whose id is selected_item
+ * @param selected_item iid of selected item
+ * @return term Service name or nil
+ */
+define term IidToTerm (string selected_item) ``{
+    if (selected_item == nil)
+    {
+	return nil;
+    }
+    return find (term line, table_data, ``(line[0, 0]:"NI" == selected_item));
+}
+
+/**
+ * Checks that the package should be installed.
+ * In normal mode, only for xinetd, for services thast are NI.
+ * In auto mode, check IsInstalled.
+ * otherwise screams nil.
+ * @param id a ui table item
+ * @return the same item or nil
+ */
+define string CheckInstallable (string id) ``{
+    if (Inetd::auto_mode)
+    {
+	// must get to the "package" field
+	map<string, any> service = (map<string, any>) find (map<string, any> s, Inetd::netd_conf, ``( s["iid"]:"" == id ));
+	if (IsInstalled (service["package"]:""))
+	{
+	    return nil;
+	}
+    }
+    else
+    {
+	// ids of NotInstalled table items start with NI
+//	if (Inetd::configured_service != `xinetd || find (id, "NI") != 0)
+	    return nil;
+    }
+    return id;
+}
+
+/**
+ * This is main inetd module dialog.
+ * @return dialog result
+ */
+define symbol InetdDialog () ``{
+
+    list expert_contents =
+	[
+	    `item(`id(`all_on),  _("&Activate All Services")),
+	    `item(`id(`all_off), _("&Deactivate All Services")),
+	];
+
+    /* These special options are available if `expert_inetd' parameter is given into command-line */
+    /*if(WFM::Args()[0]:"" == "expert_inetd")
+	expert_contents = add(expert_contents, `menu("E&xpert tools",
+	    [
+		`item(`id(`all_rev), "&Invert Status"),
+		`item(`id(`clear_changed), "&Clear \"CHANGED\" flag")
+	    ]));
+    */
+    /* These special options are available, if YAST2_INETD environment variable contains `EXPERT' */
+    /* The `expert_inetd' command-line parameter is implemented too. */
+    if((getenv("YAST2_INETD") == "EXPERT\n") || (WFM::Args()[0]:"" == "expert_inetd"))
+	expert_contents = add(expert_contents, `menu("E&xpert tools",
+	    [
+		`item(`id(`all_rev), "&Invert Status"),
+		`item(`id(`clear_changed), "&Clear \"CHANGED\" flag")
+	    ]));
+
+    /* Main dialog contents */
+    term contents =
+	`VBox(
+	    `VSpacing(0.5),
+	    `Left(
+		`RadioButtonGroup(
+		    `VBox(
+			/* Translators: Initial and target state of xinetd (or inetd) */
+			`Left(`RadioButton(`id(`stop),     `opt(`notify), _("D&isable"), true)),
+			`Left(`RadioButton(`id(`editable), `opt(`notify), _("Enab&le"), false))
+		    )
+		)
+	    ),
+	    `VSpacing(0.5),
+	      // Main dialog edit inetd.conf
+	    /* Translators: Name of table with services (echo, chargen, ...) */
+	    `Left(`Label(_("Currently Available Services"))),
+	    `HBox(
+		/* Translators: Table Header: The "Ch" label is short of "Changed". Please, make the
+				translation as short as possible. */
+		`Table(`id(`table), `opt(`notify),
+		//`opt(`keepSorting),
+		`header(`Center(_("Ch")), `Center(_("Status")),
+		    _("Service"), _("Type "), `Center(_("Protocol")), _("Wait"),
+		    _("User"), _("Server"), _("Server / Args")), table_data)
+	    ),
+	    `HBox(
+		`Left(
+		    `HBox(
+			`HSpacing(1),
+			/* Translators: Add service */
+			`PushButton(`id(`create), `opt(`key_F3), _("&Add") ),
+			`HSpacing(1),
+			/* Translators: Edit service */
+			`PushButton(`id(`edit),   `opt(`key_F4), _("&Edit") ),
+			`HSpacing(1),
+			/* Translators: Delete service */
+			`PushButton(`id(`delete), `opt(`key_F5), _("&Delete") )
+		    )
+		),
+//		`VSpacing(),
+		`Right(
+		    `HBox(
+			/* Translators: Change service status */
+			`HSquash(`PushButton(`id(`switch_active), _("&Toggle Status (On or Off)"))),
+			`HSpacing(1)
+		    )
+		)
+	    ),
+	    `HBox(
+		`Right(
+		    `HBox(
+			`HSquash(`MenuButton(`id(`toggle_menu), _("Status for All &Services"),
+			    expert_contents)),
+			`HSpacing(1)
+		    )
+		)
+	    ),
+	    `VSpacing(0.5)
+	);
+
+    any ret = nil;
+
+    /* Inetd configure dialog caption */
+    string caption = _("Network Service Configuration (xinetd)");
+
+    // initialize GUI
+    Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
+	    Label::BackButton(), Label::FinishButton());
+
+    Wizard::HideBackButton();
+
+    Wizard::SetScreenShotName("inetd-5-maindialog");
+
+    boolean new_state = false;
+
+    // if service active, enable editting
+    if(Inetd::netd_status == 0) {
+	new_state = true;
+    }
+    UI::ChangeWidget(`id(`editable),      `Value,   new_state);
+    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
+    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
+    UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
+    UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
+    UI::ChangeWidget(`id(`toggle_menu),   `Enabled, new_state);
+    UI::ChangeWidget(`id(`switch_active), `Enabled, new_state);
+
+    table_data = CreateTableData(Inetd::netd_conf);
+    indexTable();
+    UI::ChangeWidget(`id(`table),         `Items,   table_data);
+
+    // main loop
+    while(true) {
+
+	// item ID for `table stored here will be selected
+	string to_select     = "";
+	// skip time critical calculations if need_reindex == false (don't call indexTable())
+	boolean need_reindex = false;
+	// skip time critical calculations if need_rebuild == false (don't call CreateTableData())
+	// AARGH unused.
+	boolean need_rebuild = true;
+
+	if((boolean) UI::QueryWidget(`id(`editable), `Value))
+	    UI::SetFocus(`id(`table));
+	else
+	    UI::SetFocus(`id(`stop));
+
+	ret = UI::UserInput();
+	if (ret == `cancel)	// window-close button
+	{
+	    ret = `abort;
+	}
+
+	if((ret == `editable) || (ret == `stop)) {
+	    boolean new_state = (boolean) UI::QueryWidget(`id(`editable), `Value);
+	    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
+	    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
+	    UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
+	    UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
+	    UI::ChangeWidget(`id(`toggle_menu),   `Enabled, new_state);
+	    UI::ChangeWidget(`id(`switch_active), `Enabled, new_state);
+
+	    if(new_state) {
+		Inetd::netd_status = 0;
+	    }
+	    else {
+		Inetd::netd_status = -1;
+	    }
+	}
+	// create new entry
+	else if (ret == `create) {
+	    string selected_item   = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    service_t return_val      = $[];
+	    Inetd::last_created = Inetd::last_created + 1; // need uniq
+	    // default parameters for new service
+	    // TODO is "script: mandatory?
+	    service_t  new_line  = $["enabled":true, "service":"", "max":"",
+		"socket_type":"stream", "protocol":"tcp", "wait":false, "server_args":"",
+		"user":"root", "group":"", "comment":"",
+		"iid":"new" + Inetd::last_created, "created":true];
+	    // execute dialog
+	    /* Translators: Caption for EditOrCreateServiceDlg() */
+	    return_val = EditOrCreateServiceDlg(_("Add a New Service Entry"), new_line);
+	    // check Cancel
+	    if (return_val != nil) {
+		// new service was created --- add to global configuration
+		Inetd::addLine(return_val);
+		Inetd::modified = true;
+		need_reindex    = true;                 // iid_to_index and index_to_iid and
+		need_rebuild    = true;                 //   table_data must be rebuild
+		to_select       = "new" + Inetd::last_created; // select new entry
+	    }
+	    else {
+		need_reindex = false;                // nothing changed
+		need_rebuild = false;                //   so skip time-critical calculations
+		if (selected_item != nil) {
+		    to_select = selected_item;
+		}
+		else {
+		    to_select = index_to_iid[1]:"";
+		}
+	    }
+	}
+	// delete new entry
+	else if (ret == `delete) {
+	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+
+	    // one line must be selected
+	    if (selected_item != nil) {
+		if (CheckInstallable (selected_item) != nil) {
+		    /* Translators: Popup::Error */
+		    Popup::Error(_("Cannot delete the service. It is not installed."));
+		}
+		else {
+		    Inetd::modified = true;
+		    need_reindex    = true; // see `create (above) for more details
+		    need_rebuild    = true;
+		    integer old_index = iid_to_index[selected_item]:0;
+		    Inetd::deleteLine(selected_item);
+		    if (old_index == size(iid_to_index)) {
+			to_select = index_to_iid[old_index - 1]:"";
+		    }
+		    else {
+			to_select = index_to_iid[old_index + 1]:"";
+		    }
+		}
+	    }
+	    else {
+		/* Translators: Popup::Message */
+		Popup::Message(_("To delete a service, select one in the main dialog"));
+		need_reindex = false;
+		need_rebuild = false;
+		to_select    = "";
+	    }
+	}
+	// switch service status
+	else if (ret == `switch_active) {
+	    // get selected line iid
+	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    // notify a line is selected
+	    if (selected_item != nil) {
+		any result = InstallProvidedPackage(selected_item);
+
+		to_select    = selected_item;
+		if (result == `none)
+		{
+		    need_reindex = false;
+		    need_rebuild = false;
+		}
+		else
+		{
+		    // look for the selected line
+		    map<string, any> current_line = (map<string, any>) find (map<string, any> line, Inetd::netd_conf,
+			``( line["iid"]:"0" == selected_item ));
+		    // change status of line
+		    if (current_line["enabled"]:true == true) {
+			current_line = (map<string, any>) add(current_line, "enabled", false);
+		    }
+		    else {
+			current_line = (map<string, any>) add(current_line, "enabled", true);
+		    }
+		    // change line in database
+		    Inetd::changeLine(current_line, selected_item);
+		    Inetd::modified = true;
+		    need_reindex    = true;
+		    need_rebuild    = true;
+		}
+	    }
+	    else { // No line is selcted:
+		/* Translators: Popup::Message */
+		Popup::Message(_("To activate or deactivate a service, select one in the main dialog.") );
+		need_reindex = false;
+		need_rebuild = false;
+		to_select    = "";
+	    }
+	}
+	// activate all services
+	else if (ret == `all_on) {
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", true);
+		    line = (map<string, any>) add(line, "enabled", true);
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// deactivate all services
+	else if (ret == `all_off) {
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", true);
+		    line = (map<string, any>) add(line, "enabled", false);
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// invert status for all services
+	else if (ret == `all_rev) {
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", true);
+		    line = (map<string, any>) add(line, "enabled", !(line["enabled"]:false));
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// clear changed flag
+	else if (ret == `clear_changed) {
+	    Inetd::netd_conf = maplist(map<string, any> line, Inetd::netd_conf, ``{
+		if(line["deleted"]:false != true) {
+		    line = (map<string, any>) add(line, "changed", false);
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// edit service
+	else if (ret == `edit) {
+	    // get selected line in table
+	    need_reindex = false;
+	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    // line must be selected
+	    if (selected_item != nil) {
+		any result = InstallProvidedPackage(selected_item);
+
+		to_select    = selected_item;
+		if (result == `none)
+		{
+		    need_reindex = false;
+		    need_rebuild = false;
+		}
+		else
+		{
+		    service_t current_line = find (service_t line, Inetd::netd_conf,
+			``(line["iid"]:"0" == selected_item));
+		    if (current_line == nil) current_line = $[];
+		    /* Translators: Caption of EditOrCreateServiceDlg() */
+		    service_t return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
+		    // check for changes
+		    if (return_val != nil) {
+			Inetd::changeLine(return_val, selected_item);
+			Inetd::modified = true;
+		    }
+		    need_reindex = true;
+		    need_rebuild = true;
+		}
+	    }
+	    else {
+		/* Translators: Popup::Message */
+		Popup::Message(_("To edit a service, select one in the main dialog") );
+		need_reindex = false;
+		need_rebuild = false;
+		to_select    = "";
+	    }
+	}
+	else if(ret == `abort || ret == `back) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+	/*if(!((ret == `next) || (ret == `back) || (ret == `abort))) {
+	    Inetd::modified = true;
+	}*/
+	table_data = CreateTableData(Inetd::netd_conf);
+	if (need_reindex == true) {
+	    indexTable();
+	}
+	UI::ChangeWidget(`id(`table), `Items,  table_data);
+	if (to_select != "") {
+	    UI::ChangeWidget(`id(`table), `CurrentItem, to_select);
+	}
+    }
+
+    if(ret == `next) {
+	if((Inetd::netd_status == 0) && (IsAnyServiceEnabled(Inetd::netd_conf) == `no)) {
+	    Inetd::netd_status = -1;
+	    /* Translators: Popup::Warning */
+	    Popup::Warning(_("All services are marked as disabled (locked).
+Internet super-server will be disabled."));
+	}
+    }
+
+    Wizard::RestoreScreenShotName();
+    return (symbol) ret;
+}
+
+/**
+ * Edit or create an entry
+ * @param title title specifies the dialog name
+ * @param line line specifies new entry data-template
+ * @return map nil on Cancel or new entry (map) for netd_conf on OK:
+ */
+define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
+
+    /* Translators: Special widget for inetd */
+    boolean input_failed     = false;                                        // for all required widgets filled check
+    any     user_choice      = `back;                                        // for UserInput() loop
+
+    // Check for local user list is created...
+    if (local_users == nil) {
+	local_users = CreateLocalUsersList();
+    }
+    // Check for local group list is created...
+    if (local_groups == nil) {
+	local_groups = CreateLocalGroupsList();
+    }
+
+    term contents =
+	`VBox(
+	    `VSquash(
+		`HBox(
+		    // service name
+		    `HWeight(3,
+			`TextEntry(`id(`service), _("&Service"))
+		    ),
+		    `HSpacing(1),
+		    `HWeight(1,
+			`TextEntry(`id(`rpc_version), _("RPC Versio&n"))
+		    ),
+		    `HSpacing(1),
+		    // service status (running or stopped)
+		    `Bottom(`CheckBox(`id(`status), _("Service is acti&ve."),
+			line["enabled"]:false))
+		)
+	    ),
+	    `HBox(
+		// service socket type
+		`HWeight(3,
+		    `ComboBox(`id(`type), `opt(`hstretch), _("Socket T&ype"),
+			["stream", "dgram", "raw", "seqpacket"])
+		),
+		`HSpacing(1),
+		// for protocol option - ediatble ComboBox
+		`HWeight(3,
+		    `ComboBox(`id(`protocol), `opt(`hstretch),
+			_("&Protocol"), ["tcp", "udp", "rpc/tcp", "rpc/udp"])
+		),
+		`HSpacing(1),
+		// for flags (wait/nowait) - noneditable ComboBox
+		`HWeight(3,
+		    `ComboBox(`id(`wait), `opt(`hstretch), _("&Wait"),
+			["yes", "no"])
+		),
+		// check for used service - if inetd, add max TextEntry
+		`HWeight(0, `Empty())
+	    ),
+	    `VBox(
+		// user and group ComboBoxes
+		`HBox(
+		    `HWeight(1, `ComboBox(`id(`user), _("&User"), local_users)),
+		    `HSpacing(1),
+		    `HWeight(1, `ComboBox(`id(`group), _("&Group"), local_groups))
+		),
+		// Server arguments
+		`TextEntry(`id(`server), _("S&erver")),
+		`TextEntry(`id(`servargs), _("Server Argumen&ts")),
+		// Comment above the service line in inetd.conf
+		`MultiLineEdit(`id(`comment), _("Co&mment"))
+	    )
+	);
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("inetd");
+    Wizard::SetContentsButtons (
+				title,
+				contents,
+				EditCreateHelp(),
+				Label::CancelButton(),
+				Label::AcceptButton()
+				);
+
+    Wizard::SetScreenShotName("inetd-6-servicedetails");
+
+    UI::SetFocus(`id(`service));
+
+    /*
+     * NOW!! fill widgets
+     *
+     * inetd has special widget max - we must check it
+     */
+    UI::ChangeWidget(`id(`service),     `Value, line["service"]:"");
+    UI::ChangeWidget(`id(`rpc_version), `Value, line["rpc_version"]:"");
+    UI::ChangeWidget(`id(`type),        `Value, line["socket_type"]:"");
+    UI::ChangeWidget(`id(`protocol),    `Value, line["protocol"]:"");
+    if (line["wait"]:true == true) {
+	UI::ChangeWidget(`id(`wait), `Value, "yes");
+    }
+    else {
+	UI::ChangeWidget(`id(`wait), `Value, "no");
+    }
+    UI::ChangeWidget(`id(`user),      `Value, line["user"]:"");
+    string group = line["group"]:"";
+    if (group == "") {
+	/* Translators: Please BE CAREFUL! This text is often used in code! This Translation must be the same. */
+	UI::ChangeWidget(`id(`group), `Value, _("--default--"));
+    }
+    else {
+	UI::ChangeWidget(`id(`group), `Value, group);
+    }
+    UI::ChangeWidget(`id(`server),    `Value, line["server"]:"");
+    UI::ChangeWidget(`id(`servargs),  `Value, line["server_args"]:"");
+    UI::ChangeWidget(`id(`comment),   `Value, line["comment"]:"");
+
+    Wizard::HideAbortButton();
+
+    // UI Loop
+    repeat {
+	user_choice = UI::UserInput();
+	if (user_choice == `cancel) // window-close button
+	{
+	    user_choice = `back;
+	}
+
+	if (user_choice != `back) {
+
+	    // Are required values filled?
+	    // Inetd specific:
+	    //   Service and Server must be filled
+	    // Xinetd specific:
+	    //   Service must be filled.
+	    if (UI::QueryWidget(`id(`service), `Value) == "")
+	    {
+		Popup::Message(
+		    /* Translators: Popup::Message */
+		    _("Service is empty.
+Enter valid values.
+"));
+		input_failed = true;
+	    } else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
+		(UI::QueryWidget(`id(`user), `Value) == _("--default--")))
+	    {
+		/* Translators: sformat-ed() 3 strings */
+		Popup::Message(sformat(_("The user %1 is reserved for internal server processes only."), _("--default--")));
+		input_failed = true;
+	    }
+	    // YES (input is OK) --- so save settings!
+	    else {
+		input_failed = false;
+		if ((boolean) UI::QueryWidget(`id(`status), `Value)) {
+		    line = add(line, "enabled", true);
+		}
+		else {
+		    line = add(line, "enabled", false);
+		}
+		// do not add a "flags" field, it's currently in "unparsed"
+		if (UI::QueryWidget(`id(`wait), `Value) == "yes") {
+		    line = add(line, "wait", true);
+		}
+		else {
+		    line = add(line, "wait", false);
+		}
+		line = add(line, "service",     UI::QueryWidget(`id(`service),     `Value));
+		line = add(line, "rpc_version", UI::QueryWidget(`id(`rpc_version), `Value));
+		line = add(line, "socket_type", UI::QueryWidget(`id(`type),        `Value));
+		line = add(line, "protocol",    UI::QueryWidget(`id(`protocol),    `Value));
+		line = add(line, "user",        UI::QueryWidget(`id(`user),        `Value));
+		group = (string) UI::QueryWidget(`id(`group), `Value);
+		if (group == _("--default--")) {
+		    group = "";
+		}
+		line = add(line, "group",       group);
+		line = add(line, "server",      UI::QueryWidget(`id(`server),      `Value));
+		line = add(line, "server_args", UI::QueryWidget(`id(`servargs),    `Value));
+		line = add(line, "comment",     UI::QueryWidget(`id(`comment),     `Value));
+	    }
+	}
+    } until (((user_choice == `next) && (input_failed == false)) || (user_choice == `back));
+    Wizard::CloseDialog();
+    Wizard::RestoreScreenShotName();
+    // tell the calling function what user done
+    if (user_choice == `back) {
+	return(nil);  // operation canceled
+    }
+    else {
+	return(line); // line changed
+    }
+}
+
+/* EOF */
+}

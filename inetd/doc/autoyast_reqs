@@ -1,0 +1,127 @@
+							-*- outline -*-
+Improvements for xinetd autoinstallation
+mvidner@suse.cz, 2003-05-26
+
+Currently the autoyast interface for yast2-inetd is not documented.
+If one sets up a xinetd configuration via the autoyast UI, the
+configuration structures contain unnecessary, even bogus data.
+This document aims to fix that.
+
+Notes:
+
+- The primary focus is on xinetd as the default superserver. If
+  necessary, we may support fewer features for inetd, but it needs to be
+  documented, not silently broken. (What works currently?)
+
+- In the future, we would like to merge yast2-inetd and
+  yast2-runlevel, because conceptually both provide some services.
+
+- Compatibility with current version must be kept: Profiles written
+  for 8.2 must be usable in 8.3. 
+
+* Use cases
+
+** UC1: Finger server should be enabled
+
+This is the simplest case. It is a SuSE package, only one rpm provides
+the finger service.
+
+** UC2: FTP server should be enabled, pure-ftpd flavor
+
+We have multiple ftp servers in the distro. It needs to be specified,
+which is to be used.
+
+** UC3: Finger server should be enabled, running as "nobody"
+
+Enabling a service, setting some of its parameters.
+
+** UC4: non-suse-foo should be enabled
+
+User can install a non-SuSE rpm and have a service provided by it
+enabled.
+
+* Autoyast interface
+
+The following configuration maps should be recognized as input, and
+are optimized for hand-writing (well, as much as XML allows...).
+The AY UI should be able to read them but it is not necessary that
+they are output in the same terse form. However, data that is bogus
+(server= "in.fingerd (finger-server)") or UI-related (last_created=1)
+should not be output.
+
+Inetd.ycp accesses the configuration map that is placed at
+/profile/configure/inetd. It has also access to the list of
+individualy selected packages, /profile/install/software/packages.
+(This should be write-only, because a package may be provided
+implicitly by a "selection".)
+
+** UC1:
+
+/profile/install/software/packages:
+[
+  "finger-server",
+]
+
+/profile/configure/inetd:
+$[
+  "netd_service": `xinetd,
+  "netd_conf": [
+    $[
+      "service": "finger",
+    ],
+  ],
+]
+
+** UC2:
+
+/profile/install/software/packages:
+[
+  "pure-ftpd",
+]
+
+/profile/configure/inetd:
+$[
+  "netd_service": `xinetd,
+  "netd_conf": [
+    $[
+      "service": "ftp",
+      "script": "pure-ftpd",
+    ],
+  ],
+]
+
+Script is the name of the file placed in /etc/xinetd.d
+
+** UC3:
+
+/profile/install/software/packages:
+[
+  "finger-server",
+]
+
+/profile/configure/inetd:
+$[
+  "netd_service": `xinetd,
+  "netd_conf": [
+    $[
+      "service": "finger",
+      "user": "nobody",
+    ],
+  ],
+]
+
+** UC4:
+
+/profile/configure/inetd:
+$[
+  "netd_service": `xinetd,
+  "netd_conf": [
+    $[
+      "service": "foo",
+    ],
+  ],
+]
+
+This looks like UC1, but the point is that we must not rely on some
+additional information, such as currently all-services.ycp or
+default_conf_xinetd.ycp (which is outdated, BTW).

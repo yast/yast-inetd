@@ -1,0 +1,11 @@
+// re-reading used to keep the old list :-(
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
+
+    list s = [];
+    // read it twice
+    s = (list) SCR::Read (.test.inetd.services);
+    s = (list) SCR::Read (.test.inetd.services);
+
+    return s;
+}
