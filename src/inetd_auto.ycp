@@ -26,7 +26,7 @@ y2milestone("----------------------------------------");
 y2milestone("Inetd auto started");
 
 import "Inetd";
-include "inetd/ui.ycp";
+include "inetd/wizards.ycp";
 
 list args = WFM::Args();
 if(size(args) <= 0) {

@@ -195,7 +195,7 @@ global define symbol WhatToConfigureDialog() ``{
 
 /**
  * This function regenerates index_to_iid and iid_to_index maps
- * @return none
+ * @return
  */
 global define indexTable() ``{
     integer index = 0;   // (re)set index
@@ -306,7 +306,7 @@ global define symbol InetdDialog () ``{
     UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
     UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
     UI::ChangeWidget(`id(`switch_active), `Enabled, new_state);
-    
+
     table_data = CreateTableData(Inetd::netd_conf);
     indexTable();
     UI::ChangeWidget(`id(`table),         `Items,   table_data);
@@ -486,10 +486,10 @@ Internet super-server will be disabled."));
 
 /**
  * Edit or create an entry
- * @return nil on Cancel or a pair on OK:
- * [ edited_comment or "", edited_service_map ]
+ * @param title title specifies the dialog name
+ * @param line line specifies new entry data-template
+ * @return map nil on Cancel or new entry (map) for netd_conf on OK:
  */
-
 global define EditOrCreateServiceDlg(string title, map line) ``{
 
     term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets

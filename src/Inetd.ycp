@@ -88,21 +88,6 @@ global define boolean Modified() ``{
     return modified;
 };
 
-// Settings: Define all variables needed for configuration of inetd
-// TODO FIXME: Define all the variables necessary to hold
-// TODO FIXME: the configuration here (with the appropriate
-// TODO FIXME: description)
-// TODO FIXME: For example:
-//   /**
-//    * List of the configured cards.
-//    */
-//   list cards = [];
-//
-//   /**
-//    * Some additional parameter needed for the configuration.
-//    */
-//   boolean additional_parameter = true;
-
 /**
  * hold informations about installed services (rpm -q exit code).
  * 0 means installed, anything else means no or error
@@ -161,8 +146,6 @@ global define boolean Read() ``{
     integer sl = 0;
     sleep(sl);
 
-    // TODO FIXME Names of real stages
-    // We do not set help text here, because it was set outside
     Progress::New( caption, " ", steps, [
 	    _("Read the configuration"),
 	], [
@@ -212,14 +195,11 @@ global define boolean Write() ``{
     /* Inetd read dialog caption */
     string caption = _("Saving inetd configuration");
 
-    // TODO FIXME And set the right number of stages
     integer steps = 1;
 
     integer sl = 0;
     sleep(sl);
 
-    // TODO FIXME Names of real stages
-    // We do not set help text here, because it was set outside
     Progress::New(caption, " ", steps, [
 	    _("Write the settings"),
 	], [
@@ -348,7 +328,7 @@ global define map Export () ``{
 
 /**
  * Create a textual summary and a list of unconfigured cards
- * @param split split configured and unconfigured?
+ * // @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
 global define list Summary() ``{
@@ -368,7 +348,7 @@ global define list Overview() ``{
 /**
  * delete line in netd_conf
  * @param line_number "iid" geted from table's item ID
- * @return If success returns updated line
+ * @return map If success returns updated line
  */
 global define deleteLine(any line_number) ``{
     // delete
@@ -390,6 +370,7 @@ global define deleteLine(any line_number) ``{
 
 /**
  * add a line in DB
+ * @param new_line new_line contains new entry for global netd_conf configuration
  * @return void
  */
 global define void addLine(map new_line) ``{
@@ -401,7 +382,9 @@ global define void addLine(map new_line) ``{
 
 /**
  * Change a line in DB
- * @return  internal-DB map
+ * @param new_line new_line contains changes for entry in netd_conf
+ * @param line_number line_number contains iid of changed entry in netd_conf
+ * @return map If success, returnes updated line
  */
 global define changeLine(map new_line, any line_number) ``{
     // entry was changed - so set "changed" flag to true
