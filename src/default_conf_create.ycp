@@ -112,23 +112,12 @@
 	});
     }
 
-    integer old = WFM::SCRGetDefault ();
+    // needs ycp.pm,v 1.6
+    SCR::RegisterAgent (.aaa.inetd, `ag_netd (`Inetd ("etc/inetd.conf")));
+    list dc_inetd = SCR::Read (.aaa.inetd.services);
 
-    integer h = WFM::SCROpen ("ag_netd", false);
-    if (h < 1)
-    {
-	return;
-    }
-    WFM::SCRSetDefault (h);
-
-    SCR::Inetd ("etc/inetd.conf");
-    list dc_inetd = SCR::Read (.services);
-
-    SCR::Xinetd ("all-services.conf");
-    list dc_xinetd = SCR::Read (.services);
-
-    WFM::SCRClose (h);
-    WFM::SCRSetDefault (old);
+    SCR::RegisterAgent (.aaa.xinetd, `ag_netd (`Xinetd ("all-services.conf")));
+    list dc_xinetd = SCR::Read (.aaa.xinetd.services);
 
     y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
 
