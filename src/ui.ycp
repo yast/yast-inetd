@@ -277,7 +277,7 @@ global define DetectService () ``{
     }
     // now, if none installed, we show error dialog and exit...
     if (Inetd::netd_service == `none) {
-	UI::WarningPopup("No Internet service installed - please install inetd or xinetd.");
+	UI::WarningPopup(_("No Internet service installed - please install inetd or xinetd."));
 	return `abort;
     }
     // finaly: service(s) is/are installed
