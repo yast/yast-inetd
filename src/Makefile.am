@@ -9,6 +9,10 @@ modules_SCRIPTS = lan_inetd_start.ycp	\
 		  lan_inetd_custom.ycp	\
 		  lan_inetd.ycp
 
+bindir = $(YAST2DIR)/bin
+bin_SCRIPTS = build_inetd_conf_ycp.pl 
+
+
 menu_SCRIPTS = menuentry_lan_inetd.ycp
 
-EXTRA_DIST = $(modules_SCRIPTS) $(menu_SCRIPTS)
+EXTRA_DIST = $(modules_SCRIPTS) $(menu_SCRIPTS) $(bin_SCRIPTS)

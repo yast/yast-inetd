@@ -186,7 +186,7 @@ is to be executed by inetd when a request is found on its socket.
 				   )
 					 ))),
 		    //`VWeight( 0,`Frame( _("Previous block comment in inetd.conf"), `Label( previous_comment )))
-	           `VWeight( 0,`Frame( _("Previous block comment in inetd.conf"), `RichText( previous_comment )))
+	           `VWeight( 3,`Frame( _("Previous block comment in inetd.conf"), `RichText( previous_comment )))
 		    )
 	      ),
 	`HBox(
@@ -525,98 +525,99 @@ is to be executed by inetd when a request is found on its socket.
      */
 
     define writeInetdConfx ( list inetd_conf )
-	``{
-	    // not tested yet!
-	    string send_line = "";
-	    _debug( "WriteLine: ", send_line );
-	      Shell( "mv /etc/inetd.conf /etc/inetd.conf.sic" );
-	      Shell( "rm /etc/inetd.conf " );  // if i have not the permission to move
+	  ``{
+	      // not tested yet!
+	      string send_line = "";
+	      _debug( "WriteLine: ", send_line );
+		Shell( "mv /etc/inetd.conf /etc/inetd.conf.sic" );
+		Shell( "rm /etc/inetd.conf " );  // if i have not the permission to move
 
-	      list scr_write_input = maplist(`line, inetd_conf,
-		 ``{
-	      
-		     map    curr_map = $[];
-		     string inetd_conf_line = "";
-	      
-		     symbol status = lookup(line, `status, `comment);
-	      
-		     if ( status != `comment )
-		     {
-		     if ( status == `active )
-		     {
-			 inetd_conf_line = sformat( "%1 %2 %3 %4 %5 %6",
-						    lookup( line, "service", "error"),     
-						    lookup( line, "type",     "error"),     
-						    lookup( line, "protocol", "error"),     
-						    lookup( line, "flags",    "error"),     
-						    lookup( line, "user",     "error"),     
-						    lookup( line, "servargs", "error"));
-			 send_line = "echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf";
-		     }
-		     else
-		     {
-			 inetd_conf_line = sformat( "# %1 %2 %3 %4 %5 %6",
-						    lookup( line, "service", "error"),     
-						    lookup( line, "type",     "error"),     
-						    lookup( line, "protocol", "error"),     
-						    lookup( line, "flags",    "error"),     
-						    lookup( line, "user",     "error"),     
-						    lookup( line, "servargs", "error"));
-			 send_line = "echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf" ;
-		     }
-		     }
-		     else
-		     {
-			 send_line = "echo \"# "+lookup( line, "comment", "")+ "\" >>/etc/inetd.conf";
-		     }
-	      
-		     _debug( "WriteLine: ", send_line );
-		     Shell( send_line );
-		 });
+		list scr_write_input = maplist(`line, inetd_conf,
+		   ``{
+		
+		       map    curr_map = $[];
+		       string inetd_conf_line = "";
+		
+		       symbol status = lookup(line, `status, `comment);
+		
+		       if ( status != `comment )
+		       {
+		       if ( status == `active )
+		       {
+			   inetd_conf_line = sformat( "%1 %2 %3 %4 %5 %6",
+						      lookup( line, "service", "error"),     
+						      lookup( line, "type",     "error"),     
+						      lookup( line, "protocol", "error"),     
+						      lookup( line, "flags",    "error"),     
+						      lookup( line, "user",     "error"),     
+						      lookup( line, "servargs", "error"));
+			   send_line = "echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf";
+		       }
+		       else
+		       {
+			   inetd_conf_line = sformat( "# %1 %2 %3 %4 %5 %6",
+						      lookup( line, "service", "error"),     
+						      lookup( line, "type",     "error"),     
+						      lookup( line, "protocol", "error"),     
+						      lookup( line, "flags",    "error"),     
+						      lookup( line, "user",     "error"),     
+						      lookup( line, "servargs", "error"));
+			   send_line = "echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf" ;
+		       }
+		       }
+		       else
+		       {
+			   send_line = "echo \"# "+lookup( line, "comment", "")+ "\" >>/etc/inetd.conf";
+		       }
+		
+		       _debug( "WriteLine: ", send_line );
+		       Shell( send_line );
+		   });
 
-	    _debug( "WWWWWWWWWWWWWWWWWWWVVVVVVV" );
-	};
+	      _debug( "WWWWWWWWWWWWWWWWWWWVVVVVVV" );
+	  };
 
     
 //    define writeInetdConf ( list inetd_conf )
 //    {
-//	// not tested yet!
-//	  list scr_write_input = maplist(`line, inetd_conf,
-//	  ``{
+//	  // not tested yet!
+//	    list scr_write_input = maplist(`line, inetd_conf,
+//	    ``{
 //
-//	     map    curr_map = $[];
-//	     symbol status = lookup(line, `status, `comment);
-//	     
-//	     if ( status != `comment )
-//	     {
-//		 if ( status == `active )
-//		 {
-//		     curr_map = add( curr_map, "service",  lookup( line, "service", "") );
-//		 }
-//		 else
-//		 {
-//		     curr_map = add( curr_map, "c_service",  lookup( line, "service", "") );
-//		 }
-//	     
-//		 string type = lookup( line, "type", "");
-//	     
-//		 if ( type == "dgram" )     curr_map = add( curr_map,     "dgram_protocol", lookup( line, "protocol", "") );
-//		 if ( type == "stream" )    curr_map = add( curr_map,    "stream_protocol", lookup( line, "protocol", "") );
-//		 if ( type == "raw" )       curr_map = add( curr_map,       "raw_protocol", lookup( line, "protocol", "") );
-//		 if ( type == "rdw" )       curr_map = add( curr_map,       "rdw_protocol", lookup( line, "protocol", "") );
-//		 if ( type == "seqpacket" ) curr_map = add( curr_map, "seqpacket_protocol", lookup( line, "protocol", "") );
-//	     
-//	     
-//		 curr_map = add( curr_map, "flags",	   lookup( line, "flags", ""));
-//		 curr_map = add( curr_map, "user",	   lookup( line, "user", ""));
-//		 curr_map = add( curr_map, "servargs", lookup( line, "servargs", ""));
-//	     
+//	       map    curr_map = $[];
+//	       symbol status = lookup(line, `status, `comment);
+//	       
+//	       if ( status != `comment )
+//	       {
+//		   if ( status == `active )
+//		   {
+//		       curr_map = add( curr_map, "service",  lookup( line, "service", "") );
+//		   }
+//		   else
+//		   {
+//		       curr_map = add( curr_map, "c_service",  lookup( line, "service", "") );
+//		   }
+//	       
+//		   string type = lookup( line, "type", "");
+//	       
+//		   if ( type == "dgram" )     curr_map = add( curr_map,     "dgram_protocol", lookup( line, "protocol", "") );
+//		   if ( type == "stream" )    curr_map = add( curr_map,    "stream_protocol", lookup( line, "protocol", "") );
+//		   if ( type == "raw" )       curr_map = add( curr_map,       "raw_protocol", lookup( line, "protocol", "") );
+//		   if ( type == "rdw" )       curr_map = add( curr_map,       "rdw_protocol", lookup( line, "protocol", "") );
+//		   if ( type == "seqpacket" ) curr_map = add( curr_map, "seqpacket_protocol", lookup( line, "protocol", "") );
+//	       
+//	       
+//		   curr_map = add( curr_map, "flags",	   lookup( line, "flags", ""));
+//		   curr_map = add( curr_map, "user",	   lookup( line, "user", ""));
+//		   curr_map = add( curr_map, "servargs", lookup( line, "servargs", ""));
+//	       
 //		   return( curr_map );
-//	   }
-//	   else
-//	   {
-//	       return( $[ "comment":lookup( line, "comment", "")]);
-//	   }
+//	     }
+//	     else
+//	     {
+//		 return( $[ "comment":lookup( line, "comment", "")]);
+//	     }
+//	    }
 //     });
 //
 //     _debug( "WWWWWWWWWWWWWWWWWWWVVVVVVV", scr_write_input );
@@ -684,11 +685,12 @@ is to be executed by inetd when a request is found on its socket.
     //  Read the inetd.conf
     /////////////////////////////////////////////////////////////////
 
-    if ( !test_mode  )
-    {
-        scr_output = SCR(`Read(.etc.inetd.conf));
-	_debug( "WWWWWWWWWWWWWWWWWWW", scr_output );
-    }
+//    if ( !test_mode  )
+//    {
+//	  scr_output = SCR(`Read(.etc.inetd.conf_read));
+//	  _debug( "WWWWWWWWWWWWWWWWWWW", scr_output );
+//    }
+
 
     
     /////////////////////////////////////////////////////////////////
@@ -699,45 +701,47 @@ is to be executed by inetd when a request is found on its socket.
     list inetd_conf       = [];
     integer line_counter = 0;
     
-    foreach(`line, scr_output, ``{
+//    foreach(`line, scr_output, ``{
+//
+//	  // look for the type of the line
+//	  //
+//	  //  lookup( line, "c_service" ); ok? -> inactive entry
+//	  //  lookup( line, "service" );   ok? -> active entry
+//	  //  lookup( line, "comment" );   ok? -> comment
+//	  //  else comment (empty line)
+//
+//	  map line_map          = $[];
+//	  line_counter          = line_counter + 1; //
+//
+//	  string|void c_service = lookup( line, "c_service" );
+//
+//	  if ( c_service != nil )
+//	  {
+//	      line_map   = convertScrLineToInternal( line, c_service, `inactive, line_counter );
+//	      inetd_conf = add( inetd_conf, line_map );
+//	  }
+//	  else
+//	  {
+//	      string|void   service = lookup( line, "service" );
+//	      if ( service != nil )
+//	      {
+//		  // active entry
+//		  line_map   = convertScrLineToInternal( line, service, `active, line_counter );
+//		  inetd_conf = add( inetd_conf, line_map );
+//	      }
+//	      else
+//	      {
+//		  // comment
+//		  string  comment = lookup( line, "comment", " " );
+//		  integer next    = line_counter +100;
+//		  line_map   = $[ `status:`comment, "comment":comment, "line_number":line_counter  ];
+//		  inetd_conf = add( inetd_conf, line_map );
+//	      }
+//	  }
+//     });
 
-        // look for the type of the line
-        //
-        //  lookup( line, "c_service" ); ok? -> inactive entry
-        //  lookup( line, "service" );   ok? -> active entry
-        //  lookup( line, "comment" );   ok? -> comment
-        //  else comment (empty line)
-
-	map line_map          = $[];
-	line_counter          = line_counter + 1; //
-
-	string|void c_service = lookup( line, "c_service" );
-
-	if ( c_service != nil )
-	{
-	    line_map   = convertScrLineToInternal( line, c_service, `inactive, line_counter );
-	    inetd_conf = add( inetd_conf, line_map );
-	}
-	else
-	{
-	    string|void   service = lookup( line, "service" );
-	    if ( service != nil )
-	    {
-		// active entry
-		line_map   = convertScrLineToInternal( line, service, `active, line_counter );
-		inetd_conf = add( inetd_conf, line_map );
-	    }
-	    else
-	    {
-		// comment
-		string  comment = lookup( line, "comment", " " );
-		integer next    = line_counter +100;
-		line_map   = $[ `status:`comment, "comment":comment, "line_number":line_counter  ];
-		inetd_conf = add( inetd_conf, line_map );
-	    }
-	}
-     });
-
+    Shell ("/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl");
+    inetd_conf = Read( "/tmp/inetd_conf.ycp");
 
     list table_data = convertInternalToList( inetd_conf );
 
