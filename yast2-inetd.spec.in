@@ -32,6 +32,7 @@ Summary:	Configuration of inetd
 @clientdir@/inetd*.ycp
 @moduledir@/Inetd.ycp
 @configdir@/inetd.y2cc
+@desktopdir@/inetd.desktop
 @scrconfdir@/etc_inetd.scr
 @scrconfdir@/etc_xinetd.scr
 @agentdir@/ag_netd
