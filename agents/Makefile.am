@@ -5,6 +5,6 @@
 #
 
 agent_SCRIPTS = ag_netd
-scrconf_DATA = netd.scr
+scrconf_DATA = netd.scr xinetd.scr
 
 EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA)
