@@ -1,4 +1,6 @@
 // A mapping between all available services and rpm packages
+// Author: Martin Vidner <mvidner@suse.cz>
+// $Id$
 // Generated on Wed Jan 15 10:03:52 CET 2003
 [
 $["package":"finger-server", "service":"finger", "protocol":"tcp", "program":"in.fingerd"],
