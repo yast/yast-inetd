@@ -173,10 +173,11 @@ global define MainDialog () ``{
     string caption = _("Network services");
 
     term contents =
-	 `VBox(
+	`VBox(
 	       `Frame ( _("Enable/disable inetd:"),
-			`RadioButtonGroup(`id(`inetd),
-					  `VBox(`Label(""),
+			`HSquash(
+				`RadioButtonGroup (`id(`inetd), //Group
+					`VBox(`Label(""),
 						`Left(`RadioButton(`id(`off),`opt(`notify),
 								   // main dialog: RasioButton: don't start inetd
 								   _("O&ff, don't start inetd"), Inetd::inetd_status == `off  )),
@@ -194,9 +195,10 @@ global define MainDialog () ``{
 								   Inetd::inetd_status == `on_custom )),
 						`Label("")
 						)
-					  )
+					)
+				)
 			)
-	       );
+	);
 
 
     Wizard::SetContentsButtons ( caption,
