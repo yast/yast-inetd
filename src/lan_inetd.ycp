@@ -187,7 +187,7 @@
 
   while ((id >= 0) && (id < size (dialog))) {
     
-    result = eval(select(dialog, id));
+    result = eval(select(dialog, id, `none));
     
     if (result == `cancel)
       break;

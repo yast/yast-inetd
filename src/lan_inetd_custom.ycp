@@ -391,7 +391,7 @@ Please enter valid values.") ));
 	// Check for  sockettype: stream dgram raw rdm seqpacket
 	// therefore check EXISTANCE of <sockettype>protocol
 
-	string  dgram_protocol = lookup( line, "dgram_protocol" );
+	string  dgram_protocol = lookup( line, "dgram_protocol" , "");
 
 	if ( dgram_protocol != nil )
 	{
@@ -400,7 +400,7 @@ Please enter valid values.") ));
 	}
 	else
 	{
-	    string  stream_protocol = lookup( line, "stream_protocol" );
+	    string  stream_protocol = lookup( line, "stream_protocol" , "");
 	    if ( stream_protocol != nil )
 	    {
 		line_map = add( line_map, "type",       "stream");
@@ -408,9 +408,9 @@ Please enter valid values.") ));
 	    }
 	    else
 	    {
-		string  raw_protocol       = lookup( line, "raw_protocol" );
-		string  rdw_protocol       = lookup( line, "rdw_protocol" );
-		string  seqpacket_protocol = lookup( line, "seqpacket_protocol" );
+		string  raw_protocol       = lookup( line, "raw_protocol" , "");
+		string  rdw_protocol       = lookup( line, "rdw_protocol" , "");
+		string  seqpacket_protocol = lookup( line, "seqpacket_protocol" , "");
 
 		if ( raw_protocol != nil )
 		{
@@ -466,7 +466,7 @@ Please enter valid values.") ));
 		    servargs = sformat( "%1 .......", substring( servargs, 0, 36 ));
 		}
 
-		term a = `item(`id(lookup( line, "line_number" )),
+		term a = `item(`id(lookup( line, "line_number" , 0)),
 			       status_str,
 			       lookup( line, "service", ""),
 			       lookup( line, "type", ""),
@@ -815,14 +815,14 @@ UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
              // check Cancel (== nil) 
 	    if ( return_val != nil )
 	    {
-		current_line = select( return_val, 1 );
+		current_line = select( return_val, 1 , $[]);
    
 		inetd_conf = addLine( inetd_conf, current_line, w_id-1);
    
 		////////////////////////////////////
 		//   	- a dialog-ouput for comment    -> insert line X-1
 		
-		string new_comment = select( return_val, 0 ); 
+		string new_comment = select( return_val, 0 , ""); 
 		if ( new_comment != "" )
 		{
 		    // B.1
@@ -892,7 +892,7 @@ UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
 		// - change line in Database
 		///////////////////////////////////////////
 		
-		map current_line = select( filter( `line, inetd_conf, ``(lookup( line, "line_number", 0 ) == w_id ) ), 0 );
+		map current_line = select( filter( `line, inetd_conf, ``(lookup( line, "line_number", 0 ) == w_id ) ), 0 , $[]);
 
 		if ( lookup(current_line,`status,`active) == `active )
 		{
@@ -939,12 +939,12 @@ UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
 		// - compute comment
 		///////////////////////////////////////////
 		
-		map current_line = select( filter( `line, inetd_conf, ``(lookup( line, "line_number", 0 ) == w_id ) ), 0 );
+		map current_line = select( filter( `line, inetd_conf, ``(lookup( line, "line_number", 0 ) == w_id ) ), 0 , $[]);
 
 		// editable comment
 		if ( w_id > 1 )
 		{
-		    comment_line = select( filter( `line, inetd_conf, ``(lookup( line, "line_number", 0 ) == w_id-1 ) ), 0 );
+		    comment_line = select( filter( `line, inetd_conf, ``(lookup( line, "line_number", 0 ) == w_id-1 ) ), 0 , $[]);
 
 		    if ( lookup( comment_line, `status, `active ) == `comment )
 		    {
@@ -961,7 +961,7 @@ UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
 		{
 		    if ( stat == `search || stat == `read )
 		    {
-		       map curr_line = select( filter( `line,  inetd_conf, ``(lookup( line, "line_number", 0 ) == i ) ), 0);
+		       map curr_line = select( filter( `line,  inetd_conf, ``(lookup( line, "line_number", 0 ) == i ) ), 0, $[]);
 
 		       if ( lookup( curr_line, `status, `active ) == `comment )
 		       {
@@ -985,7 +985,7 @@ UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
 		// check Cancel (== nil) 
 		if ( return_val != nil )
 		{
-   		   current_line = select( return_val, 1 );
+   		   current_line = select( return_val, 1 , $[]);
    
    		   inetd_conf = changeLine( inetd_conf, current_line, w_id);
    
@@ -999,7 +999,7 @@ UI(_("<p>With the <b>Edit</b> button, change the parameters of a service.
    		   // B.1  	- a dialog-ouput for comment    -> insert line X-1
    		   // B.2  	- no dialog-ouput for comment   -> nothing ;-))
    
-   		   string new_comment = select( return_val, 0 ); 
+   		   string new_comment = select( return_val, 0 , ""); 
    		   // A
    		   if ( comment_x_1 )
    		   {
