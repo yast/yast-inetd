@@ -49,7 +49,8 @@ global map index_to_iid          = $[];
 global list table_data           = [];
 
 /**
- * Detect installed packages
+ * Detect installed packages.
+ * Ask user for packages to install (inetd, xinetd, both)
  * @return `back for abort, `next for continue
  */
 global define symbol PackageDialog() ``{
@@ -153,7 +154,8 @@ global define symbol PackageDialog() ``{
 }
 
 /**
- * Ask user for packages to install
+ * Ask user for packages to install (inetd, xinetd, both)
+ * in autoyast mode.
  * @return `back for abort, `next for continue
  */
 global define symbol PackageAutoDialog() ``{
@@ -300,6 +302,7 @@ global define void indexTable() ``{
 /**
  * This function extracts provided packages (from Inetd::xinetd_packages)
  * for selected service.
+ * Matches by (service, protocol,"program (package)")
  * @param service_info Contains informations about selected service
  * @return list Provided packages
  */
@@ -413,6 +416,8 @@ global define symbol InstallSelectedService(term service_info, boolean new_state
 
 /**
  * Get Selected Service
+ * In table_data, find the first item whose id is selected_item
+ * Also check that we have xinetd and it is an NI... item
  * @param selected_item iid of selected item
  * @return term Service name, nil if installed.
  */
@@ -421,6 +426,7 @@ global define term GetSelectedService(any selected_item) ``{
     if (Inetd::configured_service != `xinetd) {
 	return ret;
     }
+    // ids of NotInstalled table items start with NI
     if (find(selected_item, "NI") != 0) {
 	return ret;
     }
