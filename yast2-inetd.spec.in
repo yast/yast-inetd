@@ -7,6 +7,8 @@ Requires:	yast2 yast2-runlevel
 
 Provides:	yast2-config-inet y2c_inet
 Obsoletes:	yast2-config-inet y2c_inet
+Provides:	yast2-trans-inet
+Obsoletes:	yast2-trans-inet 
 
 BuildArchitectures:	noarch
 
