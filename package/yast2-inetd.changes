@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 10 12:38:40 CET 2004 - mvidner@suse.cz
+
+- disabled testsuite because of Wizard problems
+- 2.9.8
+
+-------------------------------------------------------------------
 Wed Mar 10 01:48:49 CET 2004 - nashif@suse.de
 
 - adapted for new wizard
