@@ -1,0 +1,18 @@
+(`result (true))
+# CVS pserver (remote acces to your CVS repositories)
+# Please read the section on security and passwords in the CVS manual,
+# before you enable this.
+# cvspserver stream tcp nowait root /usr/sbin/tcpd /usr/bin/cvs -f --allow-root=/home/cvsroot pserver
+# 
+# procstatd deamon (cluster software)
+# procstatd stream tcp nowait nobody /usr/sbin/tcpd /usr/sbin/procstatd -i 7885
+# 
+# 
+# LPD client support of CUPS
+# Please enable only, after reading the manual, if no LPD daemon is running,
+# and after cups-lpd (package: cups.rpm) is installed.
+# printer stream tcp nowait lp /usr/lib/cups/daemon/cups-lpd cups-lpd -o document-format=application/octet-stream
+# 
+# End.
+# Dys is mai servis
+sgi_fam/1-2 stream rpc/tcp nowait.42 root.bin /usr/sbin/fam fam

@@ -1,0 +1,37 @@
+Dump	
+Dump	All services are running and inetd will be used
+Dump	
+Dump	
+Dump	Read  --- read all services
+Dump	
+Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	Write --- write services
+Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
+Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	  ---
+Dump	
+Dump	
+Dump	inetd is running and xinetd will be used
+Dump	
+Dump	
+Dump	Read  --- read all services
+Dump	
+Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	Write --- write xinetd
+Dump	  inetd and xinetd are installed and only inetd is running
+Dump	
+Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
+Return	true
+Dump	
+Dump	  ---
+Dump	
