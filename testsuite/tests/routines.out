@@ -1,0 +1,15 @@
+Dump	
+Dump	CreateTableData()
+Dump	
+Dump	[`item (`id ("whatever"), "", "On", "finger", "stream", "tcp", "nowait", "nobody", "/usr/sbin/tcpd", "in.fingerd -w")]
+Dump	
+Dump	  ---
+Dump	
+Dump	
+Dump	Almost all services are enabled
+Dump	
+Dump	`yes
+Dump	
+Dump	Is any service enabled? (All services are disabled)
+Dump	
+Dump	`no

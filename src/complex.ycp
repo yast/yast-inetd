@@ -61,7 +61,6 @@ global define symbol SummaryDialog() ``{
     /* Inetd summary dialog caption */
     string caption = _("Inetd configuration");
 
-    /* FIXME */
     list summary = Inetd::Summary();
     list unconfigured = summary[1]:[];
     string configured = summary[0]:"";
@@ -90,7 +89,7 @@ global define symbol SummaryDialog() ``{
         }
         /* configure the selected device */
         else if(ret == `configure_button) {
-	    // TODO FIXME: check for change of the configuration
+	    // check for change of the configuration
             any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
             if(selected == `other) {
                 ret = `other;
@@ -123,7 +122,7 @@ global define symbol OverviewDialog() ``{
 
     list overview = Inetd::Overview();
 
-    /* FIXME table header */
+    /* table header */
     term contents = Wizard_hw::ConfiguredContent(
 	/* Table header */
 	`header(_("Number"), _("Inetd")),
@@ -146,19 +145,16 @@ global define symbol OverviewDialog() ``{
 	}
         /* add */
         else if(ret == `add_button) {
-	    /* FIXME */
             ret = `add;
             break;
         }
         /* edit */
         else if(ret == `edit_button) {
-	    /* FIXME */
             ret = `edit;
             break;
         }
         /* delete */
         else if(ret == `delete_button) {
-	    /* FIXME */
             continue;
         }
         else if(ret == `next || ret == `back) {

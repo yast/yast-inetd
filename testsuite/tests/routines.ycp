@@ -1,0 +1,68 @@
+/**
+ * File:        testsuite/tests/routines.ycp
+ * Package:     Configuration of inetd
+ * Summary:     Testsuite for routines in routines.ycp and dialogs.ycp
+ * Authors:     Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ *
+ * This is testsuite for routines.ycp source file.
+ * These tests are checking routines implemented
+ * in routines.ycp.
+ *
+ * Tested functions:
+ *   CreateTableData()
+ *   IsAnyServiceEnabled()
+ */
+
+{
+
+include "testsuite.ycp";
+include "inetd/routines.ycp";
+import "Report";
+
+Report::DisplayErrors(false, 0);
+
+list netd_conf = [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": true,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w"]
+	];
+
+list netd_conf_none = [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": false,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w"]
+	];
+
+DUMP("\nCreateTableData()\n");
+
+list table_data = CreateTableData(netd_conf);
+
+DUMP(table_data);
+
+DUMP("\n  ---\n");
+
+DUMP("\nAlmost all services are enabled\n");
+
+DUMP(IsAnyServiceEnabled(netd_conf));
+
+DUMP("\nIs any service enabled? (All services are disabled)\n");
+
+DUMP(IsAnyServiceEnabled(netd_conf_none));
+
+}
