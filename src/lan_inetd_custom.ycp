@@ -90,7 +90,7 @@
      */
 
     UI(``{
-          define EditOrCreateServiceDlg( string title, map line, string comment, string previous_comment ) ``{
+	global define EditOrCreateServiceDlg( string title, map line, string comment, string previous_comment ) ``{
 
 	      symbol status = lookup( line, `status, `inactive );
 	      
@@ -332,7 +332,7 @@ _("<p>---</p>");
      *----------------------------------------------------------------------
      */
 
-    define deleteLine ( list inetd_conf,  integer line_number )
+    global define deleteLine ( list inetd_conf,  integer line_number )
     ``{
 	// delete
 	inetd_conf = filter( `line,  inetd_conf, ``(lookup( line, "line_number", 0 ) != line_number ) );
@@ -359,7 +359,7 @@ _("<p>---</p>");
      *----------------------------------------------------------------------
      */
 
-    define addLine ( list inetd_conf,  map new_line, integer line_number )
+    global define addLine ( list inetd_conf,  map new_line, integer line_number )
     ``{
 	// renumber
 	inetd_conf = maplist( `line, inetd_conf,
@@ -388,7 +388,7 @@ _("<p>---</p>");
      *----------------------------------------------------------------------
      */
 
-    define changeLine ( list inetd_conf,  map new_line, integer line_number )
+    global define changeLine ( list inetd_conf,  map new_line, integer line_number )
     ``{
         inetd_conf =  maplist( `line, inetd_conf,
 	``{
@@ -412,7 +412,7 @@ _("<p>---</p>");
      *----------------------------------------------------------------------
      */
 
-    define convertScrLineToInternal ( map line, string service, symbol status, integer line_number )
+    global define convertScrLineToInternal ( map line, string service, symbol status, integer line_number )
     ``{
 	map line_map = $[];
 
@@ -479,7 +479,7 @@ _("<p>---</p>");
      *----------------------------------------------------------------------
      */
 
-    define convertInternalToList ( list inetd_conf )
+    global define convertInternalToList ( list inetd_conf )
     ``{
 	list table_input = [];
 	
@@ -531,7 +531,7 @@ _("<p>---</p>");
      *----------------------------------------------------------------------
      */
 
-    define writeInetdConfx ( list inetd_conf )
+    global define writeInetdConfx ( list inetd_conf )
 	  ``{
 	      // not tested yet!
 	      string send_line = "";
@@ -585,7 +585,7 @@ _("<p>---</p>");
 	  };
 
     
-//    define writeInetdConf ( list inetd_conf )
+//    global define writeInetdConf ( list inetd_conf )
 //    {
 //	  // not tested yet!
 //	    list scr_write_input = maplist(`line, inetd_conf,

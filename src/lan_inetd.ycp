@@ -59,7 +59,7 @@
 	       );
       
     
-    define SetContents(string title, term contents, string helptext,
+    global define SetContents(string title, term contents, string helptext,
 		       boolean has_back, boolean has_next) ``{
       ChangeWidget(`id(`next), `Enabled, has_next);
       ChangeWidget(`id(`back), `Enabled, has_back);
@@ -71,7 +71,7 @@
 
 
 	// This is a popup dialog for displaying (usually) error messages      
-    define DisplayMessage(string message) ``{
+    global define DisplayMessage(string message) ``{
 	    // ok pushbutton: confirm the dialog
 	OpenDialog(
 	    `opt(`decorated),
@@ -92,7 +92,7 @@
     };
 
     
-    define DisplayMessage2(string message, integer code, string stack) ``{
+    global define DisplayMessage2(string message, integer code, string stack) ``{
       // ok pushbutton: confirm the dialog
       term t = `VBox();
       t = add(t, `Left(`Label(message)));
@@ -108,7 +108,7 @@
     }; 
 
 	// This is a popup dialog with Yes/No question
-    define DisplayYesNo(string message, boolean d) ``{
+    global define DisplayYesNo(string message, boolean d) ``{
 	
 	term t = `VBox();
 	t = add(t, `Left(`Label(message)));
@@ -134,7 +134,7 @@
 	
     };
 
-        define YesOrNo(any message, string yes_button_message, string no_button_message) ``{
+    global define YesOrNo(any message, string yes_button_message, string no_button_message) ``{
       OpenDialog(`opt(`decorated),
 	`HBox(`HSpacing(1),
 	      `VBox(`VSpacing(0.2),
@@ -171,8 +171,8 @@
    */
 
   list dialog = [
-                ``CallFunction (`lan_inetd_start() ),
-                ``CallFunction (`lan_inetd_custom() )
+                ``(CallFunction (`lan_inetd_start() )),
+                ``(CallFunction (`lan_inetd_custom() ))
   ];
 
   integer id = 0;
