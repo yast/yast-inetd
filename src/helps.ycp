@@ -40,7 +40,7 @@ Install them now?
 One or both of these are required for running a superserver.
 "),
 
-    /* ErrorPopup */
+    /* Popup::Error */
     "no_install" : _("No packages selected. Configuration aborted."),
 
     /* Not used! */
