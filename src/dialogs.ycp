@@ -24,12 +24,21 @@ include "inetd/routines.ycp";
  * We create both lists only once - during first EditOrCreateServiceDlg() call.
  */
 global list(string) local_users  = nil;
+
+/**
+ * see local_users.
+ */
 global list(string) local_groups = nil;
 
 /**
- * These maps are used for (re)selecting table items. This is new inetd GUI improvement! :o)
+ * This map is used for (re)selecting table items. This is new inetd GUI improvement! :o)
  */
 global map iid_to_index          = $[];
+
+/**
+ * See iid_to_index.
+ * This is reverse to iid_to_index.
+ */
 global map index_to_iid          = $[];
 
 /**
@@ -451,7 +460,7 @@ global define term GetSelectedService(any selected_item) ``{
 }
 
 /**
- * Configure1 dialog
+ * This is main inetd module dialog.
  * @return dialog result
  */
 global define symbol InetdDialog () ``{

@@ -44,7 +44,8 @@ y2milestone("%1, %2", func, param);
  */
 if(func == "Summary") {
     Inetd::Import(param);
-    ret = select(Inetd::Summary(), 0 , "");
+    ret = Inetd::Summary();
+    //ret = select(Inetd::Summary(), 0 , "");
 }
 /**
  * Reset configuration
@@ -60,28 +61,20 @@ else if (func == "Reset") {
  * return symbol (i.e. `finish || `accept || `next || `cancel || `abort)
  */
 else if (func == "Change") {
-//    y2milestone("%1", "Change");
-//    symbol ret = `back;
     Inetd::Import(param);
+
     ret = PackageAutoDialog();
     if(ret == `back) {
 	return ret;
     }
 
-//    y2milestone("%1", ret);
-
     ret = InetdAutoSequence();
-//    y2milestone("%1", ret);
-//    if(ret == `next) return Inetd::Export();
-//return $["ahoj":"voli"];
-//    return ret;
 }
 /**
  * Return configuration data
  * return map or list
  */
 else if (func == "Export") {
-//    return $["Export":"Export"];
     ret = Inetd::Export();
 }
 /**
