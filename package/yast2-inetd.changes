@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Sep 14 20:46:03 CEST 2003 - adrian@suse.de
+
+- make it working in kcontrol
+
+-------------------------------------------------------------------
 Tue Sep  9 00:49:54 CEST 2003 - nashif@suse.de
 
 - #30291: Added function Packages to auto client to return 
