@@ -14,7 +14,7 @@ Name:         @RPMNAME@
 Release:      1
 Copyright:    (c) 2000 SuSE GmbH
 Group:        System Environment/YaST
-Requires:	y2t_inet perl yast2
+Requires:	yast2-trans-inet perl yast2
 BuildArchitectures: noarch
 
 Packager:     @MAINTAINER@
@@ -23,7 +23,7 @@ Summary:      YaST2 Modules for installation
 Version:      @VERSION@
 Source0:      @RPMNAME@-@VERSION@.tar.bz2
 Provides:     y2c_inet
-Obsoletes:    y2c_inet y2c_inet
+Obsoletes:    y2c_inet
 
 %description
 -
