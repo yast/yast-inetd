@@ -1,17 +1,29 @@
 -------------------------------------------------------------------
+Wed Feb  2 10:19:06 CET 2005 - mlazar@suse.cz
+
+- 2.11.6
+- deleted src/default_conf_inetd.ycp
+- default_conf is now included instead of read in run-time
+- updated src/default_conf_xinetd.ycp
+- updated testsuite
+- all-services.sh, default_conf_create.ycp: don't generate
+  defaults for inetd
+- default_conf_create.ycp: avoid select() and lookup()
+
+-------------------------------------------------------------------
 Tue Feb  1 21:23:35 CET 2005 - nashif@suse.de
 
 - Fixed testsuite, again..
 - 2.11.5
 
 -------------------------------------------------------------------
-Tue Feb  1 09:31:19 CET 2005 - gizo@suse.cz
+Tue Feb  1 09:31:19 CET 2005 - mlazar@suse.cz
 
 - fixed testsuite
 - 2.11.4
 
 -------------------------------------------------------------------
-Mon Jan 31 16:20:55 CET 2005 - gizo@suse.cz
+Mon Jan 31 16:20:55 CET 2005 - mlazar@suse.cz
 
 - removed inetd from testsuites
 - 2.11.3

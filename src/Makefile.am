@@ -16,16 +16,15 @@ client_DATA =			\
 	inetd_proposal.ycp
 
 # all-services to be removed
-ydata_DATA =                    \
-	default_conf_inetd.ycp  \
-	default_conf_xinetd.ycp
+ydata_DATA =
 
 ynclude_DATA =			\
 	helps.ycp		\
 	wizards.ycp		\
 	dialogs.ycp		\
 	complex.ycp		\
-	routines.ycp
+	routines.ycp		\
+	default_conf_xinetd.ycp
 
 desktop_DATA =			\
 	inetd.desktop

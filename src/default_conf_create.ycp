@@ -11,7 +11,6 @@
     map<string, string> package_cache = $[
 	// no package specified => assume it is already installed
 	"": "",			// internal services for xinetd
-	"internal": "",		// internal services for inetd
 
 	// this program is in multiple packages
 	// Assume it is already installed, smtp_daemon
@@ -47,7 +46,8 @@
      * @return first element
      */
     define string first_of_split (string whole, string delimiters) ``{
-	return select (splitstring (whole, delimiters), 0, "");
+	list<string> s = splitstring (whole, delimiters);
+	return s[0]:"";
     }
 
     /**
@@ -58,10 +58,8 @@
 	string cmd = sformat (
 	    "/usr/bin/pdb query --release stable-i386 --filter '%1' --attribs packname 2>/dev/null",
 	    query);
-	string out = lookup ((map) SCR::Execute (.target.bash_output, cmd),
-			     "stdout", "");
-	list<string> lines = filter (string l, splitstring (out, "\n"),
-				      ``( l != ""));
+	map res = (map) SCR::Execute (.target.bash_output, cmd);
+	list<string> lines = filter (string l, splitstring (res["stdout"]:"", "\n"), ``( l != ""));
 	// pdb adds trailing spaces
 	return maplist (string l, lines, ``( first_of_split (l, " ")));
     }
@@ -73,9 +71,7 @@
      * @param xinetd is this xinetd
      * @return services list with "package" determined
      */
-    define services_t DeterminePackages (services_t services,
-						boolean xinetd) ``{
-	y2milestone ("%1", xinetd? "xinetd": "inetd");
+    define services_t DeterminePackages (services_t services) {
 	return maplist (map<string, any> service, services, ``{
 	    string sname = (string) (service["service"]:nil);
 	    string server = service["server"]:"";
@@ -116,18 +112,13 @@
     }
 
     // needs ycp.pm,v 1.6
-    SCR::RegisterAgent (.aaa.inetd, `ag_netd (`Inetd ("etc/inetd.conf")));
-    services_t dc_inetd = (services_t) SCR::Read (.aaa.inetd.services);
-
     SCR::RegisterAgent (.aaa.xinetd, `ag_netd (`Xinetd ("all-services.conf")));
     services_t dc_xinetd = (services_t) SCR::Read (.aaa.xinetd.services);
 
-    y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
+    y2milestone ("xinetd: %1", size (dc_xinetd));
 
-    dc_xinetd = DeterminePackages (dc_xinetd, true);
-    dc_inetd = DeterminePackages (dc_inetd, false);
+    dc_xinetd = DeterminePackages(dc_xinetd);
     // watch out, a single value, not an include
-    SCR::Write (.target.ycp, "default_conf_inetd.ycp", dc_inetd);
     SCR::Write (.target.ycp, "default_conf_xinetd.ycp", dc_xinetd);
 
     SCR::Write (.target.string, "/dev/stdout", "\n");

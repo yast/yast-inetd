@@ -5,7 +5,6 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Read	.init.scripts.exists "xinetd" true
 Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
 Return	true
@@ -23,7 +22,6 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Read	.init.scripts.exists "xinetd" true
 Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
 Return	true
