@@ -160,7 +160,7 @@ define boolean struct_match_sparse (map a, map b, list fields) ``{
  * @param s a @ref service
  * @return match found
  */
-define boolean isServiceMatchPresent (list<map> netd_conf, map<string, any> s) ``{
+define boolean isServiceMatchPresent (list<map <string, any> > netd_conf, map<string, any> s) ``{
     map match = find (map<string, any> i, netd_conf, ``(
 			  ServicesMatch (i, s)
 			  ));
@@ -173,7 +173,7 @@ define boolean isServiceMatchPresent (list<map> netd_conf, map<string, any> s) `
  * Needs Inetd::configured_service.
  * @return Inetd::default_conf_(x)inetd["netd_conf"]
  */
-define list GetDefaults () ``{
+define list<map <string, any> > GetDefaults () ``{
     Inetd::EnsureDefaultConfLoaded ();
     return Inetd::configured_service == `inetd?
 	(Inetd::default_conf_inetd["netd_conf"]:[]):
@@ -194,10 +194,10 @@ define list GetDefaults () ``{
  * @param table_data Table data structure used as source data
  * @return list New table data
  */
-define list<term> AddNotInstalled (list<map> netd_conf, list<term> table_data) ``{
+define list<term> AddNotInstalled (list<map <string, any> > netd_conf, list<term> table_data) ``{
     //y2milestone("in function mergeXinetdConfs()");
 
-    list defaults = GetDefaults ();
+    list<map <string, any> > defaults = GetDefaults ();
 
     integer index = 0;
     foreach(map<string, any> line, defaults, ``{
@@ -288,7 +288,7 @@ define term ServiceToTableItem (map service, integer ni_index) ``{
  * @param netd_conf netd_conf handles whole configuration of configured service
  * @return returnes table data
  */
-define list<term> CreateTableData(list<map> netd_conf) ``{
+define list<term> CreateTableData(list<map <string, any> > netd_conf) ``{
     list<term>    table_input     = [];
 
     foreach(map service, netd_conf, ``{
@@ -359,10 +359,10 @@ define list<string> CreateLocalGroupsList() ``{
  * @param ready_conf ready_conf handles whole service configuration (Inetd::netd_conf)
  * @return returnes if found `yes, otherwise `no
  */
-define symbol IsAnyServiceEnabled(list ready_conf) ``{
+define symbol IsAnyServiceEnabled(list<map <string, any> > ready_conf) ``{
     symbol ret = `no;
 
-    foreach(map line, ready_conf, ``{
+    foreach(map<string, any> line, ready_conf, ``{
 	if(line["deleted"]:false == false) {
 	    if(line["enabled"]:false != false) {
 		ret = `yes;
