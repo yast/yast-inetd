@@ -18,6 +18,7 @@
 {
 
 include "testsuite.ycp";
+import "Inetd";
 include "inetd/routines.ycp";
 import "Report";
 

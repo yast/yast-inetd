@@ -300,6 +300,125 @@ global define indexTable() ``{
 }
 
 /**
+ * This function extracts provided packages (from Inetd::xinetd_packages)
+ * for selected service.
+ * @param service_info Contains informations about selected service
+ * @return list Provided packages
+ */
+global define list GetProvidedPackage(term service_info) ``{
+    map  info     = $[];
+    list packages = [];
+    // extract informations from service_info into map
+    info = add(info, "program",  select(service_info, 8, ""));
+    info = add(info, "protocol", select(service_info, 5, ""));
+    info = add(info, "service",  select(service_info, 3, ""));
+    //y2milestone("%1", info);
+    foreach(`line, Inetd::xinetd_packages, ``{
+        //y2milestone("%1", info["program"]:"!" + " (" + line["package"]:"!" + ")");
+	//y2milestone("line:%1 info:%2", line["program"]:"", info["program"]:"!");
+	if ((line["program"]:"" + " (" + line["package"]:"" + ")") == info["program"]:"!") {
+	    if (line["protocol"]:"" == info["protocol"]:"!") {
+		if (line["service"]:"" == info["service"]:"!") {
+		    packages = add(packages, line["package"]:"");
+		}
+	    }
+	}
+    });
+    return packages;
+}
+
+/**
+ * Show dialog with packages names provided non-installed service.
+ * @param service_info Provided service name
+ * @return symbol Status of operation
+ */
+global define symbol InstallProvidedPackage(term service_info) ``{
+    symbol ret = `next;
+    /*list packages = [];
+    term contents =
+	`VBox(
+	    `VSpacing(0.5),
+	    `HBox(
+		`HSpacing(2),
+		`Label(_("Please select one package you want to install")),
+		`HSpacing(2)
+	    ),
+	    `VSpacing(0.5),
+	    `HBox(
+		`HSpacing(6),
+		`SelectionBox(`id(`packages), _("&Packages provided same service:"), packages),
+		`HSpacing(6)
+	    ),
+	    `VSpacing(0.5),
+	    `HBox(
+		`PushButton(`id(`next), `opt(`default), OKButtonLabel()),//_("&OK")),
+		`PushButton(`id(`back), CancelButtonLabel())//_("&Cancel"))
+	    ),
+	    `VSpacing(0.5)
+	);*/
+    //UI::OpenDialog(contents);
+    //ret = UI::UserInput();
+    //GetProvidedPackages(service_info);
+    //UI::CloseDialog();
+    
+    // service (package) is installed and its configuration is known,
+    // so simply skip dialog
+    if (service_info == nil) {
+	return ret;
+    }
+    // Now, the package doesn't exists. We must tell user, the package is required...
+    // But, the fisrt, we must extract requested package name
+    list package_name = GetProvidedPackage(service_info);
+    if (Inetd::auto_mode) {
+	Inetd::required_packages = add(Inetd::required_packages, package_name);
+	UI::MessagePopup(sformat(_("Package %1 will be installed during write process."),
+	    select(package_name, 0, "")));
+	ret = `auto;
+	return ret;
+    }
+    else {
+	include "require.ycp";
+	if (!InstallAndRemove(package_name, [], sformat(_("Package %1 will be installed"),
+	    select(package_name, 0, "")))) {
+	//if (true) {
+	    UI::MessagePopup(sformat(_("Package %1 was not installed. Service can't be edited."),
+		select(package_name, 0, "")));
+	    ret = `none;
+	    return ret;
+	}
+	else {
+	    y2milestone("Rereading xinetd configuration");
+	    Inetd::netd_conf = SCR::Read(.etc.xinetd_conf.services);
+	    ret = `next;
+	    return ret;
+	}
+	y2milestone("%1", "ahoj" + select(package_name, 0, ""));
+    }
+    //y2milestone("%1", package_name);
+    return ret;
+}
+
+/**
+ * Get Selected Service
+ * @param selected_item iid of selected item
+ * @return term Service name, nil if installed.
+ */
+global define term GetSelectedService(any selected_item) ``{
+    term ret = nil;
+    if (Inetd::configured_service != `xinetd) {
+	return ret;
+    }
+    if (find(selected_item, "NI") != 0) {
+	return ret;
+    }
+    term current = select(filter(`line, table_data,
+	``(select(select(line, 0, "`id ( \"NI\")"), 0, "NI") == selected_item)), 0, "");
+    ret = current;
+    //y2milestone("%1", ret);
+    return ret;
+}
+
+/**
  * Configure1 dialog
  * @return dialog result
  */
@@ -312,8 +431,8 @@ global define symbol InetdDialog () ``{
 	    `Left(
 		`RadioButtonGroup(
 		    `VBox(
-			`RadioButton(`id(`stop),     `opt(`notify, `key_F6), _("D&isable"), true),
-			`RadioButton(`id(`editable), `opt(`notify, `key_F7), _("Enab&le"), false)
+			`RadioButton(`id(`stop),     `opt(`notify), _("D&isable"), true),
+			`RadioButton(`id(`editable), `opt(`notify), _("Enab&le"), false)
 		    )
 		)
 		//`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)
@@ -322,7 +441,7 @@ global define symbol InetdDialog () ``{
 	      // Main dialog edit inetd.conf
 	    `Left(`Label(_("Currently available services"))),
 	    `HBox(
-		`Table(`id(`table), `header(`Center(_("Ch")), `Center(_("Status")),
+		`Table(`id(`table), `opt(`keepSorting), `header(`Center(_("Ch")), `Center(_("Status")),
 		    _("Service"), _("Type "), `Center(_("Protocol")), _("Flags"),
 		    _("User"), _("Server"), _("Server / Args")), table_data)
 	    ),
@@ -330,17 +449,17 @@ global define symbol InetdDialog () ``{
 		`Left(
 		    `HBox(
 			`HSpacing(1),
-			`PushButton(`id(`create), `opt(`key_F2), _("&Add") ),
+			`PushButton(`id(`create), `opt(`key_F3), _("&Add") ),
 			`HSpacing(1),
 			`PushButton(`id(`edit),   `opt(`key_F4), _("&Edit") ),
 			`HSpacing(1),
-			`PushButton(`id(`delete), `opt(`key_F8), _("&Delete") )
+			`PushButton(`id(`delete), `opt(`key_F5), _("&Delete") )
 		    )
 		),
 		`VSpacing(),
 		`Right(
 		    `HBox(
-			`PushButton(`id(`switch_active), `opt(`key_F3), _("&Toggle status (On/Off)")),
+			`PushButton(`id(`switch_active), _("&Toggle status (On/Off)")),
 			`HSpacing(1))
 		)
 	    ),
@@ -418,6 +537,7 @@ global define symbol InetdDialog () ``{
 	// skip time critical calculations if need_rebuild == false (don't call CreateTableData())
 	boolean need_rebuild = true;
 
+	UI::SetFocus(`id(`table));
 	ret = UI::UserInput();
 
         if((ret == `editable) || (ret == `stop)) {
@@ -471,15 +591,20 @@ global define symbol InetdDialog () ``{
 
 	    // one line must be selected
 	    if (selected_item != nil) {
-		need_reindex = true; // see `create (above) for more details
-		need_rebuild = true;
-		integer old_index = iid_to_index[selected_item]:0;
-		Inetd::deleteLine(selected_item);
-		if (old_index == size(iid_to_index)) {
-		    to_select = index_to_iid[old_index - 1]:"";
+		if (GetSelectedService(selected_item) != nil) {
+		    UI::ErrorPopup(_("Can't delete non-installed service."));
 		}
 		else {
-		    to_select = index_to_iid[old_index + 1]:"";
+		    need_reindex = true; // see `create (above) for more details
+		    need_rebuild = true;
+		    integer old_index = iid_to_index[selected_item]:0;
+		    Inetd::deleteLine(selected_item);
+		    if (old_index == size(iid_to_index)) {
+			to_select = index_to_iid[old_index - 1]:"";
+		    }
+		    else {
+			to_select = index_to_iid[old_index + 1]:"";
+		    }
 		}
 	    }
 	    else {
@@ -498,21 +623,29 @@ global define symbol InetdDialog () ``{
 		// look for the selected line
 		map current_line = select(filter(`line, Inetd::netd_conf,
 		    ``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
-		// change status of line
-		if (lookup(current_line, "enabled", true) == true) {
-		    current_line = add(current_line, "enabled", false);
+		any result = InstallProvidedPackage(GetSelectedService(selected_item));
+		if (result == `next) {
+		    // change status of line
+		    if (lookup(current_line, "enabled", true) == true) {
+			current_line = add(current_line, "enabled", false);
+		    }
+		    else {
+			current_line = add(current_line, "enabled", true);
+		    }
+		    // change line in database
+		    Inetd::changeLine(current_line, selected_item);
+		    need_reindex = true;
+		    need_rebuild = true;
+		    to_select    = selected_item;
 		}
 		else {
-		    current_line = add(current_line, "enabled", true);
+		    need_reindex = false;
+		    need_rebuild = false;
+		    to_select    = selected_item;
 		}
-		// change line in database
-		Inetd::changeLine(current_line, selected_item);
-		need_reindex = true;
-		need_rebuild = true;
-		to_select    = selected_item;
 	    }
 	    else { // No line is selcted:
-		UI::MessagePopup(_("To activate or deactivate a service, select it in the main dialog") );
+		UI::MessagePopup(_("To activate or deactivate a service, select one in the main dialog") );
 		need_reindex = false;
 		need_rebuild = false;
 		to_select    = "";
@@ -527,14 +660,33 @@ global define symbol InetdDialog () ``{
 	    if (selected_item != nil) {
 		map current_line = select(filter(`line, Inetd::netd_conf,
 		    ``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
-		any return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
-		// check for changes
-		if (return_val != nil) {
-		    Inetd::changeLine(return_val, selected_item);
+		any result = InstallProvidedPackage(GetSelectedService(selected_item));
+		if (result == `next) {
+		    any return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
+		    // check for changes
+		    if (return_val != nil) {
+			Inetd::changeLine(return_val, selected_item);
+		    }
+		    need_reindex = true;
+		    need_rebuild = true;
+		    to_select = selected_item;
 		}
-		need_reindex = true;
-		need_rebuild = true;
-		to_select = selected_item;
+		else if (result == `auto) {
+		    last_created   = last_created + 1;
+		    map  new_line  = $["enabled":true, "service":select(service_info, 3, ""), "max":"",
+			"socket_type":"stream", "protocol":select(service_info, 5, ""), "wait":false, "server_args":"",
+			"user":"root", "group":"", "comment":"",
+			"iid":"inst" + last_created, "created":true, "server":select(service_info, 8, "")];
+		    Inetd::addLine(new_line);
+		    need_reindex = true;
+		    need_rebuild = true;
+		    to_select = "inst" + last_created;
+		}
+		else {
+		    need_reindex = false;
+		    need_rebuild = false;
+		    to_select    = selected_item;
+		}
 	    }
 	    else {
 		UI::MessagePopup(_("To edit a service, select one in the main dialog") );
@@ -570,7 +722,7 @@ global define symbol InetdDialog () ``{
     if(ret == `next) {
 	if(IsAnyServiceEnabled(Inetd::netd_conf) == `no) {
 	    Inetd::netd_status = -1;
-	    UI::ErrorPopup(_("All services are marked as disabled (locked).
+	    UI::WarningPopup(_("All services are marked as disabled (locked).
 Internet super-server will be disabled."));
 	}
     }
@@ -610,9 +762,11 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		    `HWeight(3,
 			`TextEntry(`id(`service), _("&Service"))
 		    ),
+		    `HSpacing(1),
 		    `HWeight(1,
 			`TextEntry(`id(`rpc_version), _("RPC versio&n"))
 		    ),
+		    `HSpacing(1),
 		    //`VBox(
 			//`VSpacing(),
 			// service status (running or stopped)
@@ -627,11 +781,13 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 		    `ComboBox(`id(`type), `opt(`hstretch), _("Socket T&ype"),
 			["stream", "dgram", "raw", "rdm", "seqpacket"])
 		),
+		`HSpacing(1),
 		// for protocol option - ediatble ComboBox
 		`HWeight(3,
 		    `ComboBox(`id(`protocol), (Inetd::configured_service == `inetd) ? inetd_protocols : xinetd_protocols,
 			_("&Protocol"), ["tcp", "udp", "rpc/tcp", "rpc/udp"])
 		),
+		`HSpacing(1),
 		// for flags (wait/nowait) - noneditable ComboBox
 		`HWeight(3,
 		    `ComboBox(`id(`flags), `opt(`hstretch), _("&Flags"),
@@ -645,8 +801,14 @@ global define EditOrCreateServiceDlg(string title, map line) ``{
 	    `VBox(
 		// user and group ComboBoxes
 		`HBox(
-		    `ComboBox(`id(`user), _("&User"), local_users),
-		    `ComboBox(`id(`group), _("&Group"), local_groups)
+		    `VBox(
+			`ComboBox(`id(`user), _("&User"), local_users),
+			`HSpacing(10)
+		    ),
+		    `VBox(
+			`ComboBox(`id(`group), _("&Group"), local_groups),
+			`HSpacing(10)
+		    )
 		),
 		// Server arguments
 		`TextEntry(`id(`server), _("S&erver")),
