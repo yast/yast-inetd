@@ -190,9 +190,9 @@ _("<p>---</p>");
 	      ),
 	`HBox(
 	      // popup create service:
-	      `PushButton(`id(`ok), `opt(`default),    _("&OK")),
+	      `PushButton(`id(`ok), `opt(`default), OKButtonLabel() ),
 	      // popup create service:
-	      `PushButton(`id(`cancel), _("&Cancel"))
+	      `PushButton(`id(`cancel), CancelButtonLabel()  )
 	      )
 	)
     );
@@ -735,7 +735,7 @@ _("<p>---</p>");
 //     });
 
     SCR(`Execute(.target.bash, "/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl"));
-    inetd_conf = Read( "/tmp/inetd_conf.ycp");
+    inetd_conf =  WFM::Read(.local.ycp, "/tmp/inetd_conf.ycp");
     SCR(`Execute(.target.bash, "/bin/rm /tmp/inetd_conf.ycp"));
     
     list table_data = convertInternalToList( inetd_conf );
@@ -789,7 +789,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
      // using SetContents (define in lan_inetd.ycp)
      UI(`SetContents(_("Enable/disable network services"), contents, help_text, true, true ));
      // changing Label to Finish
-     UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+     UI(`ChangeWidget(`id(`next), `Label, FinishButtonLabel()  ) );
       
      // todo debug raus!!
      // map curr_line = lookup( inetd_conf, 400 );
@@ -897,7 +897,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 	    else
 	    {
               // No line is selcted:
-              UI(`DisplayMessage(_("To delete a service, you have to select one in main dialog") ));
+              UI(`MessagePopup(_("To delete a service, you have to select one in main dialog") ));
 	    }
 
 	}
@@ -935,7 +935,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 	    else
 	    {
 		// No line is selcted:
-		UI(`DisplayMessage(_("To activate/inactivate a service, you have to select one in main dialog") ));
+		UI(`MessagePopup(_("To activate/inactivate a service, you have to select one in main dialog") ));
 	    }
 	}
 
@@ -1063,7 +1063,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 	    else
 	    {
               // No line is selcted:
-              UI(`DisplayMessage(_("To edit a service, you have to select one in main dialog") ));
+              UI(`MessagePopup(_("To edit a service, you have to select one in main dialog") ));
 	    }
 	}
 
@@ -1087,7 +1087,7 @@ UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 
 	    if ( ret == `back )
 	    {
-		 UI(`ChangeWidget(`id(`next), `Label,  _("&Next") ) );
+		 UI(`ChangeWidget(`id(`next), `Label, NextButtonLabel() ) );
 	    }
 
 	    if ( ret != `back )

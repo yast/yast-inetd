@@ -126,7 +126,7 @@ configuration for your needs in the next step.
     // Main dialog: Header
      UI(`SetContents(_("Network services"), contents, help_text, true, true));
 
-     if(  inetd_status == `on_custom )  UI(`ChangeWidget(`id(`next), `Label,  _("&Next") ) );
+     if(  inetd_status == `on_custom )  UI(`ChangeWidget(`id(`next), `Label, NextButtonLabel() ) );
      
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
    ////  Loop for User Input ....
@@ -143,19 +143,19 @@ configuration for your needs in the next step.
         if (ret == `on_default)
         {
 	    inetd_status = `on_default;
-	    UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+	    UI(`ChangeWidget(`id(`next), `Label, FinishButtonLabel()));
 	}
 
         if (ret == `on_custom)
         {
 	    inetd_status = `on_custom;
-	    UI(`ChangeWidget(`id(`next), `Label,  _("&Next") ) );
+	    UI(`ChangeWidget(`id(`next), `Label, NextButtonLabel() ) );
 	}
 
         if (ret == `off)
         {
 	    inetd_status = `off;
-	    UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+	    UI(`ChangeWidget(`id(`next), `Label, FinishButtonLabel() ) );
 	}
 
 	if (ret == `next || ret == `language || ret == `back)
