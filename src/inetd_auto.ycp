@@ -100,6 +100,21 @@ else if (func == "Export") {
     ret = Inetd::Export();
 }
 /**
+ * Return if configuration  was changed
+ * return boolean
+ */
+else if (func == "GetModified") {
+    ret = Inetd::modified;
+}
+/**
+ * Set modified flag
+ * return boolean
+ */
+else if (func == "SetModified") {
+    Inetd::modified = true;
+    ret = true;
+}
+/**
  * Write configuration data
  * return boolean
  */
