@@ -64,6 +64,11 @@
      *   "server": string
      *   "server_args": string
      *   "comment": string	// possibly multiline, without #
+     ** bookkeeping fields:
+     *   "iid": string		// internal id, use as table `id
+     *      Iid is necessary because there may be multiple variants
+     *      of the same service.
+     *   "changed": boolean	// when writing, unchanged services are ignored
      * ]
      * When handling existing maps, take care to preserve any other fields
      * that may be present!
@@ -72,8 +77,8 @@
      *
      * SCR::Read (netd + .services) -> list of service maps
      *   There should be a warning if inetd and xinetd are both installed
-     * SCR::Read (netd + .services + service_name) -> service map (or empty)
-     * SCR::Read (netd + .services + service_name + field) -> (any) field
+//     * SCR::Read (netd + .services + service_name) -> service map (or empty)
+//     * SCR::Read (netd + .services + service_name + field) -> (any) field
      * SCR::Write (netd, nil) -> boolean
      *   Commits changes performed by other writes (see below) to disk
      * // Hm, maybe we should check that vaid fields are passed?
