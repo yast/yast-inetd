@@ -15,6 +15,7 @@ import "Inetd";
 import "Progress";
 import "Runlevel";
 import "Directory";
+import "Popup";
 
 /**
  * Return rpm -q status for inetd package
@@ -79,7 +80,7 @@ global define boolean PollAbort() ``{
  * @return true if abort is confirmed
  */
 global define boolean ReallyAbort() ``{
-    return !Modified() || UI::ReallyAbortPopup(true);
+    return !Modified() || Popup::ReallyAbort(true);
 }
 
 /**
@@ -92,25 +93,73 @@ global define void ProgressNextStage(string title) ``{
 }
 
 /**
+ * Considers the maps as structs and tests
+ * some of their fields for equality (conjunctively, short circuit).
+ * @param a one struct
+ * @param b other struct
+ * @param fields list of keys
+ * @return Do the maps have all the named fields equal?
+ */
+global define boolean struct_match (map a, map b, list fields) ``{
+    // short circuit: use the _find_ builtin to get the mismatching key
+    any mismatch = find (any key, fields,
+			 ``( a[key]:nil != b[key]:nil ));
+    // mismatch is nil => they match
+    return mismatch == nil;
+}
+
+/**
+ * Considers the maps as structs and tests
+ * some of their fields for equality (conjunctively, short circuit).
+ * If a key is missing in either of the maps, it is considered as matching.
+ * <p> Used when merging autoyast items, to match only those fields that
+ * are specified in the profile. There, only one map is sparse.
+ * (the profile map)
+ * @param a one struct
+ * @param b other struct
+ * @param fields list of keys
+ * @return Do the maps have all named fields that are in both of them equal?
+ * @example match: $["a": 1, "b": 2, "c": 3], $["b": 2, "d": 4]
+ */
+global define boolean struct_match_sparse (map a, map b, list fields) ``{
+    // short circuit: use the _find_ builtin to get the mismatching key
+    any mismatch = find (any key, fields,
+			 ``(
+			     ! ( a[key]:nil == b[key]:nil ||
+				 !haskey (a, key) ||
+				 !haskey (b, key))
+			     ));
+    // mismatch is nil => they match
+    return mismatch == nil;
+}
+
+/**
  * Determine, if service package is installed. This function requires full configuration
  * (like Inetd::netd_conf) and standalone map with service.
+ * Linear complexity (in the working config)
  * @param netd_conf Full configuration
- * @param which service to determine
- * @return symbol `yes if installed, otherwise `no
+ * @param which service to determine, a member of default_conf
+ * @return match found
  */
-global define symbol isServiceInstalled(list netd_conf, map which) ``{
-    symbol ret = `no;
-    foreach(`line, netd_conf, ``{
-	if(line["service"]:"" == which["service"]:"!") {
-	    if(line["protocol"]:"" == which["protocol"]:"!") {
-		if(find(line["server"]:"", which["program"]:"!") != -1) {
-		    ret = `yes;
-		    return ret;
-		}
-	    }
-	}
-    });
-    return ret;
+global define symbol isServiceMatchPresent (list netd_conf, map s) ``{
+    map match = find (map i, netd_conf, ``(
+			  struct_match (i, s, ["script", "service",
+					       "protocol", "server"])
+			  ));
+    return match != nil;
+}
+
+/**
+ * Encapsulates the mess of supporting two netds and loading the
+ * defaults on the fly.
+ * Needs Inetd::configured_service.
+ * @return Inetd::default_conf_(x)inetd["netd_conf"]
+ */
+global define list GetDefaults () ``{
+    Inetd::EnsureDefaultConfLoaded ();
+    return Inetd::configured_service == `inetd?
+	(Inetd::default_conf_inetd["netd_conf"]:[]):
+	(Inetd::default_conf_xinetd["netd_conf"]:[]);
 }
 
 /**
@@ -118,32 +167,103 @@ global define symbol isServiceInstalled(list netd_conf, map which) ``{
  * available services packages generated for SuSE distribution (Inetd::xinetd_packages).
  * This function is automaticaly calld by CreateTableData() if Inetd::configured_service
  * is `xinetd.
+
+ * Adds those from all-services that do not have a matching
+ * (service,protocol,program) one in the working config.
+ * Now that we handle also inetd, better(?) ask RPM
+
+ * TODO rename this function, merge it with mWD
+ * it really means AddNotInstalled
+
  * @param netd_conf not used in this function, but used for isServiceInstalled() call.
  * @param table_data Table data structure used as source data
  * @return list New table data
  */
 global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
     //y2milestone("in function mergeXinetdConfs()");
+
+    list defaults = GetDefaults ();
+
     integer index = 0;
-    foreach(`line, Inetd::xinetd_packages, ``{
-	if(isServiceInstalled(netd_conf, line) == `no) {
+    foreach(`line, defaults, ``{
+	if(! isServiceMatchPresent (netd_conf, line)) {
 	    index = index + 1;
-	    term entry = `item(`id("NI" + index),
-		"",                  // Change entry
-		/* Translators: This is used for status "Not Installed". Please, make the
-				translation as short as possible. */
-		_("NI"),             // Status entry
-		line["service"]:"",  // Service
-		"",                  // Socket type
-		line["protocol"]:"", // Protocol
-		"",                  // Wait
-		"",                  // User
-		line["program"]:"" + " (" + line["package"]:"---" + ")",  // Server
-		"");                 // Server/Args
+	    term entry = ServiceToTableItem (line, index);
 	    table_data = add(table_data, entry);
 	}
     });
     return table_data;
+}
+
+/**
+ * @param service @ref service
+ * @param ni_index if nil, use iid as id, otherwise "NI"+ni_index
+ * @return main table item
+ */
+global define term ServiceToTableItem (map service, integer ni_index) ``{
+    y2debug ("* %1", service["service"]:"");
+    string  status_text     = "";
+    string  wait_text       = "";
+
+    // determine service is enabled (enabled text)
+    string changed_text = (service["changed"]:false) ? "X" : "";
+    if (service["enabled"]:true) {
+	/* Translators: Service status: On = running, --- = stopped */
+	status_text = _("On");
+    }
+    else {
+	/* Translators: This string you can leave unchanged */
+	status_text = _("---");
+    }
+
+    // HACK:
+    // Only distinguish non-installed packages for xinetd, like before.
+    // No time to do it also for inetd.
+    // LATER move this to the new isInstalled function or its ui part
+    if (Inetd::configured_service == `xinetd && ni_index != nil)
+    {
+	/* Translators: This is used for status "Not Installed".
+	   Please, make the
+	   translation as short as possible. */
+	status_text = _("NI");
+    }
+
+    // determine wait mode (convert to string)
+    if (service["wait"]:true) {
+	wait_text = "wait";
+    }
+    else {
+	wait_text = "nowait";
+    }
+    string sname = service["service"]:"";
+    string rpc_ver = service["rpc_version"]:"";
+    if (rpc_ver != "") {
+	sname = sname + "/" + rpc_ver;
+    }
+    string user_group = service["group"]:"";
+    if (user_group == "") {
+	user_group = service["user"]:"";
+    }
+    else {
+	user_group = service["user"]:"" + "." + user_group;
+    }
+    // create line for table structure
+    term entry = `item(
+	`id (
+	    ni_index == nil ?
+	    (service["iid"]:"0") :
+	    "NI" + ni_index
+	    ),
+	changed_text,
+	status_text,
+	sname,
+	service["socket_type"]:"",
+	service["protocol"]:"",
+	wait_text,
+	user_group,
+	service["server"]:"",
+	service["server_args"]:"");
+    return entry;
 }
 
 /**
@@ -153,79 +273,27 @@ global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
  */
 global define list(term) CreateTableData(list netd_conf) ``{
     list    table_input     = [];
-    list    my_table        = [];
-    any     status          = false;
-    string  status_text     = "";
-    string  wait_text       = "";
-    integer numberOfEntries = size(netd_conf);
 
-    //y2milestone("%1", netd_conf);
+    foreach(map service, netd_conf, ``{
+	// service must be marked as nondeleted ("deleted" == false or "deleted" not exists)
+	if (! service["deleted"]:false) {
+	    term entry = ServiceToTableItem (service, nil);
+	    // add line to table structure
+	    table_input = add(table_input, entry);
+	};
+    });
 
-    if (numberOfEntries != 0) {
-
-	foreach(`line, netd_conf, ``{
-	    // service must be marked as nondeleted ("deleted" == false or "deleted" not exists)
-	    if (lookup(line, "deleted", false) != true) {
-
-		// determine service is enabled (enabled text)
-		string changed_text = (lookup(line, "changed", false) == false) ? "" : "X";
-		any status = lookup(line, "enabled", true);
-		if (status == true) {
-		    /* Translators: Service status: On = running, --- = stopped */
-		    status_text = _("On");
-		}
-		else {
-		    /* Translators: This string you can leave unchanged */
-		    status_text = _("---");
-		}
-		if (lookup(line, "package", "!") != "")
-		    status_text = _("NI");
-		// determine wait mode (convert to string)
-		status = lookup(line, "wait", true);
-		if (status == true) {
-		    wait_text = "wait";
-		}
-		else {
-		    wait_text = "nowait";
-		}
-		any service = lookup(line, "service",     "");
-		any rpc_ver = lookup(line, "rpc_version", "");
-		if (rpc_ver != "") {
-		    service = service + "/" + rpc_ver;
-		}
-		string user_group = lookup(line, "group", "");
-		if (user_group == "") {
-		    user_group = lookup(line, "user", "");
-		}
-		else {
-		    user_group = lookup(line, "user", "") + "." + user_group;
-		}
-		// create line for table structure
-		term entry = `item(`id(lookup(line, "iid", "0")),
-		    changed_text,
-		    status_text,
-		    service,
-		    lookup(line, "socket_type", ""),
-		    lookup(line, "protocol", ""),
-		    wait_text,
-		    user_group,
-		    lookup(line, "server", ""),
-		    lookup(line, "server_args", ""));
-		// add line to table structure
-		table_input = add(table_input, entry);
-	    };
-	});
-    }
-    //table_input = sort(table_input);
-    /*
-     * NOT NEEDED YET!
-     * Packages are handled in xinetd.conf.
-     */
-    /*if (Inetd::configured_service == `xinetd) {
+    // now can do it for both superservers
+    // ... not yet
+    if (Inetd::configured_service == `xinetd)
+    {
 	table_input = mergeXinetdConfs(netd_conf, table_input);
-    }*/
+    }
+    // table_input = find out which are installed
+    // but that would require a better data model.
+    // let's try doing with the current one.
     return table_input;
-};
+}
 
 /**
  * Read user names from passwd.
