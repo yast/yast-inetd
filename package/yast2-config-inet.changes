@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Jan 21 15:39:22 EST 2002 - nashif@suse.de
+
+ - migration to devtools
+ - use standard copyright files
+ - removed old menu entry
+ - added testsuite
+ - fixed syntax (select and lookup)
+
+-------------------------------------------------------------------
 Thu Sep  6 18:47:43 CEST 2001 - jbuch@suse.de
 
 - Read -> SCR::Read(..) 
