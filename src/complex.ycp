@@ -36,7 +36,8 @@ global define symbol ReadDialog() ``{
     Wizard::SetScreenShotName("inetd-3-read");
     Inetd::AbortFunction = ``{ return PollAbort();};
     boolean ret = Inetd::Read();
-    Users::Read (``{ return false;}, false);
+    Users::SetGUI (false);
+    Users::Read ();
     Wizard::RestoreScreenShotName();
     return ret ? `next : `abort;
 }
