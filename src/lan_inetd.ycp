@@ -60,10 +60,10 @@
 					      `HBox(
 						    // back pushbutton: the user input is ignored and the last dialog is called
 						    `PushButton(`id(`back), `opt(`disabled), _("&Back")),
-						    // Button Cancel added
-						    `HCenter ( `PushButton(`id(`cancel), _("&Cancel")) ),
-						    //`HStretch(),
-						    // next pushbutton: the user input is checked and the next dialog is called
+						    
+						    `HStretch(),
+
+                                                    // next pushbutton: finish the configuration
 						    `PushButton(`id(`next), `opt(`disabled), _("&Finish"))
 						    )
 					      )

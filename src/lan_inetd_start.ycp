@@ -96,7 +96,7 @@ configuration for your needs in the next step.
 
 
     // Main dialog: Header
-     UI(`SetContents(_("Network services"), contents, help_text, false, true));
+     UI(`SetContents(_("Network services"), contents, help_text, true, true));
 
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
