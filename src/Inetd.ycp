@@ -187,28 +187,9 @@ global list xinetd_conf          = [];
 global list netd_conf            = [];
 
 /**
- * Holds package names which provides xinetd services (like ftp, ...).
- * This list is filled by calling routine
- * <pre>  xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");</pre>
- */
-global list xinetd_packages      = [];
-
-/**
  * Holds default configuration for currently edited superserver.
  */
 global map default_conf          = $[];
-
-/**
- * This variable holds informations about main package (inetd or xinetd)
- * This variable is used in autoinstallation mode.
- */
-//global list service_package      = [];
-
-/**
- * Required packages for Autoinstallation write.
- * Contains xinetd services package names (for more details please see xinetd_packages).
- */
-//global list required_packages    = [];
 
 /**
  * Is inetd (or xinetd) running?
@@ -314,7 +295,6 @@ global define boolean Read() ``{
     else if(netd_service == `xinetd) {
 	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
     }
-    xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
 
     sleep(sl);
 
@@ -692,12 +672,8 @@ global define boolean Import (map settings) ``{
 	netd_service  = `none;
     }
     // common variables
-    //service_package    = settings["service_package"]:[];
-    //required_packages  = settings["xinetd_packages"]:[];
     last_created       = settings["last_created"]:0;
     configured_service = netd_service;
-//    required_packages  = [];
-//    service_package    = [];
     //y2milestone("%1", netd_conf);
     return true;
 }
@@ -807,8 +783,6 @@ global define map Export () ``{
     config = add(config, "netd_conf",       getChanged(netd_conf));
     config = add(config, "netd_service",    configured_service);
     config = add(config, "netd_status",     netd_status);
-    //config = add(config, "service_package", service_package);
-    //config = add(config, "xinetd_packages", required_packages);
     config = add(config, "last_created",    last_created);
     y2milestone("%1", config);
     return config;
@@ -835,30 +809,6 @@ global define string mkeServiceSummary() ``{
 }
 
 /**
- * Create unsorted list of packages for installation
- * @return string Returnes string with RichText-formated list
- */
-global define string mkePackageSummary() ``{
-    string S = "";
-    foreach(`line, service_package, ``{
-	S = sformat("%1<li>%2", S, line);
-    });
-    string service = "";
-    string program = "";
-    foreach(`line, required_packages, ``{
-	string package = select(line, 0, "");
-	foreach(`pkg, xinetd_packages, ``{
-	    if(pkg["package"]:"" == package) {
-		service = pkg["service"]:"";
-		program = pkg["program"]:"";
-	    }
-	});
-	S = sformat("%1<li>%2 <i>(%3, %4)</i>", S, package, service, program);
-    });
-    return S;
-}
-
-/**
  * Create a textual summary and a list of unconfigured cards
  * @return summary of the current configuration
  */
@@ -880,15 +830,6 @@ global define list Summary() ``{
 	S = Summary::AddHeader(S, head);
 	S = Summary::AddHeader(S, _("These services will be enabled"));
 	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
-	//S = Summary::AddHeader(S, _("These packages will be installed"));
-	//S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
-	/*string S = sformat(_("<p><big><b>Network services are managed via %1</b></big></p>"),
-	    configured_service == `inetd ? "inetd" : "xinetd");
-	S = sformat("%1<p><u>%2</u>", S, _("These services will be enabled"));
-	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
-	S = sformat("%1<p><u>%2</u>", S, _("These packages will be installed"));
-	S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
-	return [ S, [], ];*/
     }
     return S;
 }

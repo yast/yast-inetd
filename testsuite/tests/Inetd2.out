@@ -6,7 +6,6 @@ Dump	Read  --- read all services
 Dump	
 Read	.etc.inetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
 Read	.etc.xinetd_conf.services nil
-Read	.target.ycp "/usr/share/YaST2/data/all-services.ycp" nil
 Return	true
 Dump	
 Dump	Write --- write inetd
@@ -31,7 +30,6 @@ Dump	Read  --- read all services
 Dump	
 Read	.etc.inetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
 Read	.etc.xinetd_conf.services nil
-Read	.target.ycp "/usr/share/YaST2/data/all-services.ycp" nil
 Return	true
 Dump	
 Dump	Write --- write inetd
@@ -51,7 +49,6 @@ Dump	Read  --- read all services
 Dump	
 Read	.etc.inetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
 Read	.etc.xinetd_conf.services nil
-Read	.target.ycp "/usr/share/YaST2/data/all-services.ycp" nil
 Return	true
 Dump	
 Dump	Write --- write inetd
@@ -70,7 +67,6 @@ Dump	Read  --- read all services
 Dump	
 Read	.etc.inetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
 Read	.etc.xinetd_conf.services nil
-Read	.target.ycp "/usr/share/YaST2/data/all-services.ycp" nil
 Return	true
 Dump	
 Dump	Write --- write inetd

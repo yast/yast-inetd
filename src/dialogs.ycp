@@ -305,7 +305,7 @@ global define void indexTable() ``{
 }
 
 /**
- * This function extracts provided packages (from Inetd::xinetd_packages)
+ * This function extracts provided packages (from Inetd::default_conf_*)
  * for selected service.
  * Matches by (service, protocol,"program (package)")
  * @param service_info Contains informations about selected service
@@ -429,7 +429,7 @@ global define term IidToTerm (string selected_item) ``{
  * In normal mode, only for xinetd, for services thast are NI.
  * In auto mode, check IsInstalled.
  * otherwise screams nil.
- * @param item a ui table item
+ * @param id a ui table item
  * @return the same item or nil
  */
 global define string CheckInstallable (string id) ``{
