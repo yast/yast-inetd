@@ -2,6 +2,11 @@
 # Makefile.am for devtools/devtools/skeletons/config/src
 #
 
+# copied from runlevel
+#crude:
+TAGS_DEPENDENCIES = *.ycp
+ETAGS_ARGS = $(TAGS_DEPENDENCIES)
+
 yncludedir = @yncludedir@/inetd
 
 client_DATA =			\
