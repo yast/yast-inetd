@@ -114,7 +114,7 @@ configuration for your needs in the next step.
         if (ret == `on_default)
         {
 	    inetd_status = `on_default;
-	     UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+	    UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
 	}
 
         if (ret == `on_custom)
@@ -126,7 +126,7 @@ configuration for your needs in the next step.
         if (ret == `off)
         {
 	    inetd_status = `off;
-	     UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
+	    UI(`ChangeWidget(`id(`next), `Label,  _("&Finish") ) );
 	}
 
 	if (ret == `next || ret == `language || ret == `back)
@@ -140,16 +140,23 @@ configuration for your needs in the next step.
 		/////////////////////////////////////////////////////////////
 
 		user_settings = add( user_settings, "inetd_status", inetd_status );
-		
+
+		map config_map = $[];
+		string comment = "start the inet daemon in multi-user? (\"yes\" or \"no\")\n# this is needed, if you have to telnet/rlogin to your own machine.\n# It is also needed for the man page formatter in SuSE Help system\n# and for starting the plp lp daemon.";
+
 		if ( inetd_status == `off )
 		{
+		    config_map = add( config_map, "START_INETD", ["no", comment] );
 		    _debug( "Writing START_INETD no" );
-		    SCR(`Write(.etc.rcconfig.START_INETD, "no"));
+		    SCR(`Write(.etc.rcconfig, config_map));
+		    //SCR(Write(.etc.rcconfig.START_INETD, "no"));
 		}
 		else
 		{
-		     _debug( "Writing START_INETD yes" );
-		    SCR(`Write(.etc.rcconfig.START_INETD, "yes"));
+		    config_map = add( config_map, "START_INETD", ["yes", comment] );
+		    _debug( "Writing START_INETD yes" );
+		    SCR(`Write(.etc.rcconfig, config_map));
+		    //SCR(Write(.etc.rcconfig.START_INETD, "yes"));
 		}
 	    }
 
