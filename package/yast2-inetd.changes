@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug 18 03:10:20 CEST 2004 - nashif@suse.de
+
+- Using xorg-x11 instead of XFree86. 
+
+-------------------------------------------------------------------
 Mon Jun 21 10:34:10 CEST 2004 - mvidner@suse.cz
 
 - Added "testedfiles" to test cases to make it work with the new testsuite.
