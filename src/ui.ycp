@@ -255,7 +255,8 @@ global define MainDialog () ``{
 
 /**
  * Edit or create an entry
- * @return list
+ * @return nil on Cancel or a pair on OK:
+ * [ edited_comment or "", edited_service_map ]
  */
 
 global define EditOrCreateServiceDlg( string title,

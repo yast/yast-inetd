@@ -25,6 +25,24 @@
 
     global symbol  inetd_status = `off;
 
+    /**
+     * /etc/inetd.conf, as a list of lines
+     * where lines are maps, all containing:
+     *   "line_number": integer
+     *   `status: `comment, `active or `inactive // note `status, not "status"
+     * And additionally, depending on `status:
+     * For `comment:
+     *   // TODO: does it include #, space or \n?
+     *   "comment": string
+     * For `active and `inactive:
+     * All are strings corresponding to fields of inetd.conf
+     *   "service"
+     *   "type"
+     *   "protocol"
+     *   "flags"
+     *   "user"
+     *   "servargs": combines server and its arguments
+     */
     global list inetd_conf       = [];
 
     boolean file_read = false;
@@ -32,10 +50,42 @@
     global boolean changed_conf = false;
 
     /**
-     * Read all Inetd settings from the SCR
-     * @param abort A block that can be called by Read to find
-     *	      out whether abort is requested. Returns true if abort
-     *	      was pressed.
+     * New SCR interface:
+     * A service map looks like this:
+     * $[
+     *   "service": string	// * different from equally named field above
+     *   "rpc_version": string
+     *   "socket_type": string
+     *   "protocol": string
+     *   "wait": boolean
+     *   "max": integer		// inetd only
+     *   "user": string		// *
+     *   "group": string
+     *   "server": string
+     *   "server_args": string
+     *   "comment": string	// possibly multiline, without #
+     * ]
+     * When handling existing maps, take care to preserve any other fields
+     * that may be present!
+     *
+     * path netd = .whatever.inetd or .whatever.xinetd;
+     *
+     * SCR::Read (netd + .services) -> list of service maps
+     *   There should be a warning if inetd and xinetd are both installed
+     * SCR::Read (netd + .services + service_name) -> service map (or empty)
+     * SCR::Read (netd + .services + service_name + field) -> (any) field
+     * SCR::Write (netd, nil) -> boolean
+     *   Commits changes performed by other writes (see below) to disk
+     * // Hm, maybe we should check that vaid fields are passed?
+     * SCR::Write (netd + .services, list of service maps) -> true
+     * SCR::Write (netd + .services + service_name, service map) -> true
+     * SCR::Write (netd + .services + service_name + field, any) -> true
+     *   This last one should be useful for autoyast - changing just
+     *   the "enabled" field.
+     */
+
+    /**
+     * Determines inetd_status
      * @return True on success
      */
     global define boolean Read (block abort) ``{
@@ -401,6 +451,7 @@
     };
 
     /**
+     * UNUSED
      * Convert SCR-DB Line to internal DB line
      * @return internal-DB map
      */
@@ -468,7 +519,7 @@
      * @return List-DB map
      */
 
-    global define makeAllInactive ()
+    global define list(map) makeAllInactive ()
     ``{
 	list table_input = [];
 
@@ -484,7 +535,7 @@
      * @return List-DB map
      */
 
-    global define convertInternalToList ( )
+    global define list(term) convertInternalToList ( )
     ``{
 	list table_input = [];
 
@@ -538,7 +589,7 @@
      * @return -
      */
 
-    global define WriteInetdConf ( )
+    global define void WriteInetdConf ( )
 	``{
 	// not tested yet!
 	string send_line = "";
