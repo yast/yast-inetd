@@ -279,8 +279,21 @@ global define boolean Read() ``{
 /**
  * This function solves differences between new (after installing requested packages)
  * xinetd configuration and old small configuration created by user.
- * @param netd_conf holds new configuration
- * @param old_conf  holds old configuration
+ * <pre>
+ * <b>In auto mode</b>:
+ * for each user's service:
+ *   if its iid contains "inst",
+ *     the service(s) in the system is found having the same
+ *     (service,protocol,server) triple (more precisely, for the server:
+ *     the first word of user's server must be contained in system's server)
+ *     And then this system service is used, replacing only the "enabled" field
+ *     and marking it as changed.
+ *   otherwise
+ *     the user's service is taken as it is
+ * So for xinetd AY UI, only toggling works
+ * </pre>
+ * @param netd_conf holds new configuration (auto: on the system)
+ * @param old_conf  holds old configuration (auto: profile + defaults)
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
@@ -490,6 +503,16 @@ global define boolean WriteOnly () ``{
 
 /**
  * merges imported changes with services defaults
+ * <br>
+ * Each change is a service map. If its iid: <dl>
+ * <dt> starts with "inst" or "new"
+ *  <dd> it is added to the list
+ * <dt> does not exist or is "!"
+ *  <dd> it unioned with the service(s) having the same
+ *       (service,protocol,server) triple.
+ * <dt> otherwise
+ *  <dd> it is discarded!
+ * </dl>
  * @param changes imported changes
  * @return complete configuration with user changes
  */
