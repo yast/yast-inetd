@@ -282,7 +282,7 @@ global define boolean Read() ``{
  * @return list Returnes new solved xinetd configuration (ready for Write()).
  */
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
-    
+
     map new_entry = nil;
     
     if(!auto_mode) {
@@ -309,7 +309,7 @@ global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 		// service, protocol and server must be the same...
 		if((new_line["service"]:"" == old_line["service"]:"!") &&         // service
 		    (new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
-		    (find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
+		    (find(new_line["server"]:"", select(splitstring(old_line["server"]:"!", " "), 0, "")) != -1)) { // server
 		    new_line  = add(new_line, "enabled", old_line["enabled"]:true);
                     new_line  = add(new_line, "changed", true);
 		    new_entry = new_line;
@@ -360,7 +360,9 @@ global define boolean Write() ``{
     if(Abort()) return false;
 //    y2milestone("%1, %2", configured_service, netd_status);
     if (write_only) {
+	list new_conf = [];
 	if (configured_service == `inetd) {
+//	    new_conf = SCR::Read(.etc.inetd_conf.services);
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("inetd", "enable");
 	    }
@@ -371,6 +373,10 @@ global define boolean Write() ``{
 	    SCR::Write(.etc.inetd_conf.services, netd_conf);
 	}
 	else if (configured_service == `xinetd) {
+	    new_conf  = SCR::Read(.etc.xinetd_conf.services);
+	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
+	    //y2milestone("\nnetd_conf = %1\n", netd_conf);
+	    //return;
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("xinetd", "enable");
 	    }
@@ -581,17 +587,17 @@ global define boolean Import (map settings) ``{
      */
     // service is inetd
     if (settings["netd_service"]:`none == `inetd) {
+	netd_service  = `inetd;
 	inetd_conf    = mergeWithDefaults(settings["netd_conf"]:[]);
         inetd_status  = 0;
-	netd_service  = `inetd;
 	netd_status   = settings["netd_status"]:-1;
 	netd_conf     = inetd_conf;
     }
     // service is xinetd
     else if (settings["netd_service"]:`none == `xinetd) {
+	netd_service  = `xinetd;
 	xinetd_conf   = mergeWithDefaults(settings["netd_conf"]:[]);
         xinetd_status = 0;
-	netd_service  = `xinetd;
 	netd_status   = settings["netd_status"]:-1;
 	netd_conf     = xinetd_conf;
     }
