@@ -283,7 +283,7 @@ global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
     netd_conf = maplist(`new_line, netd_conf, ``{
 	new_entry = new_line;
 	foreach(`old_line, old_conf, ``{
-	    if((new_line["service"]:"" == old_line["service"]:"!") &&          // service
+	    if((new_line["service"]:"" == old_line["service"]:"!") &&         // service
 		(new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
 		(find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
 	        new_entry = old_line;
@@ -301,7 +301,7 @@ global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 	    // find this line in new (installed) configuration
 	    foreach(`new_line, netd_conf, ``{
 		// service, protocol and server must be the same...
-		if((new_line["service"]:"" == old_line["service"]:"!") &&          // service
+		if((new_line["service"]:"" == old_line["service"]:"!") &&         // service
 		    (new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
 		    (find(new_line["server"]:"", old_line["server"]:"!") != -1)) { // server
 		    new_line  = add(new_line, "enabled", old_line["enabled"]:true);
@@ -510,6 +510,48 @@ global define boolean WriteOnly () ``{
 }
 
 /**
+ * merges imported changes with services defaults
+ * @param changes imported changes
+ * @return complete configuration with user changes
+ */
+global define list mergeWithDefaults(list changes) ``{
+    list defaults = [];
+    list new_conf = [];
+
+    //y2milestone("%1", changes);
+
+    if(netd_service == `inetd) {
+	defaults = default_conf_inetd["netd_conf"]:[];
+    }
+    else if(netd_service == `xinetd) {
+	defaults = default_conf_xinetd["netd_conf"]:[];
+    }
+
+    map new_entry = nil;
+
+    foreach(`line, changes, ``{
+	defaults = maplist(`default, defaults, ``{
+	    if(default["iid"]:"" == line["iid"]:"!") {
+		new_entry =  line;
+	    }
+	    else {
+		new_entry = default;
+	    }
+	    return new_entry;
+	});
+    });
+    foreach(`line, changes, ``{
+	if((find(line["iid"]:"", "inst") != -1) &&
+	    (line["created"]:false == true)) {
+	    defaults = add(defaults, line);
+	}
+    });
+
+    //y2milestone("%1", defaults);
+    return defaults;
+}
+
+/**
  * Get all inetd settings from the first parameter
  * (For use by autoinstallation.)
  * @param settings The YCP structure to be imported.
@@ -531,20 +573,23 @@ global define boolean Import (map settings) ``{
      * if "netd_service" is not found, configuration is generated from default values
      * stored if default_conf_*.ycp.
      */
+    // service is inetd
     if (settings["netd_service"]:`none == `inetd) {
-	inetd_conf    = settings["netd_conf"]:[];
+	inetd_conf    = mergeWithDefaults(settings["netd_conf"]:[]);
         inetd_status  = 0;
 	netd_service  = `inetd;
 	netd_status   = settings["netd_status"]:-1;
 	netd_conf     = inetd_conf;
     }
+    // service is xinetd
     else if (settings["netd_service"]:`none == `xinetd) {
-	xinetd_conf   = settings["netd_conf"]:[];
+	xinetd_conf   = mergeWithDefaults(settings["netd_conf"]:[]);
         xinetd_status = 0;
 	netd_service  = `xinetd;
 	netd_status   = settings["netd_status"]:-1;
 	netd_conf     = xinetd_conf;
     }
+    // no service detected --- loading defaults
     else if (settings["netd_service"]:`none == `none) {
 	inetd_conf    = default_conf_inetd["netd_conf"]:[];
 	xinetd_conf   = default_conf_xinetd["netd_conf"]:[];
@@ -552,12 +597,30 @@ global define boolean Import (map settings) ``{
 	xinetd_status = 0;
 	netd_service  = `both;
     }
+    // common variables
     service_package    = settings["service_package"]:[];
     required_packages  = settings["xinetd_packages"]:[];
     configured_service = netd_service;
 //    y2milestone("%1", settings);
 //    y2milestone("%1", service_package);
     return true;
+}
+
+/**
+ * Get only changed entries
+ * @param config complete configuration
+ * @return Returnse list of changes only
+ */
+global define list getChanged(list config) ``{
+    list changes = [];
+
+    foreach(`line, config, ``{
+	if(line["changed"]:false == true)
+	    changes = add(changes, line);
+    });
+
+    y2milestone("%1", changes);
+    return changes;
 }
 
 /**
@@ -568,7 +631,7 @@ global define boolean Import (map settings) ``{
 global define map Export () ``{
 //    sleep(3000);
     map config = $[];
-    config = add(config, "netd_conf",       netd_conf);
+    config = add(config, "netd_conf",       getChanged(netd_conf));
     config = add(config, "netd_service",    configured_service);
     config = add(config, "netd_status",     netd_status);
     config = add(config, "service_package", service_package);
