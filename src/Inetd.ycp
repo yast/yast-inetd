@@ -19,8 +19,9 @@
     import "Runlevel";
     import "Report";
     import "Mode";
-
-
+    import "Summary";
+    import "Directory";
+    
 
     global symbol  inetd_status = `off;
 
@@ -96,7 +97,9 @@
      * @return boolean
      */
     global define boolean WriteOnly()``{
-	if (changed_conf && inetd_status == `on_custom ) {
+	if (changed_conf && inetd_status == `on_custom )
+	{
+	    Runlevel::ServiceAdjust("inetd", "enable");
 	    WriteInetdConf();
 	    return true;
 	}
@@ -292,15 +295,6 @@
     }
 
 
-
-
-
-
-
-
-
-
-
      /**
      * Build a textual summary that can be used e.g. in inst_hw_config () or
      * something similar.
@@ -324,6 +318,7 @@
 	} else {
 	    inetd_status = `off;
 	}
+	changed_conf = true;
 
 	return;
     }
