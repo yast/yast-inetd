@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 17 17:20:41 CEST 2001 - kkaempf@suse.de
+
+- name change to "yast2-config-inet"
+  package as .bz2
+
+-------------------------------------------------------------------
 Thu Jan 18 15:09:51 CET 2001 - mike@suse.de
 
 - fix: now translates properly 
