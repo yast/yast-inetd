@@ -20,10 +20,11 @@
  *   /etc/rc.config  (START_INETD)
  *   /etc/inetd.conf
  *
- *
  * Run SuSEconfig to generate /etc/hosts, /etc/host.conf, /etc/resolv.conf
  *
  * $Id$
+ *
+ * Strings ok. Proofread 2001/08/01 <cstein@suse.de>
  */
 
 {

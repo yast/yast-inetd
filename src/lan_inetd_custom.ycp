@@ -19,6 +19,8 @@
  *
  * external function:  SCR .etc.inetd.conf
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/08/01
+ *
  *************************************************************
 
  $Id$
@@ -107,19 +109,8 @@ _("<ul>
 <li>server program	    
 <li>server program arguments
 </ul>")+
-_("<p>To specify an Sun-RPC based service, the entry would contain these
-fields:</p>")+
-_("<ul>
-<li>service name/version    
-<li>socket type		    
-<li>rpc/protocol	    
-<li>wait/nowait[.max]	    
-<li>user[.group]	    
-<li>server program	    
-<li>server program arguments
-</ul>")+
 
-_("<p>Here a short description, for details see <b>info inetd.conf</b>
+_("<p>Here is a short description, for details see <b>info inetd.conf</b>
 </p>")+
 
 _("<p>The <b>service-name</b> entry is the name of a valid service
@@ -137,11 +128,12 @@ Examples might be <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i> or <i>rpc/udp</i>.
 _("<p>The <b>wait/nowait</b> entry is applicable to datagram sockets only.
 The optional <i>max</i> suffix specifies the maximum number of
 server instances that may be spawned from inetd within an interval of 60
-seconds. 
+seconds.
 </p>")+
 
-_("<p>The <b>user</b> entry should contain the user name of the user as whom the 
-server should run.
+_("<p>The server will be run with the permissions of the user entered in
+the <b>user</b> field. This is useful to make services run with permissions
+less than root.
 </p>")+
 
 _("<p>The <b>server-program</b> entry should contain the pathname of the program which
@@ -787,15 +779,12 @@ All services marked with \"Active!\" are <i>active</i> (unlocked).</p>")) +
 UI(_("<p>Inactive means, that these services are preconfigured in the configuration
 file of inetd (/etc/inetd.conf), but they are locked.</p>
 ")) +
-UI(_("<p>With a click to this entry, and a second click
-on the button activate/inactivate you can unlock an inactive entry, or
-lock an active entry.</p>
+UI(_("<p>To lock/unlock a service, click the respective
+entry and then press the <b>activate/deactivate</b> button.
+</p>
 ")) +
-UI(_("<p>With a click to an entry, and a second click
-on the button edit you can change parameters of this service
+UI(_("<p>With the <b>Edit</b> button you can change the parameters of a service.
 </p>"));
-
-     help_text = help_text + "<p>(.13)</p>";
 
      // using SetContents (define in lan_inetd.ycp)
      UI(`SetContents(_("Enable/disable network services"), contents, help_text, true, true ));
