@@ -14,6 +14,7 @@ shopt -s expand_aliases
 alias kick-debug-lines="fgrep -v ' <0> '"
 alias kick-empty-lines="grep -v '^$'"
 alias strip-constant-part="sed 's/^....-..-.. ..:..:.. [^)]*) //g'"
+alias mask-line-numbers="sed 's/^\([^ ]* [^)]*):\)[[:digit:]]*/\1XXX/'"
 
 rm -f "$IN.test"
 cp "$IN" "$IN.test" 2> /dev/null
@@ -35,6 +36,7 @@ Y2DIR="$AGDIR" $Y -l - 2>&1 >"$OUT_TMP" "$YCP" '("'"$IN.test"'")' testsuite \
     | kick-debug-lines \
     | kick-empty-lines \
     | strip-constant-part \
+    | mask-line-numbers \
     > "$ERR_TMP"
 
 cat "$IN.test" >> "$OUT_TMP" 2> /dev/null
