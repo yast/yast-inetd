@@ -155,38 +155,44 @@ is to be executed by inetd when a request is found on its socket.
 	`HBox(
 	      /// left side
 	      `RichText( helptextCR ),
+	      `HSpacing(1),
 	      /// right side
 	      `VBox(
 		    // popup create edit service: Framedescription
 		    // here values for the inetd service can be set
-		    `VWeight( 4,`Top( `Frame ( _("Edit service"),
+		    `Top( `Frame ( _("Edit service"),
+				   `HBox(
+					 `HSpacing(1),
 			     `VBox(
-				   `VWeight( 50, `Left( `CheckBox( `id(`status), "service is active",
-							     status == `active ))),
-				   `VWeight( 500,`HBox(
-					   `VBox(
+				   `Left( `CheckBox( `id(`status), "service is active",
+							     status == `active )),
+				   `HBox( 
+					   `HWeight( 3,`VBox(
 						 // popup create/edit inetd service : Description Inputfield
 						 `TextEntry(`id(`service), _("&Service")),
 						 // popup create/edit inetd service : Description Inputfield
-						 `ComboBox(`id(`type), `opt(`editable),_("&Type"), [ "stream", "dgram", "raw", "rdm","seqpacket" ] )
-						 ),
-					   `VBox(
+						 `Left(`ComboBox(`id(`type), `opt(`editable),_("&Type"), [ "stream", "dgram", "raw", "rdm","seqpacket" ] ))
+						 )),
+					   `HWeight( 3,`VBox(
 						 // popup create/edit inetd service : Description Inputfield
 						 `ComboBox(`id(`protocol), `opt(`editable),_("&Protocol"), [ "tcp", "udp", "rpc/tcp", "rpc/udp" ]  ),
 						 // popup create/edit inetd service : Description Inputfield
 						 `ComboBox(`id(`flags),`opt(`editable), _("&Flags"),  [ "wait", "nowait" ] )
-						 )
-					   )),
+						 ))
+					   ),
 				     // popup create/edit inetd service : Description Inputfield
-				   `VWeight( 50,`TextEntry(`id(`user), _("&User"))),
+				   `TextEntry(`id(`user), _("&User")),
 				   // popup create/edit inetd service : Description Inputfield
-				   `VWeight( 50,`TextEntry(`id(`servargs), _("S&erver / Args"))),
+				   `TextEntry(`id(`servargs), _("S&erver / Args")),
 				   // popup create 
-				   `VWeight( 50,`TextEntry(`id(`comment), _("&Comment")))
-				   )
-					 ))),
+				   `TextEntry(`id(`comment), _("&Comment"))
+				   ),
+					 `HSpacing(1)
+					 )
+					 
+					 )),
 		    //`VWeight( 0,`Frame( _("Previous block comment in inetd.conf"), `Label( previous_comment )))
-	           `VWeight( 3,`Frame( _("Previous block comment in inetd.conf"), `RichText( previous_comment )))
+	           `Frame( _("Previous block comment in inetd.conf"), `RichText( previous_comment ))
 		    )
 	      ),
 	`HBox(

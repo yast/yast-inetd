@@ -27,10 +27,18 @@
 */
 {
   
-   symbol  ret         = `next;
-   symbol inetd_status = lookup( user_settings, "inetd_status", `off);
+    symbol  ret         = `next;
+    symbol inetd_status = lookup( user_settings, "inetd_status", `off);
 
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // check if there is a default for inetd.conf, ele create one
+    if ( !fileexist ("/etc/inetd.conf.default"))
+    {
+       Shell( "/bin/cp /etc/inetd.conf /etc/inetd.conf.default" );  
+    }
+
+   
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // MAIN:
     /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +168,11 @@ configuration for your needs in the next step.
 		    SCR(`Write(.etc.rcconfig, config_map));
 		    
 		    _debug( "Shell restart inetd" );
-		    if ( inetd_status == `on_default)  Shell("/sbin/init.d/inetd restart");
+		    if ( inetd_status == `on_default)
+		    {
+			Shell( "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );  
+			Shell( "/sbin/init.d/inetd restart");
+		    }
 		}
 	    }
 
