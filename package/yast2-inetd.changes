@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Feb 26 10:39:58 CET 2003 - mvidner@suse.de
+
+- includedir was lost after adding and removing a xinetd service (#24270).
+- Updated the installable packages list.
+- 2.7.6
+
+-------------------------------------------------------------------
 Mon Feb 24 18:10:47 CET 2003 - mvidner@suse.de
 
 - updated installable packages list
