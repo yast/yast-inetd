@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr  2 14:57:52 CEST 2004 - mvidner@suse.cz
+
+- changed license to GPL
+- 2.9.12
+
+-------------------------------------------------------------------
 Wed Mar 31 14:50:05 CEST 2004 - mvidner@suse.cz
 
 - autoyast - check arguments
