@@ -17,13 +17,13 @@
 {
 
 include "testsuite.ycp";
-import "Inetd.ycp";
+import "Inetd";
 include "inetd/dialogs.ycp";
 import "Report";
 
 Report::DisplayErrors(false, 0);
 
-list netd_conf = [
+list<map> netd_conf = [
 	$["iid": "whatever",
 	    "comment": "My service",
 	    "enabled": true,
@@ -36,7 +36,7 @@ list netd_conf = [
 	    "server_args": "in.fingerd -w"]
 	];
 
-list netd_conf_none = [
+list<map> netd_conf_none = [
 	$["iid": "whatever",
 	    "comment": "My service",
 	    "enabled": false,

@@ -21,45 +21,45 @@ import "Label";
 include "inetd/helps.ycp";
 include "inetd/routines.ycp";
 
-global define string CheckInstallable (string id);
-global define term IidToTerm (string selected_item);
-global define map EditOrCreateServiceDlg(string title, map line);
+define string CheckInstallable (string id);
+define term IidToTerm (string selected_item);
+define map EditOrCreateServiceDlg(string title, map line);
 
 /**
  * local users and groups are stored here
  * We create both lists only once - during first EditOrCreateServiceDlg() call.
  */
-global list<string> local_users  = nil;
+list<string> local_users  = nil;
 
 /**
  * see local_users.
  */
-global list<string> local_groups = nil;
+list<string> local_groups = nil;
 
 /**
  * This map is used for (re)selecting table items. This is new inetd GUI improvement! :o)
  * Indexes table items, ie. not counting deleted services.
  */
-global map iid_to_index          = $[];
+map iid_to_index          = $[];
 
 /**
  * See iid_to_index.
  * This is reverse to iid_to_index.
  * Indexes table items, ie. not counting deleted services.
  */
-global map index_to_iid          = $[];
+map index_to_iid          = $[];
 
 /**
  * used for conversion netd_conf to table's format
  */
-global list<term> table_data           = [];
+list<term> table_data           = [];
 
 /**
  * Detect installed packages.
  * Ask user for packages to install (inetd, xinetd, both)
  * @return `back for abort, `next for continue
  */
-global define symbol PackageDialog() ``{
+define symbol PackageDialog() ``{
 
     term contents =
 	`VBox(
@@ -113,7 +113,7 @@ global define symbol PackageDialog() ``{
 	// User will continue
 	else {
 	    // Determine user selection
-	    list packages = [];
+	    list<string> packages = [];
 	    if(install_inetd) {
 		packages = add(packages, "inetd");
 	    }
@@ -169,7 +169,7 @@ global define symbol PackageDialog() ``{
  * in autoyast mode.
  * @return `back for abort, `next for continue
  */
-global define symbol PackageAutoDialog() ``{
+define symbol PackageAutoDialog() ``{
     any result = `both;
 
     term contents =
@@ -243,7 +243,7 @@ global define symbol PackageAutoDialog() ``{
  * Ask user which service wants to configure (if booth installed)
  * @return returns `back for abort and `next for continue
  */
-global define symbol WhatToConfigureDialog() ``{
+define symbol WhatToConfigureDialog() ``{
 
     term contents =
 	`VBox(
@@ -305,7 +305,7 @@ global define symbol WhatToConfigureDialog() ``{
 /**
  * This function regenerates index_to_iid and iid_to_index maps
  */
-global define void indexTable() ``{
+define void indexTable() ``{
     integer index = 0;   // (re)set index
     iid_to_index  = $[]; // clear data
     index_to_iid  = $[]; //   maps are not empty!
@@ -327,8 +327,8 @@ global define void indexTable() ``{
  * @param service_info Contains informations about selected service
  * @return list Provided packages
  */
-global define list GetProvidedPackage(term service_info) ``{
-    list packages = [];
+define list<string> GetProvidedPackage(term service_info) ``{
+    list<string> packages = [];
 
     // yuck, using numbers instead of names, this should be cleaned up
     map<string, any> table_s = $[
@@ -360,7 +360,7 @@ global define list GetProvidedPackage(term service_info) ``{
  * `none: cancelled or install error
  * </pre>
  */
-global define symbol InstallProvidedPackage(string selected_item) ``{
+define symbol InstallProvidedPackage(string selected_item) ``{
     symbol ret       = `next;
     // possibly nil it out
     selected_item = CheckInstallable (selected_item);
@@ -376,7 +376,7 @@ global define symbol InstallProvidedPackage(string selected_item) ``{
     // Now, the package doesn't exists. We must tell user, the package is required...
     // But, the fisrt, we must extract requested package name
     // (singleton list)
-    list package_name = GetProvidedPackage(service_info);
+    list<string> package_name = GetProvidedPackage(service_info);
     y2milestone ("* pkg: %1", package_name);
 
     // if Autoinstallation mode --- we do not want to install packages yet...
@@ -412,9 +412,9 @@ global define symbol InstallProvidedPackage(string selected_item) ``{
 	else {
 	    IsInstalledClearCache ();
 	    y2milestone("Rereading xinetd configuration");
-	    list old_conf = Inetd::netd_conf;
+	    list<map> old_conf = Inetd::netd_conf;
 	    // Reread configuration!
-	    Inetd::netd_conf = (list) SCR::Read(.etc.xinetd_conf.services);
+	    Inetd::netd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
 	    Inetd::netd_conf = Inetd::MergeEditedWithSystem(Inetd::netd_conf, old_conf);
 	    /* Translators: The package name is stored in %1 */
 	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
@@ -431,7 +431,7 @@ global define symbol InstallProvidedPackage(string selected_item) ``{
  * @param selected_item iid of selected item
  * @return term Service name or nil
  */
-global define term IidToTerm (string selected_item) ``{
+define term IidToTerm (string selected_item) ``{
     if (selected_item == nil)
     {
 	return nil;
@@ -448,7 +448,7 @@ global define term IidToTerm (string selected_item) ``{
  * @param id a ui table item
  * @return the same item or nil
  */
-global define string CheckInstallable (string id) ``{
+define string CheckInstallable (string id) ``{
     if (Inetd::auto_mode)
     {
 	// must get to the "package" field
@@ -473,7 +473,7 @@ global define string CheckInstallable (string id) ``{
  * This is main inetd module dialog.
  * @return dialog result
  */
-global define symbol InetdDialog () ``{
+define symbol InetdDialog () ``{
 
     list expert_contents =
 	[
@@ -897,7 +897,7 @@ Internet super-server will be disabled."));
  * @param line line specifies new entry data-template
  * @return map nil on Cancel or new entry (map) for netd_conf on OK:
  */
-global define map EditOrCreateServiceDlg(string title, map line) ``{
+define map EditOrCreateServiceDlg(string title, map line) ``{
 
     /* Translators: Special widget for inetd */
     term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets

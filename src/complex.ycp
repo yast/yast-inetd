@@ -23,7 +23,7 @@ include "inetd/routines.ycp";
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return Inetd::Modified();
 }
 
@@ -31,7 +31,7 @@ global define boolean Modified() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol ReadDialog() ``{
+define symbol ReadDialog() ``{
     Wizard::RestoreHelp(HELPS["read"]:"");
     Wizard::SetScreenShotName("inetd-3-read");
     Inetd::AbortFunction = ``{ return PollAbort();};
@@ -46,7 +46,7 @@ global define symbol ReadDialog() ``{
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol WriteDialog() ``{
+define symbol WriteDialog() ``{
     Wizard::RestoreHelp(HELPS["write"]:"");
     Wizard::SetScreenShotName("inetd-7-write");
     Inetd::AbortFunction = ``{ return PollAbort();};

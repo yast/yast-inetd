@@ -88,7 +88,7 @@
 	    // Xinetd should go first as it can provide more info
 
 	    // /usr/sbin for packages run via tcpd
-	    string package = (string) (package_cache[server]: package_cache["/usr/sbin/"+server]: nil);
+	    string package = (string) (package_cache[server]: (package_cache["/usr/sbin/"+server]: nil));
 	    if (package == nil)
 	    {
 		list<string> packages = PdbQuery ("rpmfile:*" + server);
@@ -114,10 +114,10 @@
 
     // needs ycp.pm,v 1.6
     SCR::RegisterAgent (.aaa.inetd, `ag_netd (`Inetd ("etc/inetd.conf")));
-    list dc_inetd = (list) SCR::Read (.aaa.inetd.services);
+    list<map> dc_inetd = (list<map>) SCR::Read (.aaa.inetd.services);
 
     SCR::RegisterAgent (.aaa.xinetd, `ag_netd (`Xinetd ("all-services.conf")));
-    list dc_xinetd = (list) SCR::Read (.aaa.xinetd.services);
+    list<map> dc_xinetd = (list<map>) SCR::Read (.aaa.xinetd.services);
 
     y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
 

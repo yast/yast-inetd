@@ -14,7 +14,7 @@
 {
 
 include "testsuite.ycp";
-import "Inetd.ycp";
+import "Inetd";
 import "Report";
 
 Report::DisplayErrors(false, 0);
@@ -73,12 +73,12 @@ map READ = $[
 ];
 
 map READXinetd = $[];
-READXinetd = eval(READ);
+READXinetd =(map) eval(READ);
 READXinetd["init", "scripts", "runlevel", "xinetd"] = service_off;
 READXinetd["etc", "inetd_conf"]                     = $[ ];
 
 map READXinetd2 = $[];
-READXinetd2 = eval(READ);
+READXinetd2 =(map) eval(READ);
 READXinetd2["init", "scripts", "runlevel", "xinetd"] = service_on;
 READXinetd2["etc", "inetd_conf"]                     = $[ ];
 
