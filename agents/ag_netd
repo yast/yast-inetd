@@ -56,6 +56,7 @@ sub to_bool ($)
 
 package linefile;
 # a handle, a name and line number
+use IO::File;
 
 sub new ($$)
 {
@@ -184,6 +185,7 @@ sub include_dir ($)
 
 sub write_file ()
 {
+    use IO::File;
     my $class = shift;
 
     my %changed_services = get_changed (@services);
@@ -293,7 +295,6 @@ sub services_by_package ()
 
 package inetd;
 @inetd::ISA = qw(netd);
-use IO;
 use ycp;
 
 # parses the next service, returns it or undef on EOF
