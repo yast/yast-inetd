@@ -205,54 +205,6 @@ _("<p>---</p>");
 
 				       
 	      
-//   OpenDialog( `opt(`decorated,`defaultsize ), `VBox(`Heading(title),
-//	`Label(""),
-//	`HBox(
-//	      /// left side
-//	      `RichText( helptextCR ),
-//	      /// right side
-//	      `VBox(
-//		    // popup create edit servive: Framedescription (at the moment empty)
-//		    `Frame ( _(""),
-//			     `VBox(
-//				   `VWeight( 5, `Frame( _(""), `CheckBox( `id(`status), "service is listed only as comment",
-//							     status == `inactive ))),
-//				   `VWeight( 5,`Label( "" )),
-//				   `VWeight( 5,`HBox(
-//					 `VBox(
-//					       // popup create/edit inetd service : Description Inputfield
-//					       `TextEntry(`id(`service), _("&Service")),
-//					       // popup create/edit inetd service : Description Inputfield
-//					       `TextEntry(`id(`type), _("&Type"))
-//					       ),
-//					 `VBox(
-//					       // popup create/edit inetd service : Description Inputfield
-//					       `TextEntry(`id(`protocol), _("&Protocol")),
-//					       // popup create/edit inetd service : Description Inputfield
-//					       `TextEntry(`id(`flags), _("&Flags"))
-//					       )
-//					 )),
-//				   // popup create/edit inetd service : Description Inputfield
-//				   `VWeight( 5,`TextEntry(`id(`user), _("&User"))),
-//				   // popup create/edit inetd service : Description Inputfield
-//				   `VWeight( 5,`TextEntry(`id(`servargs), _("S&erver / Args"))),
-//				   // popup create 
-//				   `VWeight( 1,`TextEntry(`id(`comment), _("&Comment")))
-//				   )
-//			     ),
-//		    `Frame( _("Previous comment in inetd.conf"), `RichText( previous_comment ))
-//		    ),
-//	      `Label(" ")
-//	      ),
-//	`Label(""),
-//	`HBox(
-//	      // popup create service:
-//	      `PushButton(`id(`ok), `opt(`default),    _("&OK")),
-//	      // popup create service:
-//	      `PushButton(`id(`cancel), _("&Cancel"))
-//	      )
-//	)
-//    );
 	      
     SetFocus(`id(`service));
 
@@ -271,6 +223,7 @@ _("<p>---</p>");
 
     repeat
           {
+	      input_is_ok = true;
               //-------------------------------
               // Check the User input / change popup ...
               //-------------------------------
@@ -302,6 +255,19 @@ _("<p>---</p>");
                   line = add( line, "servargs",  QueryWidget(`id(`servargs), `Value)) ;
 		  
                   comment = QueryWidget(`id(`comment), `Value);
+
+		  if  ((QueryWidget(`id(`service),     `Value) == "")
+		      || (QueryWidget(`id(`protocol),  `Value) == "")
+		      || (QueryWidget(`id(`type),      `Value) == "")
+		      || (QueryWidget(`id(`flags),     `Value) == "")
+		      || (QueryWidget(`id(`user),      `Value) == "")
+		      || (QueryWidget(`id(`servargs),  `Value) == ""))
+		  {
+		      UI(`MessagePopup(_("Error: One of the fields server, protocol, flags, type, user, server/Args is empty.
+Please enter valid values.") ));
+
+		      input_is_ok = false;
+		  }
               }
           } until ( (doit == `ok && input_is_ok)  ||  doit == `cancel );
 
