@@ -115,6 +115,7 @@ global define symbol PackageDialog() ``{
 	    if(size(packages) > 0) {
 		//include "require.ycp";
 		Require::DoInstallAndRemoveTarget(packages, []);
+		IsInstalledClearCache ();
 	    }
 	    // Check for installed packages
 	    Inetd::inetd_installed  = GetInetdInstalled();
@@ -203,6 +204,7 @@ global define symbol PackageAutoDialog() ``{
 	ret = `back;
 	if(install_inetd) {
 	    Require::DoInstallAndRemoveTarget(["inetd"], []);
+	    IsInstalledClearCache ();
 	    Inetd::netd_service    = `inetd;
 	    Inetd::inetd_installed = 0;
 	    ret = `next;
@@ -211,6 +213,7 @@ global define symbol PackageAutoDialog() ``{
 	    Inetd::inetd_installed = -1;
 	if(install_xinetd) {
 	    Require::DoInstallAndRemoveTarget(["xinetd"], []);
+	    IsInstalledClearCache ();
 	    Inetd::netd_service     = `xinetd;
 	    Inetd::xinetd_installed = 0;
 	    ret = `next;
@@ -331,8 +334,9 @@ global define list GetProvidedPackage(term service_info) ``{
 }
 
 /**
+ * Ensure that a package is installed.
  * Show dialog with packages names provided non-installed service.
- * @param service_info Provided service name
+ * @param selected_item iid from table
  * @return symbol Status of operation:<pre>
  * `next: nothing to do, it is installed already
  * `auto: will be installed at autoinstall time
@@ -340,40 +344,41 @@ global define list GetProvidedPackage(term service_info) ``{
  * `none: cancelled or install error
  * </pre>
  */
-global define symbol InstallProvidedPackage(term service_info) ``{
+global define symbol InstallProvidedPackage(any selected_item) ``{
     symbol ret       = `next;
+    // possibly nil it out
+    selected_item = CheckInstallable (selected_item);
+    term service_info = IidToTerm (selected_item);
 
     // service (package) is installed and its configuration is known,
     // so simply skip dialog
     if (service_info == nil) {
+	y2milestone ("%1", ret);
 	return ret;
     }
 
     // Now, the package doesn't exists. We must tell user, the package is required...
     // But, the fisrt, we must extract requested package name
+    // (singleton list)
     list package_name = GetProvidedPackage(service_info);
     y2milestone ("* pkg: %1", package_name);
 
     // if Autoinstallation mode --- we do not want to install packages yet...
     if (Inetd::auto_mode) {
-	// Add requested package into list...
-	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
 	   The package name is stored in %1. This is Popup::ContinueCancel. */
-	if(Popup::ContinueCancel(sformat(_("Package %1 will be installed during the write process."),
-	    select(package_name, 0, "")))) {
-	    string package = select(package_name, 0, "");
-	    foreach(`line, table_data, ``{
-		if(find(select(line, 8, "!"), package) != -1) {
-		    InstallSelectedService(line, line == service_info ? true : false);
-		}
+	if (Popup::ContinueCancel (sformat (_("Package %1 will be installed during the write process."),
+	    package_name[0]:"")))
+	{
+	    // Add requested package into list...
+	    Require::DoInstallAndRemoveTarget(package_name, []);
+	    IsInstalledClearCache ();
 	    ret = `auto;
-	    return ret;
-	    });
 	}
-//	InstallSelectedService(selected_item);
-	ret = `none;
-	return ret;
+	else
+	{
+	    ret = `none;
+	}
     }
     // we are in normal mode :-)))
     else {
@@ -386,10 +391,10 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    Popup::Message(sformat(_("Package %1 was not installed. The service cannot be edited."),
 		select(package_name, 0, "")));
 	    ret = `none;
-	    return ret;
 	}
 	// installation successful
 	else {
+	    IsInstalledClearCache ();
 	    y2milestone("Rereading xinetd configuration");
 	    list old_conf = Inetd::netd_conf;
 	    // Reread configuration!
@@ -399,55 +404,53 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
 		select(package_name, 0, "")));
 	    ret = `installed;
-	    return ret;
 	}
     }
-
+    y2milestone ("%1", ret);
     return ret;
 }
 
 /**
- * Install service in auto-mode.
- * @param service_info Service description (line form all-services.ycp)
- * @param new_state New state for service (enabled or disabled)
- * @return `OK
- */
-global define symbol InstallSelectedService(term service_info, boolean new_state) ``{
-    string n_service    = select(service_info, 3, "");
-    string n_protocol   = select(service_info, 5, "");
-    string n_server     = select(service_info, 8, "");
-    Inetd::last_created = Inetd::last_created + 1;
-    // TODO this whole function is probably obsolete
-    // if it isn't, should this map contain "script" too?
-    map  new_line  = $["enabled":new_state, "service":n_service, "max":"",
-	"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
-	"user":"root", "group":"", "comment":"",
-	"iid":"inst" + Inetd::last_created, "created":true, "server":n_server];
-    Inetd::addLine(new_line);
-    return `OK;
-}
-
-/**
- * Get Selected Service
  * In table_data, find the first item whose id is selected_item
- * Also check that we have xinetd and it is an NI... item
  * @param selected_item iid of selected item
- * @return term Service name, nil if installed.
+ * @return term Service name or nil
  */
-global define term GetSelectedService(any selected_item) ``{
-    term ret = nil;
-    if (Inetd::configured_service != `xinetd) {
-	return ret;
+global define term IidToTerm (string selected_item) ``{
+    if (selected_item == nil)
+    {
+	return nil;
     }
-    // ids of NotInstalled table items start with NI
-    if (find(selected_item, "NI") != 0) {
-	return ret;
-    }
-    term current = select(filter(`line, table_data,
-	``(select(select(line, 0, "`id ( \"NI\")"), 0, "NI") == selected_item)), 0, "");
-    ret = current;
+    return find (`line, table_data, ``(
+		     select(select(line, 0, `id ("oops")), 0, "NI") == selected_item));
+}
 
-    return ret;
+/**
+ * Checks that the package should be installed.
+ * In normal mode, only for xinetd, for services thast are NI.
+ * In auto mode, check IsInstalled.
+ * otherwise screams nil.
+ * @param item a ui table item
+ * @return the same item or nil
+ */
+global define string CheckInstallable (string id) ``{
+    if (Inetd::auto_mode)
+    {
+	// must get to the "package" field
+	map service = find (map s, Inetd::netd_conf, ``( s["iid"]:"" == id ));
+	if (IsInstalled (service["package"]:""))
+	{
+	    return nil;
+	}
+    }
+    else
+    {
+	// ids of NotInstalled table items start with NI
+	if (Inetd::configured_service != `xinetd || find (id, "NI") != 0)
+	{
+	    return nil;
+	}
+    }
+    return id;
 }
 
 /**
@@ -612,6 +615,7 @@ global define symbol InetdDialog () ``{
 	    UI::SetFocus(`id(`table));
 	else
 	    UI::SetFocus(`id(`stop));
+
 	ret = UI::UserInput();
 
 	if((ret == `editable) || (ret == `stop)) {
@@ -670,7 +674,7 @@ global define symbol InetdDialog () ``{
 
 	    // one line must be selected
 	    if (selected_item != nil) {
-		if (GetSelectedService(selected_item) != nil) {
+		if (CheckInstallable (selected_item) != nil) {
 		    /* Translators: Popup::Error */
 		    Popup::Error(_("Cannot delete the service. It is not installed."));
 		}
@@ -702,11 +706,19 @@ global define symbol InetdDialog () ``{
 	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
 	    // notify a line is selected
 	    if (selected_item != nil) {
-		// look for the selected line
-		map current_line = select(filter(`line, Inetd::netd_conf,
-		    ``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
-		any result = InstallProvidedPackage(GetSelectedService(selected_item));
-		if (result == `next) {
+		any result = InstallProvidedPackage(selected_item);
+
+		to_select    = selected_item;
+		if (result == `none)
+		{
+		    need_reindex = false;
+		    need_rebuild = false;
+		}
+		else
+		{
+		    // look for the selected line
+		    map current_line = find (`line, Inetd::netd_conf,
+			``( line["iid"]:"0" == selected_item ));
 		    // change status of line
 		    if (lookup(current_line, "enabled", true) == true) {
 			current_line = add(current_line, "enabled", false);
@@ -719,24 +731,6 @@ global define symbol InetdDialog () ``{
 		    Inetd::modified = true;
 		    need_reindex    = true;
 		    need_rebuild    = true;
-		    to_select       = selected_item;
-		}
-		else if (result == `auto) {
-		    Inetd::modified = true;
-		    need_reindex    = true;
-		    need_rebuild    = true;
-		    to_select       = "inst" + Inetd::last_created;
-		}
-		else if (result == `installed) {
-		    Inetd::modified = true;
-		    need_reindex    = true;
-		    need_rebuild    = true;
-		    to_select       = "";
-		}
-		else {
-		    need_reindex = false;
-		    need_rebuild = false;
-		    to_select    = selected_item;
 		}
 	    }
 	    else { // No line is selcted:
@@ -809,8 +803,16 @@ global define symbol InetdDialog () ``{
 	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
 	    // line must be selected
 	    if (selected_item != nil) {
-		any result = InstallProvidedPackage(GetSelectedService(selected_item));
-		if (result == `next) {
+		any result = InstallProvidedPackage(selected_item);
+
+		to_select    = selected_item;
+		if (result == `none)
+		{
+		    need_reindex = false;
+		    need_rebuild = false;
+		}
+		else
+		{
 		    map current_line = select(filter(`line, Inetd::netd_conf,
 			``(lookup(line, "iid", "0") == selected_item)), 0, $[]);
 		    /* Translators: Caption of EditOrCreateServiceDlg() */
@@ -822,24 +824,6 @@ global define symbol InetdDialog () ``{
 		    }
 		    need_reindex = true;
 		    need_rebuild = true;
-		    to_select = selected_item;
-		}
-		else if (result == `auto) {
-		    Inetd::modified = true;
-		    need_reindex    = true;
-		    need_rebuild    = true;
-		    to_select       = "inst" + Inetd::last_created;
-		}
-		else if (result == `installed) {
-		    Inetd::modified = true;
-		    need_reindex    = true;
-		    need_rebuild    = true;
-		    to_select       = "";
-		}
-		else {
-		    need_reindex = false;
-		    need_rebuild = false;
-		    to_select    = selected_item;
 		}
 	    }
 	    else {
