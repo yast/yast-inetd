@@ -144,10 +144,7 @@
 	    }
 
 	}
-	
-
-	 
-	
+		 	
 
 	// increase the progress to "finish"
 	Progress::Finish ();
@@ -248,9 +245,12 @@
      * @return Dumped settings (later acceptable by Import ())
      */
     global define map Export () ``{
-	
-	
-	return $[];
+	boolean start_inetd = false;
+	if (inetd_status != `off)
+	    start_inetd = true;
+
+		
+	return $["start_inetd":start_inetd, "services":[]];
     }
 
     /**
