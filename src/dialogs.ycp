@@ -33,7 +33,7 @@ global map iid_to_index          = $[];
 global map index_to_iid          = $[];
 
 /**
- * used for conversion inetd_conf to table's format
+ * used for conversion netd_conf to table's format
  */
 global list table_data           = [];
 
@@ -67,7 +67,7 @@ global define symbol PackageDialog() ``{
 	    ),
 	    `VSpacing(0.5)
 	);
-    
+
     Wizard::RestoreHelp(HELPS["packages"]:"");
 
     // Check for installed packages
@@ -87,6 +87,7 @@ global define symbol PackageDialog() ``{
 	}
 	// User will continue
 	else {
+	    // Determine user selection
 	    list packages = [];
 	    if(install_inetd) {
 		packages = add(packages, "inetd");
@@ -133,7 +134,7 @@ global define symbol PackageDialog() ``{
     else {
 	Inetd::netd_service = `none;
     }
-    
+
     return `next;
 }
 
@@ -142,9 +143,9 @@ global define symbol PackageDialog() ``{
  * @return returns `back for abort and `next for continue
  */
 global define symbol WhatToConfigureDialog() ``{
-    
+
     string caption = _("What service do you want to configure?");
-    
+
     term contents =
 	`VBox(
 	    `VSpacing(0.5),
@@ -175,13 +176,13 @@ global define symbol WhatToConfigureDialog() ``{
     UI::OpenDialog(contents);
 
     any ret = UI::UserInput();
-    
+
     // Check for selected service
-    if(UI::QueryWidget(`id(`inetd), `Value) == true) {
+    if(UI::QueryWidget(`id(`inetd), `Value) == true) { // inetd
 	Inetd::configured_service = `inetd;
 	Inetd::netd_status        = Inetd::inetd_status;
     }
-    else {
+    else {                                             // xinetd
 	Inetd::configured_service = `xinetd;
 	Inetd::netd_status        = Inetd::xinetd_status;
     }
@@ -194,15 +195,16 @@ global define symbol WhatToConfigureDialog() ``{
 
 /**
  * This function regenerates index_to_iid and iid_to_index maps
- *
+ * @return none
  */
 global define indexTable() ``{
-    integer index = 0;
-    iid_to_index  = $[];
-    index_to_iid  = $[];
+    integer index = 0;   // (re)set index
+    iid_to_index  = $[]; // clear data
+    index_to_iid  = $[]; //   maps are not empty!
     foreach(`line, Inetd::netd_conf, ``{
+	// Skip deleted entries
 	if (line["deleted"]:false == false) {
-	    index = index + 1;
+	    index        = index + 1;
 	    string iid   = lookup(line, "iid", "");
 	    iid_to_index = add(iid_to_index, iid, index);
 	    index_to_iid = add(index_to_iid, index, iid);
@@ -215,7 +217,7 @@ global define indexTable() ``{
  * @return dialog result
  */
 global define symbol InetdDialog () ``{
-    
+
     /* XXPkg configure1 dialog contents */
     term contents =
 	`VBox(
@@ -255,7 +257,9 @@ global define symbol InetdDialog () ``{
 
     any ret = nil;
 
+    // Check for both services installed. Only one can run in real-time
     if(Inetd::netd_service == `both) {
+	// ask user
 	ret = WhatToConfigureDialog();
 	if(ret != `next) {
 	    return ret;
@@ -265,6 +269,7 @@ global define symbol InetdDialog () ``{
 	Inetd::configured_service = Inetd::netd_service;
     }
 
+    // load configuration of selected service (ore installed service --- if only one)
     if(Inetd::configured_service == `inetd) {
 	Inetd::netd_conf = Inetd::inetd_conf;
     }
@@ -280,6 +285,7 @@ global define symbol InetdDialog () ``{
     else {
 	caption = caption + " (xinetd)";
     }
+    // next line is disabled --- y2base crashes with SIGSEGV
     //string caption = _("Internet super-server configuration") + (Inetd::configured_service == `inetd) ? " (inetd)" : " (xinetd)";
 
     // initialize GUI
@@ -290,6 +296,7 @@ global define symbol InetdDialog () ``{
 
     boolean new_state = false;
 
+    // if service active, enable editting
     if(Inetd::netd_status == 0) {
 	new_state = true;
     }
@@ -333,10 +340,12 @@ global define symbol InetdDialog () ``{
 		Inetd::netd_status = -1;
 	    }
 	}
+	// create new entry
 	else if (ret == `create) {
 	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
 	    any return_val = [];
 	    last_created   = last_created + 1; // need uniq
+	    // default parameters for new service
 	    map  new_line  = $["enabled":true, "service":"", "max":"",
 		"socket_type":"stream", "protocol":"tcp", "wait":false, "server_args":"",
 		"user":"root", "group":"", "comment":"",
@@ -345,14 +354,15 @@ global define symbol InetdDialog () ``{
 	    return_val = EditOrCreateServiceDlg(_("Add a new service entry"), new_line);
 	    // check Cancel
 	    if (return_val != nil) {
+		// new service was created --- add to global configuration
 		Inetd::addLine(return_val);
-		need_reindex = true;
-		need_rebuild = true;
-		to_select    = "new" + last_created;
+		need_reindex = true;                 // iid_to_index and index_to_iid and
+		need_rebuild = true;                 //   table_data must be rebuild
+		to_select    = "new" + last_created; // select new entry
 	    }
 	    else {
-		need_reindex = false;
-		need_rebuild = false;
+		need_reindex = false;                // nothing changed
+		need_rebuild = false;                //   so skip time-critical calculations
 		if (selected_item != nil) {
 		    to_select = selected_item;
 		}
@@ -361,12 +371,13 @@ global define symbol InetdDialog () ``{
 		}
 	    }
 	}
+	// delete new entry
 	else if (ret == `delete) {
 	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
 
 	    // one line must be selected
 	    if (selected_item != nil) {
-		need_reindex = true;
+		need_reindex = true; // see `create (above) for more details
 		need_rebuild = true;
 		integer old_index = iid_to_index[selected_item]:0;
 		Inetd::deleteLine(selected_item);
@@ -384,6 +395,7 @@ global define symbol InetdDialog () ``{
 		to_select    = "";
 	    }
 	}
+	// switch service status
 	else if (ret == `switch_active) {
 	    // get selected line iid
 	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
@@ -412,6 +424,7 @@ global define symbol InetdDialog () ``{
 		to_select    = "";
 	    }
 	}
+	// edit service
 	else if (ret == `edit) {
 	    // get selected line in table
 	    need_reindex = false;
