@@ -34,12 +34,14 @@ global list(string) local_groups = nil;
 
 /**
  * This map is used for (re)selecting table items. This is new inetd GUI improvement! :o)
+ * Indexes table items, ie. not counting deleted services.
  */
 global map iid_to_index          = $[];
 
 /**
  * See iid_to_index.
  * This is reverse to iid_to_index.
+ * Indexes table items, ie. not counting deleted services.
  */
 global map index_to_iid          = $[];
 
@@ -300,6 +302,22 @@ global define void indexTable() ``{
 }
 
 /**
+ * @param server "server" field of a service
+ * @param server_args "server_args" field of a service
+ * @return server, or first word of server_args if server is /usr/sbin/tcpd
+ */
+global define string GetRealServer (string server, string server_args) ``{
+    if (server == "/usr/sbin/tcpd")
+    {
+	return select (splitstring (server_args, " \t"), 0, "");
+    }
+    else
+    {
+	return server;
+    }
+}
+
+/**
  * This function extracts provided packages (from Inetd::xinetd_packages)
  * for selected service.
  * Matches by (service, protocol,"program (package)")
@@ -307,19 +325,24 @@ global define void indexTable() ``{
  * @return list Provided packages
  */
 global define list GetProvidedPackage(term service_info) ``{
-    map  info     = $[];
     list packages = [];
-    // extract informations from service_info into map
-    info = add(info, "program",  select(service_info, 8, ""));
-    info = add(info, "protocol", select(service_info, 5, ""));
-    info = add(info, "service",  select(service_info, 3, ""));
-    foreach(`line, Inetd::xinetd_packages, ``{
-	if ((line["program"]:"" + " (" + line["package"]:"" + ")") == info["program"]:"!") {
-	    if (line["protocol"]:"" == info["protocol"]:"!") {
-		if (line["service"]:"" == info["service"]:"!") {
-		    packages = add(packages, line["package"]:"");
-		}
-	    }
+
+    // yuck, using numbers instead of names, this should be cleaned up
+    string sname = select(service_info, 3, "");
+    string protocol = select(service_info, 5, "");
+    string server = select(service_info, 8, "");
+    string server_args = select(service_info, 9, "");
+    server = GetRealServer (server, server_args);
+
+    foreach(map service, GetDefaults (), ``{
+	// can't compare "script" here, it is not in the table.
+	// is it a problem?
+	if (service["service"]:"" == sname &&
+	    service["protocol"]:"" == protocol &&
+	    GetRealServer (service["server"]:"", service["server_args"]:"")
+	    == server)
+	{
+	    packages = add (packages, service["package"]:"");
 	}
     });
     return packages;
@@ -328,7 +351,12 @@ global define list GetProvidedPackage(term service_info) ``{
 /**
  * Show dialog with packages names provided non-installed service.
  * @param service_info Provided service name
- * @return symbol Status of operation
+ * @return symbol Status of operation:<pre>
+ * `next: nothing to do, it is installed already
+ * `auto: will be installed at autoinstall time
+ * `installed: successfully installed
+ * `none: cancelled or install error
+ * </pre>
  */
 global define symbol InstallProvidedPackage(term service_info) ``{
     symbol ret       = `next;
@@ -342,13 +370,14 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     // Now, the package doesn't exists. We must tell user, the package is required...
     // But, the fisrt, we must extract requested package name
     list package_name = GetProvidedPackage(service_info);
+    y2milestone ("* pkg: %1", package_name);
 
     // if Autoinstallation mode --- we do not want to install packages yet...
     if (Inetd::auto_mode) {
 	// Add requested package into list...
 	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
-			The package name is stored in %1. This is Popup::Message. */
+	   The package name is stored in %1. This is Popup::ContinueCancel. */
 	if(Popup::ContinueCancel(sformat(_("Package %1 will be installed during the write process."),
 	    select(package_name, 0, "")))) {
 	    string package = select(package_name, 0, "");
@@ -383,7 +412,7 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    list old_conf = Inetd::netd_conf;
 	    // Reread configuration!
 	    Inetd::netd_conf = SCR::Read(.etc.xinetd_conf.services);
-	    Inetd::netd_conf = Inetd::mergeAfterInstall(Inetd::netd_conf, old_conf);
+	    Inetd::netd_conf = Inetd::MergeEditedWithSystem(Inetd::netd_conf, old_conf);
 	    /* Translators: The package name is stored in %1 */
 	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
 		select(package_name, 0, "")));
@@ -406,6 +435,8 @@ global define symbol InstallSelectedService(term service_info, boolean new_state
     string n_protocol   = select(service_info, 5, "");
     string n_server     = select(service_info, 8, "");
     Inetd::last_created = Inetd::last_created + 1;
+    // TODO this whole function is probably obsolete
+    // if it isn't, should this map contain "script" too?
     map  new_line  = $["enabled":new_state, "service":n_service, "max":"",
 	"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
 	"user":"root", "group":"", "comment":"",
@@ -623,6 +654,7 @@ global define symbol InetdDialog () ``{
 	    any return_val      = [];
 	    Inetd::last_created = Inetd::last_created + 1; // need uniq
 	    // default parameters for new service
+	    // TODO is "script: mandatory?
 	    map  new_line  = $["enabled":true, "service":"", "max":"",
 		"socket_type":"stream", "protocol":"tcp", "wait":false, "server_args":"",
 		"user":"root", "group":"", "comment":"",
@@ -1048,6 +1080,7 @@ Enter valid values.
 		else {
 		    line = add(line, "enabled", false);
 		}
+		// do not add a "flags" field, it's currently in "unparsed"
 		if (UI::QueryWidget(`id(`flags), `Value) == "wait") {
 		    line = add(line, "wait", true);
 		}
@@ -1058,7 +1091,6 @@ Enter valid values.
 		line = add(line, "rpc_version", UI::QueryWidget(`id(`rpc_version), `Value));
 		line = add(line, "socket_type", UI::QueryWidget(`id(`type),        `Value));
 		line = add(line, "protocol",    UI::QueryWidget(`id(`protocol),    `Value));
-		line = add(line, "flags",       UI::QueryWidget(`id(`flags),       `Value));
 		line = add(line, "user",        UI::QueryWidget(`id(`user),        `Value));
 		group = UI::QueryWidget(`id(`group), `Value);
 		if (group == _("--default--")) {
