@@ -9,7 +9,10 @@ client_DATA =			\
 	inetd_auto.ycp	        \
 	inetd_proposal.ycp
 
-ydata_DATA =                     \
+# all-services to be removed
+ydata_DATA =                    \
+	default_conf_inetd.ycp  \
+	default_conf_xinetd.ycp \
 	all-services.ycp
 
 ynclude_DATA =			\
@@ -17,9 +20,7 @@ ynclude_DATA =			\
 	wizards.ycp		\
 	dialogs.ycp		\
 	complex.ycp		\
-	routines.ycp            \
-	default_conf_inetd.ycp  \
-	default_conf_xinetd.ycp
+	routines.ycp
 
 config_DATA =			\
 	inetd.y2cc
