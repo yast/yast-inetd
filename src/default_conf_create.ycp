@@ -28,13 +28,14 @@
 	"/usr/sbin/in.midinetd": "",
 	"/opt/mimer/bin/mimtcp": "",
 	"/usr/sbin/procstatd": "",
+	"/usr/sbin/in.ftpd": "", // in 9.0 but not 9.1
 	];
 
     /**
      * Log a string and put a dot to stdout
      * @param s string
      */
-    global define void Progress (string s) ``{
+    define void Progress (string s) ``{
 	y2milestone ("%1", s);
 	SCR::Write (.target.string, "/dev/stdout", ".");
     }
@@ -45,7 +46,7 @@
      * @param delimiters where to split
      * @return first element
      */
-    global define string first_of_split (string whole, string delimiters) ``{
+    define string first_of_split (string whole, string delimiters) ``{
 	return select (splitstring (whole, delimiters), 0, "");
     }
 
@@ -53,7 +54,7 @@
      * @param query will be substituted to --filter '%1'
      * @return a list of packages that match
      */
-    global define list<string> PdbQuery (string query) ``{
+    define list<string> PdbQuery (string query) ``{
 	string cmd = sformat (
 	    "/usr/bin/pdb query --filter '%1' --attribs packname 2>/dev/null",
 	    query);
@@ -65,12 +66,14 @@
 	return maplist (string l, lines, ``( first_of_split (l, " ")));
     }
 
+    typedef list<map <string, any> > services_t;
+
     /**
      * @param services default services list
      * @param xinetd is this xinetd
      * @return services list with "package" determined
      */
-    global define list<map> DeterminePackages (list<map> services,
+    define services_t DeterminePackages (services_t services,
 						boolean xinetd) ``{
 	y2milestone ("%1", xinetd? "xinetd": "inetd");
 	return maplist (map<string, any> service, services, ``{
@@ -114,10 +117,10 @@
 
     // needs ycp.pm,v 1.6
     SCR::RegisterAgent (.aaa.inetd, `ag_netd (`Inetd ("etc/inetd.conf")));
-    list<map> dc_inetd = (list<map>) SCR::Read (.aaa.inetd.services);
+    services_t dc_inetd = (services_t) SCR::Read (.aaa.inetd.services);
 
     SCR::RegisterAgent (.aaa.xinetd, `ag_netd (`Xinetd ("all-services.conf")));
-    list<map> dc_xinetd = (list<map>) SCR::Read (.aaa.xinetd.services);
+    services_t dc_xinetd = (services_t) SCR::Read (.aaa.xinetd.services);
 
     y2milestone ("inetd: %1, xinetd: %2", size (dc_inetd), size (dc_xinetd));
 

@@ -17,8 +17,7 @@ client_DATA =			\
 # all-services to be removed
 ydata_DATA =                    \
 	default_conf_inetd.ycp  \
-	default_conf_xinetd.ycp \
-	all-services.ycp
+	default_conf_xinetd.ycp
 
 ynclude_DATA =			\
 	helps.ycp		\
