@@ -17,8 +17,10 @@
 include "testsuite.ycp";
 import "Inetd";
 import "Report";
+import "Progress";
 
 Report::DisplayErrors(false, 0);
+Progress::off ();
 
 map s = $[
     "iid": "whatever",
