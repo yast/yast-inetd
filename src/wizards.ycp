@@ -11,11 +11,10 @@
 
 textdomain "inetd";
 
+import "Inetd";
+import "Directory";
 import "Wizard";
-
-//include "ui/common_popups.ycp";
 import "Popup";
-//include "ui/common_messages.ycp";
 import "Label";
 
 include "wizard/sequencer.ycp";
