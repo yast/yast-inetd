@@ -1007,7 +1007,7 @@ Enter valid values.
 	    else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
 		/* Translators: sformat-ed() 3 strings */
-		UI::MessagePopup(sformat(_("The user %1 is reserved only for server internal."), _("--default--")));
+		UI::MessagePopup(sformat(_("The user %1 is reserved only for internal servers only."), _("--default--")));
 		input_failed = true;
 	    }
 	    // YES (input is OK) --- so save settings!
