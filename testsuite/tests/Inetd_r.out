@@ -34,7 +34,7 @@ Dump	0
 Dump	0
 Dump	`xinetd
 Dump	Calling Export()
-Dump	$["netd_conf":[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]], "netd_service":`xinetd, "netd_status":0]
+Dump	$["netd_conf":[$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]], "netd_service":`xinetd, "netd_status":0, "service_package":[], "xinetd_packages":[]]
 Dump	
 Dump	  ---
 Dump	
