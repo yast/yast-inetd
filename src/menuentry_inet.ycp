@@ -1,0 +1,1 @@
+CallModule("inet", [ "get_menuentry" ])
