@@ -1,19 +1,19 @@
 /**
  * File:
- *   modules/Inet.ycp
+ *   modules/Inetd.ycp
  *
  * Package:
- *   Configuration of inet
+ *   Configuration of Inetd
  *
  * Summary:
- *   Data for configuration of inet, input and output functions.
+ *   Data for configuration of Inetd, input and output functions.
  *
  * Authors:
  *   Michael Hager <mike@suse.de>
  *
  * $Id$
  *
- * Representation of the configuration of inet.
+ * Representation of the configuration of Inetd.
  * Input and output routines.
  *
  */
@@ -23,6 +23,7 @@
     module "Inetd";
     import "Progress";
     import "Runlevel";
+    import "Report";
 
     textdomain "lan_inet";
 
@@ -37,7 +38,7 @@
     global boolean changed_conf = false;
     
     /**
-     * Read all inet settings from the SCR
+     * Read all Inetd settings from the SCR
      * @param abort A block that can be called by Read to find
      *	      out whether abort is requested. Returns true if abort
      *	      was pressed.
@@ -48,7 +49,7 @@
 	boolean start_inetd = Runlevel::ServiceEnabled ("inetd");
 	 
 	/* check if there is a default for inetd.conf, else create one
-	 * different inetd.conf and inetd.con.default will set inetd_status = `on_custom
+	 * different inetd.conf and inetd.conf.default will set inetd_status = `on_custom
 	 */
 	
 	if ( SCR::Read(.target.size, "/etc/inetd.conf.default") != -1 )
@@ -92,7 +93,7 @@
     }
 
     /**
-     * Update the SCR according to inet settings
+     * Update the SCR according to Inetd settings
      * @param abort A block that can be called by Write to find
      *	      out whether abort is requested. Returns true if abort
      *	      was pressed.
@@ -100,12 +101,11 @@
      */
     global define boolean Write (block abort) ``{
 
-	
-	
+	y2milestone("Calling Write");
 	boolean write_aborted = false;
-	// TODO FIXME Assign the true texts intead of these
+	
 	string caption = _("Saving Inetd service configuration");
-	// TODO FIXME And set the right number of stages
+	
 	integer no_of_steps = 2 ;
 	
 	Progress::New ( caption, " ", no_of_steps,
@@ -119,17 +119,34 @@
 	
 	
 	Progress::NextStage();
-	if (changed_conf) {
+	if (changed_conf && inetd_status == `on_custom ) {
 	    WriteInetdConf();
 	}
 
 	Progress::NextStage();
-	if (0 != Runlevel::RunInitScript ("inetd", "restart"))
+	
+	if (inetd_status == `off)
 	{
-	    y2error ("Can not start service");
-	    return false;
+	    y2milestone("Turning service inetd off");
+	    Runlevel::ServiceAdjust("inetd", "disable");
+	    Runlevel::RunInitScript("inetd", "stop");
+	}
+	else {		
+	    Runlevel::ServiceAdjust("inetd", "enable");
+	    if (inetd_status == `on_default)
+		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
+		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );
+	    
+	    if (0 != Runlevel::RunInitScript ("inetd", "restart"))
+	    {
+		y2error ("Can not start service");
+		return false;
+	    }
+
 	}
 	
+
+	 
 	
 
 	// increase the progress to "finish"
@@ -138,27 +155,101 @@
     }
 
     /**
-     * Get all inet settings from the first parameter
+     * Get all Inetd settings from the first parameter
      * (For use by autoinstallation.)
      * @param settings The YCP structure to be imported.
      * @return True on success
+     * @example settings=$["start_inetd":true,
+     "services":[
+                 $[
+		 "service":"telnet",
+		 "status":"enable"
+		 ]
+     ]
      */
 
+ 
     
     global define boolean Import (map settings) ``{
-	// TODO FIXME: your code here (fill the above mentioned variables)...
-	sleep (3000);
+	if (size (settings) == 0)
+	{	
+	    return false;
+	}
+
+	boolean missing = false;
+	foreach (`k, ["start_inetd", "services"], ``{
+	    if (! haskey (settings, k))
+	    {
+		y2error ("Missing at Import: '%1'.", k);
+		missing = true;
+	    }
+	});
+	if (missing)
+	{
+	    return false;
+	}
+
+	    
+	if (settings["start_inetd"]:false && size(settings["services"]:[])>0)
+	{
+	    inetd_status = `on_custom;
+	    ReadFile();
+	    foreach(`s, settings["services"]:[], ``{
+		if (s["status"]:"" == "enable" || s["status"]:"" == "disable") {
+		    ChangeServiceStatus(s["service"]:"none", s["status"]:"none");
+		}
+	    });
+	    
+	}
+	else if (settings["start_inetd"]:false && size(settings["services"]:[])==0)
+	{
+	    inetd_status = `on_default;
+	} else {
+	    inetd_status = `off;
+	}
+
+	
+	
 	return true;
     }
 
     /**
-     * Dump the inet settings to a single map
+     * Find a service in the parsed file
+     * @return map: service map
+     */
+	
+	
+    define map FindService(string service)``{
+	return (select( filter( `line,
+				inetd_conf,
+				``(line["service"]:"none" == service)
+				), 0 , $[]));
+    }
+
+    
+    global define ChangeServiceStatus(string service, string status)
+	``{
+	ReadFile();
+	map service_line = FindService(service);
+	if (size(service_line)>0) {
+	    if (status == "enable")
+		change(service_line,`status,`active);
+	    else if (status == "disable")
+		change(service_line,`status,`inactive);
+	}
+	changeLine( service_line, service_line["line_number"]:0);
+	
+    }
+
+    
+    /**
+     * Dump the Inetd settings to a single map
      * (For use by autoinstallation.)
      * @return Dumped settings (later acceptable by Import ())
      */
     global define map Export () ``{
-	// TODO FIXME: your code here (return the above mentioned variables)...
-	sleep (3000);
+	
+	
 	return $[];
     }
 
@@ -168,7 +259,7 @@
      * @return Summary of the configuration.
      */
     global define string Summary () ``{
-	// TODO FIXME: your code here...
+	
 	return _("Summary of the configuration...");
     }
 
@@ -196,10 +287,10 @@
 
     /**
      * add a line in DB
-     * Return value: internal-DB map     
+     * @return void
      */
 
-    global define addLine (  map new_line, integer line_number )
+    global define void addLine (  map new_line, integer line_number )
     ``{
 	changed_conf = true;
 	// renumber
@@ -216,7 +307,7 @@
 
 	// add
 	inetd_conf = add( inetd_conf, new_line );
-	
+	return;
     }
 
 
@@ -371,11 +462,9 @@
 	SCR::Execute(.target.bash, "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" );
 	SCR::Execute(.target.bash, "/bin/rm /etc/inetd.conf " );  // if i have not the permission to move
 	string file = "";
-	list scr_write_input = maplist(`line, inetd_conf,``{
+	foreach(`line, inetd_conf,``{
 					   
-	    map    curr_map = $[	];
-	    string inetd_conf_line = "";
-	    
+	    string inetd_conf_line = "";	    
 	    symbol status = lookup(line, `status, `comment);
 	
 	    if ( status != `comment )
@@ -408,7 +497,11 @@
 	    file = file + inetd_conf_line;
 
 	});
-	SCR::Write(.target.string, "/etc/inetd.conf", file);
+	if (size(file)>0) {
+	    SCR::Write(.target.string, "/etc/inetd.conf", file);
+	} else {
+	    Report::Error(_("Configuration is empty"));
+	}
     }
     
 }

@@ -22,7 +22,6 @@
 textdomain "lan_inetd";
 
 import "Wizard";
-import "Wizard_hw";
 import "Progress";
 import "Inetd";
 
@@ -117,6 +116,7 @@ global define MainSequence () ``{
 	$[
 	    `abort	: `abort,
 	    `next	: `next,
+	    `back	: `back,
 	    `off	: `next,
 	    `on_default	: `next,
 	    `on_custom	: "configure"
@@ -158,10 +158,7 @@ global define ReadDialog () ``{
  * Write settings dialog
  */
 global define WriteDialog () ``{
-    if ( Inetd::inetd_status != `on_custom || !Inetd::changed_conf)
-	return `next;
 
-    
     // Set help text
     Wizard::RestoreHelp (WriteDialogHelp ());
 
@@ -172,8 +169,6 @@ global define WriteDialog () ``{
 
     // Write the configuration
     boolean was_ok = Inetd::Write ( callback );
-
-    // TODO FIXME possibly handle the abort
 
     return ( was_ok? `next : `abort );
 }
@@ -249,25 +244,10 @@ global define MainDialog () ``{
 	else if (ret == `next)
 	{
 	    Inetd::inetd_status = selected;
-	    y2milestone("selected: %1", selected);
-	    if (Inetd::inetd_status == `off)
-	    {
-		y2milestone("Turning service inetd off");
-		Runlevel::ServiceAdjust("inetd", "disable");
-		Runlevel::RunInitScript("inetd", "stop");
-	    }
-	    else {
-		
-		Runlevel::ServiceAdjust("inetd", "enable");
-		if (Inetd::inetd_status == `on_default)
-		{
-		    y2milestone("Enabling service inetd with default configuration");
-		    if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
-			SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );
-		    Runlevel::RunInitScript("inetd", "restart");
-		}
-	    }
+	
 	    ret = selected;
+	    break;
+	} else {
 	    break;
 	}
 	
@@ -278,8 +258,10 @@ global define MainDialog () ``{
 }
 
 
-
-
+/**
+ * Edit or create an entry
+ * @return list
+ */
 
 global define EditOrCreateServiceDlg( string title,
 				      map line,
@@ -419,9 +401,10 @@ Please enter valid values.") );
 
 
 
-
-
-
+/**
+ * Main configuration Dialog
+ *
+ */
 
 global define ConfigureDialog() ``{
     integer line_counter = 0;
@@ -480,8 +463,7 @@ global define ConfigureDialog() ``{
 	     /**
 	      *  CREATE
 	      */
-	     
-	
+	     	
 	     if (ret == `create)
 	     {
 		 any w_id = UI::QueryWidget(`id(`table), `CurrentItem);
@@ -733,6 +715,12 @@ global define ConfigureDialog() ``{
 		     // No line is selcted:
 		     UI::MessagePopup(_("To edit a service, select one in the main dialog") );
 		 }
+	     } else if (ret == `abort)
+	     {		 
+		 if ( UI::ReallyAbortPopup ( true ) )
+		     break;
+		 else
+		     continue;
 	     }
 
 	     if (ret == `next  || ret == `back)
@@ -747,7 +735,7 @@ global define ConfigureDialog() ``{
 		     if (ret == `apply) return `again;
 		 }
 	     }	
-	 } until (ret == `next || ret == `back || ret == `cancel);
+	 } until (ret == `next || ret == `back || ret == `cancel || ret == `abort);
      return ret;
 
 }

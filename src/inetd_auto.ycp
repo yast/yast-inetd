@@ -28,7 +28,7 @@
 {
     textdomain "lan_inetd";
 
-    import "Inet";
+    import "Inetd";
 
     include "lan_inetd/ui.ycp";
 
@@ -45,7 +45,7 @@
     }
 
     // The settings are in the first argument
-    map settings = select (args, 0);
+    map settings = select (args, 0, $[]);
     y2milestone("Imported: (%1)", settings);
 
     Inetd::Import ( settings );
