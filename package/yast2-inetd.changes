@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 27 10:51:22 CET 2005 - mlazar@suse.cz
+
+- changed texts: flag wait/nowait -> wait yes/no
+- updated help texts for xinetd and wait/nowait
+
+-------------------------------------------------------------------
 Tue Jan 25 14:00:36 CET 2005 - mlazar@suse.cz
 
 - removed inetd support

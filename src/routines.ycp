@@ -202,10 +202,10 @@ define term ServiceToTableItem (map service, integer ni_index) ``{
 
     // determine wait mode (convert to string)
     if (service["wait"]:true) {
-	wait_text = "wait";
+	wait_text = "yes";
     }
     else {
-	wait_text = "nowait";
+	wait_text = "no";
     }
     string sname = service["service"]:"";
     string rpc_ver = service["rpc_version"]:"";
