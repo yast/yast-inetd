@@ -742,7 +742,8 @@ is to be executed by inetd when a request is found on its socket.
 
     Shell ("/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl");
     inetd_conf = Read( "/tmp/inetd_conf.ycp");
-
+    Shell ("rm /tmp/inetd_conf.ycp");
+    
     list table_data = convertInternalToList( inetd_conf );
 
     term contents =
