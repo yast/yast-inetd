@@ -10,6 +10,7 @@ ETAGS_ARGS = $(TAGS_DEPENDENCIES)
 yncludedir = @yncludedir@/inetd
 
 client_DATA =			\
+	xinetd.ycp		\
 	inetd.ycp		\
 	inetd_auto.ycp	        \
 	inetd_proposal.ycp
