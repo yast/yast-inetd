@@ -352,7 +352,7 @@ define symbol InstallProvidedPackage(string selected_item) ``{
 	//if (true) { // for debugging
 	    /* Translators: The package name is stored in %1. This is Popup::Message. */
 	    Popup::Message(sformat(_("Package %1 was not installed. The service cannot be edited."),
-		select(package_name, 0, "")));
+		package_name[0]:""));
 	    ret = `none;
 	}
 	// installation successful
@@ -365,7 +365,7 @@ define symbol InstallProvidedPackage(string selected_item) ``{
 	    Inetd::netd_conf = Inetd::MergeEditedWithSystem(Inetd::netd_conf, old_conf);
 	    /* Translators: The package name is stored in %1 */
 	    Popup::Message(sformat(_("Package %1 was successfuly installed."),
-		select(package_name, 0, "")));
+		package_name[0]:""));
 	    ret = `installed;
 	}
     }
@@ -383,8 +383,7 @@ define term IidToTerm (string selected_item) ``{
     {
 	return nil;
     }
-    return (term) find (term line, table_data, ``(
-		     select(select(line, 0, `id ("oops")), 0, "NI") == selected_item));
+    return find (term line, table_data, ``(line[0, 0]:"NI" == selected_item));
 }
 
 /**
@@ -429,7 +428,7 @@ define symbol InetdDialog () ``{
 	];
 
     /* These special options are available if `expert_inetd' parameter is given into command-line */
-    /*if(select(WFM::Args(), 0, "") == "expert_inetd")
+    /*if(WFM::Args()[0]:"" == "expert_inetd")
 	expert_contents = add(expert_contents, `menu("E&xpert tools",
 	    [
 		`item(`id(`all_rev), "&Invert Status"),
@@ -438,7 +437,7 @@ define symbol InetdDialog () ``{
     */
     /* These special options are available, if YAST2_INETD environment variable contains `EXPERT' */
     /* The `expert_inetd' command-line parameter is implemented too. */
-    if((getenv("YAST2_INETD") == "EXPERT\n") || (select(WFM::Args(), 0, "") == "expert_inetd"))
+    if((getenv("YAST2_INETD") == "EXPERT\n") || (WFM::Args()[0]:"" == "expert_inetd"))
 	expert_contents = add(expert_contents, `menu("E&xpert tools",
 	    [
 		`item(`id(`all_rev), "&Invert Status"),
@@ -784,8 +783,9 @@ define symbol InetdDialog () ``{
 		}
 		else
 		{
-		    service_t current_line = (service_t) select(filter(service_t line, Inetd::netd_conf,
-			``(line["iid"]:"0" == selected_item)), 0, $[]);
+		    service_t current_line = find (service_t line, Inetd::netd_conf,
+			``(line["iid"]:"0" == selected_item));
+		    if (current_line == nil) current_line = $[];
 		    /* Translators: Caption of EditOrCreateServiceDlg() */
 		    service_t return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
 		    // check for changes

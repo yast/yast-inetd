@@ -77,6 +77,7 @@ import "Progress";
 import "Report";
 import "Summary";
 import "Directory";
+import "String";
 
 typedef map<string, any> service_t;
 typedef list<service_t> services_t;
@@ -731,8 +732,7 @@ global define services_t getChanged(services_t config) ``{
 	    // a service among its variants
 	    if (line["server"]:"" == "/usr/sbin/tcpd")
 	    {
-		string s = select (splitstring (line["server_args"]:"", " \t"),
-				   0, "");
+		string s = String::FirstChunk (line["server_args"]:"", " \t");
 		line = (map<string, any>) add (line, "server", s);
 	    }
 
@@ -836,8 +836,13 @@ global define string Summary() ``{
  */
 global define void deleteLine(any line_number) ``{
     // delete
-    service_t current_line = (service_t) select(filter(service_t line, netd_conf,
-	``(line["iid"]:"0" == line_number)), 0, $[]);
+    service_t current_line = find (service_t line, netd_conf,
+				   ``(line["iid"]:"0" == line_number));
+    if (current_line == nil)
+    {
+	y2internal ("can't happen");
+	current_line = $[];
+    }
     // set "deleted" flag to true
     current_line = add(current_line, "changed", true);
     current_line = add(current_line, "deleted", true);

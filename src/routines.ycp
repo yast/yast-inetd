@@ -18,6 +18,7 @@ import "Directory";
 import "Popup";
 import "Package";
 import "UsersCache";
+import "String";
 
 define term ServiceToTableItem (map service, integer ni_index);
 define boolean ServicesMatch (map<string, any> a, map<string, any> b);
@@ -102,7 +103,7 @@ define string GetServerBasename (string server, string server_args) ``{
     if (result != nil)
     {
 	// program only
-	result = select (splitstring (result, " \t"), 0, "");
+	result = String::FirstChunk (result, " \t");
 	// basename
 	list<string> comp = splitstring (result, "/");
 	result = comp[size (comp) - 1]:"";
