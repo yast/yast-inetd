@@ -72,7 +72,7 @@
 module "Inetd";
 textdomain "inetd";
 
-import "Runlevel";
+import "Service";
 import "Progress";
 import "Report";
 import "Summary";
@@ -222,13 +222,13 @@ global map <string, any> default_conf          = $[];
 
 /**
  * Is inetd (or xinetd) running?
- * These variables contains return values from Runlevel::ServiceStatus() calls.
+ * These variables contains return values from Service::Status() calls.
  */
 global integer inetd_status      = -1;
 
 /**
  * This contains return value of following call:
- * <br>  Runlevel::ServiceStatus("xinetd");
+ * <br>  Service::Status("xinetd");
  */
 global integer xinetd_status     = -1;
 
@@ -401,24 +401,24 @@ global define boolean Write() ``{
 	services_t new_conf = [];
 	if (configured_service == `inetd) {
 	    if (netd_status == 0) {
-		Runlevel::ServiceAdjust("inetd", "enable");
+		Service::Enable ("inetd");
 	    }
 	    else {
-		Runlevel::ServiceAdjust("inetd", "disable");
+		Service::Disable ("inetd");
 	    }
-	    Runlevel::ServiceAdjust("xinetd", "disable");
+	    Service::Disable ("xinetd");
 	    SCR::Write(.etc.inetd_conf.services, netd_conf);
 	}
 	else if (configured_service == `xinetd) {
 	    new_conf  = (services_t) SCR::Read(.etc.xinetd_conf.services);
 	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
 	    if (netd_status == 0) {
-		Runlevel::ServiceAdjust("xinetd", "enable");
+		Service::Enable ("xinetd");
 	    }
 	    else {
-		Runlevel::ServiceAdjust("xinetd", "disable");
+		Service::Disable("xinetd");
 	    }
-	    Runlevel::ServiceAdjust("inetd", "disable");
+	    Service::Disable ("inetd");
 	    SCR::Write(.etc.xinetd_conf.services, netd_conf);
 	}
     }
@@ -429,8 +429,8 @@ global define boolean Write() ``{
 	    if (xinetd_installed == 0) {
 		y2milestone("xinetd installed  --- stopping and disabling service");
 		if (!write_only)
-		    Runlevel::RunInitScript("xinetd", "stop");
-		Runlevel::ServiceAdjust("xinetd", "disable");
+		    Service::Stop ("xinetd");
+		Service::Disable ("xinetd");
 	    }
 	    else {
 		y2milestone("xinetd not installed --- nothing done");
@@ -442,8 +442,8 @@ global define boolean Write() ``{
 		if (inetd_status == 0) { // was running --- stop
 		    y2milestone("inetd was running --- stoping and disabling service");
 		    if (!write_only)
-			Runlevel::RunInitScript("inetd", "stop");
-		    Runlevel::ServiceAdjust("inetd", "disable");
+			Service::Stop ("inetd");
+		    Service::Disable ("inetd");
 		} // else --- leave stopped
 		else {
 		    y2milestone("inetd was stopped --- leaving unchanged");
@@ -454,14 +454,14 @@ global define boolean Write() ``{
 		if (inetd_status == 0) {
 		    y2milestone("inetd was running --- calling force-reload");
 		    if (!write_only)
-			Runlevel::RunInitScript("inetd", "force-reload");
+			Service::RunInitScript("inetd", "force-reload");
 		}
 		// if stopped - enable and start
 		else {
 		    y2milestone("inetd was stopped --- enabling and starting service");
-		    Runlevel::ServiceAdjust("inetd", "enable");
+		    Service::Enable ("inetd");
 		    if (!write_only)
-			Runlevel::RunInitScript("inetd", "start");
+			Service::Start ("inetd");
 		}
 	    }
 	}
@@ -471,8 +471,8 @@ global define boolean Write() ``{
 	    if (inetd_installed == 0) {
 		y2milestone("inetd installed     --- stopping and disabling service");
 		if (!write_only)
-		    Runlevel::RunInitScript("inetd", "stop");
-		Runlevel::ServiceAdjust("inetd", "disable");
+		    Service::Stop ("inetd");
+		Service::Disable ("inetd");
 	    }
 	    else {
 		y2milestone("inetd not installed --- nothing done");
@@ -484,8 +484,8 @@ global define boolean Write() ``{
 		if (xinetd_status == 0) {
 		    y2milestone("xinetd was running --- stopping and disabling service");
 		    if (!write_only)
-			Runlevel::RunInitScript("xinetd", "stop");
-		    Runlevel::ServiceAdjust("xinetd", "disable");
+			Service::Stop ("xinetd");
+		    Service::Disable ("xinetd");
 		}
 		else {
 		    y2milestone("xinetd was stopped --- leaving unchanged");
@@ -496,14 +496,14 @@ global define boolean Write() ``{
 		if (xinetd_status == 0) {
 		    y2milestone("xinetd was running --- calling force-reload");
 		    if (!write_only)
-			Runlevel::RunInitScript("xinetd", "force-reload");
+			Service::RunInitScript("xinetd", "force-reload");
 		}
 		// if stopped - enable and start
 		else {
 		    y2milestone("xinetd was stopped --- enabling and starting service");
-		    Runlevel::ServiceAdjust("xinetd", "enable");
+		    Service::Enable ("xinetd");
 		    if (!write_only)
-			Runlevel::RunInitScript("xinetd", "start");
+			Service::Start ("xinetd");
 		}
 	    }
 	}
