@@ -5,7 +5,7 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.target.ycp "/var/tmp/yast2-inetd-2.11.4-build/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Read	.init.scripts.exists "xinetd" true
 Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
 Return	true
@@ -24,7 +24,7 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Read	.target.ycp "/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
+Read	.target.ycp "/var/tmp/yast2-inetd-2.11.4-build/usr/share/YaST2/data/default_conf_xinetd.ycp" nil
 Read	.init.scripts.exists "xinetd" true
 Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
 Return	true
