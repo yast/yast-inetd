@@ -38,9 +38,6 @@ y2milestone("func = %1", func);
 
 y2milestone("%1, %2", func, param);
 
-// we do not want to install RPMs in autoinstallation mode...
-Inetd::auto_mode = true;
-
 /**
  * Create a summary
  * return string
