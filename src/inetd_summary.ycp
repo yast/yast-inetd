@@ -1,15 +1,8 @@
 /**
- * File:
- *   inet_summary.ycp
- *
- * Package:
- *   Configuration of inet
- *
- * Summary:
- *   Summary for the last installation screen.
- *
- * Authors:
- *   Michael Hager <mike@suse.de>
+ * File:	clients/inetd_summary.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Summary for the last installation screen.
+ * Authors:	Michael Hager <mike@suse.de>
  *
  * $Id$
  *
@@ -17,15 +10,17 @@
  */
 
 {
-    textdomain "lan_inetd";
 
-    import "Inet";
-    import "Progress";
+textdomain "inetd";
 
-    // Do not show any progress during Read()
-    Progress::off ();
-    boolean ret = Inetd::Read ( ``{ return false; } );
-    Progress::on ();
+import "Inet";
+import "Progress";
 
-    return Inetd::Summary ();
+// Do not show any progress during Read()
+Progress::off ();
+boolean ret = Inetd::Read ( ``{ return false; } );
+Progress::on ();
+
+return Inetd::Summary ();
+
 }

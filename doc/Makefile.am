@@ -6,10 +6,8 @@
 
 SUBDIRS = autodocs
 
-docdir = @DOCDIR@
-htmldir = $(docdir)
+htmldir = @docdir@
 
-doc_DATA =
 html_DATA =
 
-EXTRA_DIST = $(doc_DATA) $(html_DATA)
+EXTRA_DIST = $(html_DATA)

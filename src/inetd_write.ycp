@@ -1,23 +1,14 @@
 /**
- * File:
- *   inet_write.ycp
- *
- * Package:
- *   Configuration of inet
- *
- * Summary:
- *   Writing only client
- *
- * Authors:
- *   Michael Hager <mike@suse.de>
+ * File:	clients/inetd_write.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Writing only client
+ * Authors:	Michael Hager <mike@suse.de>
  *
  * $Id$
  *
  * This is a write-only client. It takes its arguments and just
  * write the settings.
- */
-
-/**
+ *
  * @param first a map of inet settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
@@ -25,7 +16,8 @@
  */
 
 {
-    textdomain "lan_inetd";
+
+    textdomain "inetd";
 
     import "Inetd";
     import "Progress";

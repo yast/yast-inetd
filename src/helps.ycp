@@ -1,24 +1,17 @@
 /**
- * File:
- *   include/inet/helps.ycp
- *
- * Package:
- *   Configuration of inet
- *
- * Summary:
- *   Help texts of all the dialogs.
- *
- * Authors:
- *   Michael Hager <mike@suse.de>
+ * File:	include/inetd/helps.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Help texts of all the dialogs.
+ * Authors:	Michael Hager <mike@suse.de>
  *
  * $Id$
  *
  * The help texts.
- *
  */
 
 {
-    textdomain "lan_inetd";
+
+    textdomain "inetd";
 
 
     global define ConfigureHelp()``{
@@ -41,25 +34,25 @@ _("<p>Use the <b>Edit</b> button to change the parameters of a service.
 ");
     }
 
-    
+
     /**
      * Help for the EditOrCreateServiceDlg () dialog.
      * @return The help text.
      */
     global define string EditCreateHelp () ``{
-	
+
 	return _("
 <p>To create a valid entry (service) for inetd,
-enter</p> 
+enter</p>
 ")+
-	    
+
 _("<ul>
-<li>service name            
-<li>socket type		    
-<li>protocol		    
-<li>wait/nowait[.max]	    
-<li>user[.group]	    
-<li>server program	    
+<li>service name
+<li>socket type
+<li>protocol
+<li>wait/nowait[.max]
+<li>user[.group]
+<li>server program
 <li>server program arguments
 </ul>")+
 
@@ -94,7 +87,7 @@ less than root.
 </p>")+
 
 _("<p>In <b>server program</b>, enter the path name of the program to
-be executed by inetd when a request reaches its socket. 
+be executed by inetd when a request reaches its socket.
 
 </p>
 ")+
@@ -103,7 +96,7 @@ _("<p>---</p>");
     }
 
 
-    
+
     /**
      * Help for the ReadDialog () dialog.
      * @return The help text.
@@ -144,7 +137,7 @@ An additional dialog will inform you whether it is safe to do so or not.
      * Help for the MainDialog () dialog.
      * @return The help text.
      */
-    global define string MainDialogHelp () ``{	
+    global define string MainDialogHelp () ``{
 	return
 _("<p>Starting inetd will allow outside connections
 to network services installed on your server,
@@ -152,7 +145,7 @@ such as telnet, finger, or ftp.
 Should inetd be started at boot?
 </p>\n") +
     // helptext inetd configuration
-_("	
+_("
 <p>
 If you want to start the inetd, you can choose
 the SuSE default configuration. If you choose
@@ -160,7 +153,6 @@ the custom configuration, you can edit the default
 configuration for your needs in the next step.
 </p>");
     }
-
 
 
 

@@ -8,8 +8,7 @@ BuildArchitectures:	noarch
 Summary:	Configuration of inetd
 
 %description
-This package is a part of YaST2. It contains the necessary scripts to
-configure inet.
+-
 
 @PREP@
 
@@ -21,10 +20,9 @@ configure inet.
 
 %files
 %defattr(-,root,root)
-%dir @YAST2DIR@/include/lan_inetd
-@YAST2DIR@/include/lan_inetd/*
-@YAST2DIR@/clients/lan_inetd.ycp
-@YAST2DIR@/clients/inetd_*.ycp
-@YAST2DIR@/modules/Inetd.ycp
-@YAST2DIR@/config/lan_inetd.y2cc
-%doc @DOCDIR@
+%dir @yncludedir@/inetd
+@yincludedir@/inetd/*
+@clientdir@/inetd*.ycp
+@moduledir@/Inetd.ycp
+@configdir@/inetd.y2cc
+%doc @docdir@

@@ -1,24 +1,15 @@
 /**
- * File:
- *   inet_auto.ycp
- *
- * Package:
- *   Configuration of inet
- *
- * Summary:
- *   Client for autoinstallation
- *
- * Authors:
- *   Michael Hager <mike@suse.de>
+ * File:	clients/inetd_auto.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Client for autoinstallation
+ * Authors:	Michael Hager <mike@suse.de>
  *
  * $Id$
  *
  * This is a client for autoinstallation. It takes its arguments,
  * goes through the configuration and return the setting.
  * Does not do any changes to the configuration.
- */
-
-/**
+ *
  * @param first a map of inet settings
  * @return map edited settings or an empty map if canceled
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
@@ -26,14 +17,15 @@
  */
 
 {
-    textdomain "lan_inetd";
+
+    textdomain "inetd";
 
     import "Mode";
     Mode::config = true;
-    
+
     import "Inetd";
-    
-    include "lan_inetd/ui.ycp";
+
+    include "inetd/ui.ycp";
 
     list args = Args ();
     if ( size (args) <= 0 )
@@ -72,7 +64,7 @@
 	Wizard::SetContents(_("Inetd Configuration"),
 			    contents, "", true, true);
     }
-    
+
     set_contents();
     any result = nil;
     any ret = nil;
@@ -81,7 +73,7 @@
 	if (ret == `configure)
 	{
 	    result = InetAutoSequence ();
-	    
+
 	    if (result == `next || result == `finish)
 	    {
 		settings = Inetd::Export ();
@@ -98,7 +90,7 @@
     } until (ret == `back || ret == `next || ret ==`key);
 
     return [ret, settings];
-}    
+}
 
 
-  
+

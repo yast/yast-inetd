@@ -1,0 +1,34 @@
+/**
+ * File:	clients/inetd.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Main file
+ * Authors:	Michael Hager <mike@suse.de>
+ *
+ * $Id$
+ *
+ * Main file for inet configuration. Uses all other files.
+ */
+
+{
+
+/***
+ * <h3>Configuration of the inet</h3>
+ */
+
+textdomain "inetd";
+
+include "inetd/ui.ycp";
+
+/* The main () */
+y2milestone ("Inet module started");
+y2milestone ("----------------------------------------");
+
+/* main ui function */
+any ret = InetSequence ();
+y2debug ("ret == %1", ret);
+
+/* Finish */
+y2milestone ("Inet module finished");
+return ret;
+
+}

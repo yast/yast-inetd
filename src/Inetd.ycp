@@ -1,31 +1,23 @@
 /**
- * File:
- *   modules/Inetd.ycp
- *
- * Package:
- *   Configuration of Inetd
- *
- * Summary:
- *   Data for configuration of Inetd, input and output functions.
- *
- * Authors:
- *   Michael Hager <mike@suse.de>
+ * File:	modules/Inetd.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Data for configuration of Inetd, input and output functions.
+ * Authors:	Michael Hager <mike@suse.de>
  *
  * $Id$
  *
  * Representation of the configuration of Inetd.
  * Input and output routines.
- *
  */
 
 {
-    // Set the name of the module
+
     module "Inetd";
+    textdomain "inetd";
+
     import "Progress";
     import "Runlevel";
     import "Report";
-
-    textdomain "lan_inet";
 
 
 
@@ -36,7 +28,7 @@
     boolean file_read = false;
 
     global boolean changed_conf = false;
-    
+
     /**
      * Read all Inetd settings from the SCR
      * @param abort A block that can be called by Read to find
@@ -45,13 +37,13 @@
      * @return True on success
      */
     global define boolean Read (block abort) ``{
-		
+
 	boolean start_inetd = Runlevel::ServiceEnabled ("inetd");
-	 
+
 	/* check if there is a default for inetd.conf, else create one
 	 * different inetd.conf and inetd.conf.default will set inetd_status = `on_custom
 	 */
-	
+
 	if ( SCR::Read(.target.size, "/etc/inetd.conf.default") != -1 )
 	{
 	    SCR::Execute(.target.bash, "/bin/cp /etc/inetd.conf /etc/inetd.conf.default" );
@@ -68,9 +60,9 @@
 	    {
 		if( start_inetd )
 		    inetd_status = `on_default;
-	    }    
+	    }
 	}
-	
+
 	return true;
     }
 
@@ -78,7 +70,7 @@
      * Read inetd.conf file
      * @return void
      */
-      
+
     global define ReadFile()``{
 
 	if (!file_read) {
@@ -107,7 +99,7 @@
 	    WriteInetdConf();
 	    return true;
 	}
-	
+
 	if (inetd_status == `off)
 	{
 	    y2milestone("Turning service inetd off");
@@ -115,7 +107,7 @@
 	    return true;
 	}
 	else
-	{		
+	{
 	    Runlevel::ServiceAdjust("inetd", "enable");
 	    if (inetd_status == `on_default)
 		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
@@ -126,7 +118,7 @@
     }
 
 
-    
+
     /**
      * Update the SCR according to Inetd settings
      * @param abort A block that can be called by Write to find
@@ -138,11 +130,11 @@
 
 	y2milestone("Calling Write");
 	boolean write_aborted = false;
-	
+
 	string caption = _("Saving Inetd service configuration");
-	
+
 	integer no_of_steps = 2 ;
-	
+
 	Progress::New ( caption, " ", no_of_steps,
 		       [ _("Write the new inetd.conf"),
 			 _("Restart inetd service") ],
@@ -151,27 +143,27 @@
 			 _("Finished") ],
 		       "" );
 
-	
-	
+
+
 	Progress::NextStage();
 	if (changed_conf && inetd_status == `on_custom ) {
 	    WriteInetdConf();
 	}
 
 	Progress::NextStage();
-	
+
 	if (inetd_status == `off)
 	{
 	    y2milestone("Turning service inetd off");
 	    Runlevel::ServiceAdjust("inetd", "disable");
 	    Runlevel::RunInitScript("inetd", "stop");
 	}
-	else {		
+	else {
 	    Runlevel::ServiceAdjust("inetd", "enable");
 	    if (inetd_status == `on_default)
 		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
 		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );
-	    
+
 	    if (0 != Runlevel::RunInitScript ("inetd", "restart"))
 	    {
 		y2error ("Can not start service");
@@ -179,7 +171,7 @@
 	    }
 
 	}
-		 	
+
 
 	// increase the progress to "finish"
 	Progress::Finish ();
@@ -198,31 +190,31 @@
 		 "status":"enable"
 		 ]
      ]
-     */     
+     */
     global define boolean Import (map settings) ``{
 	if (size (settings) == 0)
-	{	
+	{
 	    return false;
 	}
-	    
-	Set(settings);		
+
+	Set(settings);
 	return true;
     }
 
     /**
      * Find a service in the parsed file
      * @return map: service map
-     */		
+     */
     define map FindService(string service)``{
 	return (select( filter( `line,
 				inetd_conf,
 				``(line["service"]:"none" == service)
 				), 0 , $[]));
     }
-    
+
     /**
-     * Change service status 
-     * @param service service to change 
+     * Change service status
+     * @param service service to change
      * @param status new status
      * @return true on success
      */
@@ -240,7 +232,7 @@
 	return true;
     }
 
-    
+
     /**
      * Dump the Inetd settings to a single map
      * (For use by autoinstallation.)
@@ -280,7 +272,7 @@
 					  "service_status": "enable"]);
 	    }
 	});
-	
+
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("Enabled Services"));
 	if (size(services)==0)
@@ -307,7 +299,7 @@
 
 
 
-    
+
      /**
      * Build a textual summary that can be used e.g. in inst_hw_config () or
      * something similar.
@@ -323,7 +315,7 @@
 		    ChangeServiceStatus(s["service_name"]:"none", s["service_status"]:"none");
 		}
 	    });
-	    
+
 	}
 	else if (settings["start_inetd"]:false && size(settings["inetd_services"]:[])==0)
 	{
@@ -351,7 +343,7 @@
 	    }
 	    return( line );
 	});
-	
+
     };
 
 
@@ -381,10 +373,10 @@
     }
 
 
-    
-    /**	
-     * Change a line in DB    
-     * @return  internal-DB map     
+
+    /**
+     * Change a line in DB
+     * @return  internal-DB map
      */
 
     global define changeLine (   map new_line, integer line_number )
@@ -401,13 +393,13 @@
 		return( line );
 	    }
 	});
-	
-	
+
+
     };
 
     /**
-     * Convert SCR-DB Line to internal DB line     
-     * @return internal-DB map     
+     * Convert SCR-DB Line to internal DB line
+     * @return internal-DB map
      */
 
     global define convertScrLineToInternal ( map line, string service, symbol status, integer line_number )
@@ -470,37 +462,37 @@
 
     /**
      * Make all services inactive
-     * @return List-DB map     
+     * @return List-DB map
      */
 
     global define makeAllInactive ()
     ``{
 	list table_input = [];
-	
+
 	return maplist(`line, inetd_conf, ``{
 	    if (line[`status]:`none == `active)
 		line[`status] = `inactive;
 	    return line;
 	});
     }
-    
+
     /**
-     * Convert Internal Map into the Format, the list widget needs     
-     * @return List-DB map     
+     * Convert Internal Map into the Format, the list widget needs
+     * @return List-DB map
      */
 
     global define convertInternalToList ( )
     ``{
 	list table_input = [];
-	
+
 	foreach(`line, inetd_conf, ``{
 
 	    symbol status = lookup(line, `status, `comment);
-	   
+
 	    if ( status != `comment )
 	    {
 		string status_str = "  #   ";
-		
+
 		if ( status == `active )
 		{
 		    status_str    = "Active!  ";
@@ -508,9 +500,9 @@
 
 		// todo: fix widget
 		// if line to long, helptext is too small
-		
+
 		string servargs = lookup( line, "servargs", "");
-		
+
 		if ( size(servargs) > 41 )
 		{
 		    servargs = sformat( "%1 .......", substring( servargs, 0, 36 ));
@@ -529,7 +521,7 @@
 	    }
 
         });
-	
+
 	return( table_input );
     };
 
@@ -539,8 +531,8 @@
     /**
      * Write inetd_conf to disk
      * - Convert internal DB into SCR format
-     * - write      
-     * @return -     
+     * - write
+     * @return -
      */
 
     global define WriteInetdConf ( )
@@ -551,41 +543,41 @@
 	SCR::Execute(.target.bash, "/bin/rm /etc/inetd.conf " );  // if i have not the permission to move
 	string file = "";
 	foreach(`line, inetd_conf,``{
-					   
-	    string inetd_conf_line = "";	    
+
+	    string inetd_conf_line = "";
 	    symbol status = lookup(line, `status, `comment);
-	
+
 	    if ( status != `comment )
 	    {
 		if ( status == `active )
 		{
 		    inetd_conf_line = sformat( "%1 %2 %3 %4 %5 %6\n",
-					       lookup( line, "service", "error"),     
-					       lookup( line, "type",     "error"),     
-					       lookup( line, "protocol", "error"),     
-					       lookup( line, "flags",    "error"),     
-					       lookup( line, "user",     "error"),     
+					       lookup( line, "service", "error"),
+					       lookup( line, "type",     "error"),
+					       lookup( line, "protocol", "error"),
+					       lookup( line, "flags",    "error"),
+					       lookup( line, "user",     "error"),
 					       lookup( line, "servargs", "error"));
 		}
 		else
 		{
 		    inetd_conf_line = sformat( "# %1 %2 %3 %4 %5 %6\n",
-					       lookup( line, "service", "error"),     
-					       lookup( line, "type",     "error"),     
-					       lookup( line, "protocol", "error"),     
-					       lookup( line, "flags",    "error"),     
-					       lookup( line, "user",     "error"),     
+					       lookup( line, "service", "error"),
+					       lookup( line, "type",     "error"),
+					       lookup( line, "protocol", "error"),
+					       lookup( line, "flags",    "error"),
+					       lookup( line, "user",     "error"),
 					       lookup( line, "servargs", "error"));
 		}
 	    }
 	    else
 	    {
-		inetd_conf_line="# " + lookup( line, "comment", "") + "\n";		
-	    }	    
+		inetd_conf_line="# " + lookup( line, "comment", "") + "\n";
+	    }
 	    file = file + inetd_conf_line;
 
 	});
-	
+
 	if (size(file)>0)
 	{
 	    SCR::Write(.target.string, "/etc/inetd.conf", file);
@@ -595,5 +587,5 @@
 	    Report::Error(_("Configuration is empty"));
 	}
     }
-    
+
 }

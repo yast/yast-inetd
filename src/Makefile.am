@@ -4,27 +4,24 @@
 # $Id$
 #
 
-clientsdir = $(YAST2DIR)/clients
-includedir = $(YAST2DIR)/include/lan_inetd
-modulesdir = $(YAST2DIR)/modules
+yncludedir = @yncludedir@/inetd
 
-clients_DATA =			\
-	lan_inetd.ycp		\
+client_DATA =			\
+	inetd.ycp		\
 	inetd_auto.ycp		\
 	inetd_summary.ycp	\
 	inetd_write.ycp
 
-include_DATA =			\
+ynclude_DATA =			\
 	helps.ycp		\
 	ui.ycp
 
-config_DATA = lan_inetd.y2cc
+config_DATA = inetd.y2cc
 
-modules_DATA =			\
+module_DATA =			\
 	Inetd.ycp
 
-bindir = $(YAST2DIR)/bin
 bin_SCRIPTS = 			\
 	build_inetd_conf_ycp.pl
 
-EXTRA_DIST = $(bin_SCRIPTS) $(clients_DATA) $(include_DATA) $(config_DATA) $(modules_DATA)
+EXTRA_DIST = $(bin_SCRIPTS) $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA)
