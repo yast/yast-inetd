@@ -335,7 +335,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
  * @return list users
  */
 global define list CreateLocalUsersList() ``{
-    list(string) users = merge(UsersCache::usernamelists[`local]:[], UsersCache::usernamelists[`system]:[]);
+    list(string) users = merge(UsersCache::usernamelists["local"]:[], UsersCache::usernamelists["system"]:[]);
     users = sort(users);
     y2debug("users: %1", users);
 
@@ -352,7 +352,7 @@ global define list CreateLocalUsersList() ``{
  * @return list groups
  */
 global define list CreateLocalGroupsList() ``{
-    list(string) groups = merge(UsersCache::groupnamelists[`local]:[], UsersCache::groupnamelists[`system]:[]);
+    list(string) groups = merge(UsersCache::groupnamelists["local"]:[], UsersCache::groupnamelists["system"]:[]);
     groups = sort(groups);
     y2debug("groups: %1", groups);
 
