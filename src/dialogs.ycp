@@ -14,10 +14,8 @@ textdomain "inetd";
 import "Inetd";
 
 import "Require";
-
-//include "ui/common_popups.ycp";
+import "Wizard";
 import "Popup";
-//include "ui/common_messages.ycp";
 import "Label";
 
 include "inetd/helps.ycp";

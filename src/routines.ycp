@@ -11,7 +11,10 @@
 
 textdomain "inetd";
 
+import "Inetd";
+import "Progress";
 import "Runlevel";
+import "Directory";
 
 /**
  * Return rpm -q status for inetd package
@@ -128,7 +131,7 @@ global define list mergeXinetdConfs(list netd_conf, list table_data) ``{
 	    term entry = `item(`id("NI" + index),
 		"",                  // Change entry
 		/* Translators: This is used for status "Not Installed". Please, make the
-		                translation as short as possible. */
+				translation as short as possible. */
 		_("NI"),             // Status entry
 		line["service"]:"",  // Service
 		"",                  // Socket type
@@ -313,7 +316,7 @@ global define string getenv(string environment) ``{
     if(result["stdout"]:"" == "")
 	return nil;
     else
-        return result["stdout"]:"";
+	return result["stdout"]:"";
 }
 
 /* EOF */
