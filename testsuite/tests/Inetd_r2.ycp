@@ -20,7 +20,7 @@ import "Report";
 
 Report::DisplayErrors(false, 0);
 
-list NEW_CONF = [
+list SYSTEM_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -34,7 +34,7 @@ list NEW_CONF = [
     "server_args": "in.fingerd -w",
     ],
     $[
-    "iid": "new-whatever",
+    "iid": "whatever2",
     "comment": "new service",
     "enabled": false,
     "service": "ns",
@@ -47,7 +47,7 @@ list NEW_CONF = [
     ]
 ];
 
-list OLD_CONF = [
+list PROFILE_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -78,7 +78,7 @@ list OLD_CONF = [
  * In normal mode, the new installed service has no entry
  * in netd_conf.
  */
-list NORMAL_OLD_CONF = [
+list EDITED_CONF = [
     $[
     "iid": "whatever",
     "comment": "My service",
@@ -94,20 +94,20 @@ list NORMAL_OLD_CONF = [
 ];
 
 DUMP("\nDefault (full) configuration\n");
-DUMP(NEW_CONF);
+DUMP(SYSTEM_CONF);
 
 DUMP("\nNew package installed in normal mode\n");
-DUMP(Inetd::MergeEditedWithSystem(NEW_CONF, NORMAL_OLD_CONF));
+DUMP(Inetd::MergeEditedWithSystem(SYSTEM_CONF, EDITED_CONF));
 DUMP("\n---\n");
 
 Inetd::auto_mode = true;
 
 DUMP("\nNew package installed in autoinstall mode\n");
-DUMP(Inetd::mergeAfterInstall(NEW_CONF, OLD_CONF));
+DUMP(Inetd::mergeAfterInstall(SYSTEM_CONF, PROFILE_CONF));
 DUMP("\n---\n");
 
 DUMP("\nNo packages was installed --- configuration is the same\n");
-DUMP(Inetd::mergeAfterInstall(NEW_CONF, NEW_CONF));
+DUMP(Inetd::mergeAfterInstall(SYSTEM_CONF, SYSTEM_CONF));
 DUMP("\n---\n");
 
 }

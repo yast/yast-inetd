@@ -328,12 +328,13 @@ global define boolean Read() ``{
 }
 
 /**
- * This function solves differences between new (after installing requested packages)
- * xinetd configuration and old small configuration created by user.
+ * This function solves differences between new
+ * (after installing requested packages)
+ * xinetd configuration and the configuration edited by the user.
  * <pre>
  * <b>In normal mode</b>:
  * take the system services
- *   if it matches a service in the ui (service,protocol,server substring)
+ *   if it matches a service in the ui (ServicesMatch)
  *     use the ui data
  * (not-installed ones are not a part of netd_conf, they
  * only enter the table in mergexinetdconfs)
@@ -356,10 +357,8 @@ global define list MergeEditedWithSystem (list system_conf, list edited_conf) ``
     system_conf = maplist(map system_s, system_conf, ``{
 	new_entry = system_s;
 	foreach(map edited_s, edited_conf, ``{
-	    if (struct_match (system_s, edited_s,
-			      ["script", "service", "protocol"]) &&
-		// substring because ...?
-		find(system_s["server"]:"", edited_s["server"]:"!") != -1) {
+	    if (ServicesMatch (system_s, edited_s))
+	    {
 		new_entry = edited_s;
 	    }
 	});
@@ -370,51 +369,6 @@ global define list MergeEditedWithSystem (list system_conf, list edited_conf) ``
     list added = filter (map edited_s, edited_conf,
 			 ``( find (edited_s["iid"]:"", "new") == 0 ));
     return flatten ([system_conf, added]);
-}
-/**
- * This function solves differences between new (after installing requested packages)
- * xinetd configuration and old small configuration created by user.
- * <pre>
- * <b>In auto mode</b>:
- * for each user's service:
- *   if its iid contains "inst",
- *     the service(s) in the system is found having the same
- *     (service,protocol,server) triple (more precisely, for the server:
- *     the first word of user's server must be contained in system's server)
- *     And then this system service is used, replacing only the "enabled" field
- *     and marking it as changed.
- *   otherwise
- *     the user's service is taken as it is
- * So for xinetd AY UI, only toggling works
- * </pre>
- * @param netd_conf holds new configuration (on the system)
- * @param old_conf  holds old configuration (auto: profile + defaults)
- * @return list Returnes new solved xinetd configuration (ready for Write()).
- */
-global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
-
-    map new_entry = nil;
-
-    old_conf = maplist(`old_line, old_conf, ``{
-	new_entry = old_line;
-	// find all new lines for installed packages...
-	if(find(old_line["iid"]:"", "inst") != -1) { // iid is beginning with "inst"
-	    // find this line in new (installed) configuration
-	    foreach(`new_line, netd_conf, ``{
-		// service, protocol and server must be the same...
-		if((new_line["service"]:"" == old_line["service"]:"!") &&         // service
-		    (new_line["protocol"]:"" == old_line["protocol"]:"!") &&       // protocol
-		    (find(new_line["server"]:"", select(splitstring(old_line["server"]:"!", " "), 0, "")) != -1)) { // server
-		    new_line  = add(new_line, "enabled", old_line["enabled"]:true);
-		    new_line  = add(new_line, "changed", true);
-		    new_entry = new_line;
-		}
-		// else
-	    });
-	}
-	return new_entry;
-    });
-    return old_conf;
 }
 
 /**
@@ -581,6 +535,41 @@ global define boolean WriteOnly () ``{
 }
 
 /**
+ * This function solves differences between new (after installing requested packages)
+ * xinetd configuration and old small configuration created by user.
+ * <pre>
+ * <b>In auto mode</b>:
+ * for each user's service:
+ *   if its iid contains "inst",
+ *     the service(s) in the system is found having the same
+ *     (service,protocol,server) triple (more precisely, for the server:
+ *     the first word of user's server must be contained in system's server)
+ *     And then this system service is used, replacing only the "enabled" field
+ *     and marking it as changed.
+ *   otherwise
+ *     the user's service is taken as it is
+ * So for xinetd AY UI, only toggling works
+ * </pre>
+ * @param system_c holds new configuration (on the system)
+ * @param user_c  holds old configuration (auto: profile + defaults)
+ * @return list Returnes new solved xinetd configuration (ready for Write()).
+ */
+global define list mergeAfterInstall(list system_c, list user_c) ``{
+    return MergeAyProfile (system_c, user_c);
+}
+
+/**
+ * merges imported changes with services defaults
+ * @param changes imported changes
+ * @return complete configuration with user changes
+ */
+global define list mergeWithDefaults(list changes) ``{
+    list target = default_conf["netd_conf"]:[];
+    return MergeAyProfile (target, changes);
+}
+
+/**
+ * Merges AY profile items into a target list (defaults or system).
  * merges imported changes with services defaults
  * <br>
  * TODO updated description!
@@ -594,38 +583,48 @@ global define boolean WriteOnly () ``{
  * <dt> otherwise
  *  <dd> it is discarded!
  * </dl>
+ * @param target base list of services
  * @param changes imported changes
- * @return complete configuration with user changes
+ * @return merged list of services
  */
-global define list mergeWithDefaults(list changes) ``{
-    list target = default_conf["netd_conf"]:[];
-
-    map new_entry = nil;
-
+global define list MergeAyProfile (list target, list changes) ``{
     // for each change in the patch list:
-    foreach (map line, changes, ``{
-	string service  = line["service"]:"";
-	string server   = line["server"]:"";
-	string protocol = line["protocol"]:"";
-	string script   = line["script"]:"";
+    foreach (map change_s, changes, ``{
 	integer matches = 0;
-	target = maplist(map target_s, target, ``{
-	    new_entry = target_s;
-	    // TODO: make target_s["real_server"]
-	    if (struct_match_sparse (
-		    line, target_s,
-		    ["script", "service", "protocol", "server"]))
-	    {
-		matches = matches + 1;
+	// For compatibility and as a hook for workarounds
+	// if the matching turns out to be too clever:
+	// skip matching
+	string change_iid = change_s["iid"]:"";
+	if (find (change_iid, "new") == 0
+	    /* || find (change_iid, "inst") == 0*/ )
+	{
+	    // do nothing, matches is 0 and we add the service
+	}
+	else
+	{
+	    // apply the change to the target list:
+	    target = maplist(map target_s, target, ``{
+		map new_entry = target_s;
+		if (ServicesMatch (change_s, target_s))
+		{
+		    // yippee, it matches
+		    matches = matches + 1;
 
-		// line has priority
-		new_entry = union (new_entry, line);
-		new_entry = add (new_entry, "changed", true);
-		// "enabled" is true - if not present
-		new_entry = add (new_entry, "enabled", line["enabled"]:true);
-	    }
-	    return new_entry;
-	});
+		    // Cannot do a simple union, because we don't
+		    // want to merge the "server" key field:
+		    // The "basename (package)" content generated by the
+		    // AY UI must be avoided.
+		    // And while merging, iid must be also preserved
+		    map to_merge = remove (remove (change_s, "server"), "iid");
+		    new_entry = union (new_entry, to_merge);
+		    new_entry = add (new_entry, "changed", true);
+		    // "enabled" is true - if not present
+		    new_entry = add (new_entry, "enabled",
+				     change_s["enabled"]:true);
+		}
+		return new_entry;
+	    });
+	}
 	/*
 	 * Not found in target? Three states happened:
 	 *  - Service is new (user wants forEx. telnet on port #53;-)
@@ -634,11 +633,11 @@ global define list mergeWithDefaults(list changes) ``{
 	 */
 	if (matches == 0)
 	{
-	    target = add(target, line);
+	    target = add(target, change_s);
 	}
 	else if (matches > 1)
 	{
-	    y2warning ("Ambiguous match (%1): %2", matches, line);
+	    y2warning ("Ambiguous match (%1): %2", matches, change_s);
 	}
     });
 
@@ -747,13 +746,16 @@ global define list getChanged(list config) ``{
 	    }
 
 	    // Find coresponding entry in `defaults'.
-	    // Can use iid here because we started editing
+	    // Could use iid here because we started editing
 	    // with the defaults list
-	    def_line = findiidMapinList(defaults, line_iid);
+	    // but it broke the testsuite.
+	    def_line = find (map default_s, defaults, ``(
+				 ServicesMatch (line, default_s)
+				 ));
 
-	    // def_line is empty --- possibly item not found
+	    // item not found
 	    // So, write this entry into `changes'
-	    if(def_line == $[]) {
+	    if (def_line == nil) {
 		changes = add(changes, line);
 		return; // skip the following code
 	    }
@@ -817,10 +819,9 @@ global define string mkeServiceSummary() ``{
     foreach(`line, netd_conf, ``{
 	//"enabled" defaults to true
 	if(line["enabled"]:true && !line["deleted"]:false) {
-	    S = sformat("%1<li>%2 <i>(%3, %4)</i>",
+	    S = sformat("%1<li>%2 <i>(%3)</i>",
 			S,
 			line["service"]:"",
-			line["socket_type"]:"",
 			line["protocol"]:"");
 	}
     });

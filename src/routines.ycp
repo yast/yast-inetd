@@ -93,6 +93,36 @@ global define void ProgressNextStage(string title) ``{
 }
 
 /**
+ * Used for cpmparisons whether the servers match:
+ * If server is /usr/sbin/tcpd, consider server_args instead.
+ * Then take the firse word (strips arguments or the parenthesized pkg name).
+ * Then take the last slash-delimited component.
+ * For sparse matching: nil is returned if server is nil
+ * (or if server args is nil AND is needed)
+ * @param server "server" field of a service
+ * @param server_args "server_args" field of a service
+ * @return basename of the real server
+ */
+global define string GetServerBasename (string server, string server_args) ``{
+    string result = server;
+    // discard tcpd
+    if (result == "/usr/sbin/tcpd")
+    {
+	result = server_args;
+    }
+    // check nil
+    if (result != nil)
+    {
+	// program only
+	result = select (splitstring (result, " \t"), 0, "");
+	// basename
+	list comp = splitstring (result, "/");
+	result = select (comp, size (comp) - 1, "");
+    }
+    return result;
+}
+
+/**
  * Considers the maps as structs and tests
  * some of their fields for equality (conjunctively, short circuit).
  * @param a one struct
@@ -354,23 +384,33 @@ global define list GetXinetdDefaults() ``{
 }
 
 /**
- * Find map with given `iid' in given list.
- * @param data list with maps to look into for iid
- * @param iid iid to find
- * @return first ocurence of map with iid `iid' in the list
+ * Do the services match?
+ * Considered fields:
+ * "script", "service", "protocol", "server" (or "server_args", if tcpd)
+ * The matching is sparse: a missing field in either map
+ * means the field is condidered as matching.
+ * @param a one map
+ * @param b other map
+ * @return match?
  */
-global define map findiidMapinList(list data, string iid) ``{
-    integer count = size(data);
-    integer i     = 0; // index
-
-    while(i < count) {
-	map line = select(data, i, $[]);
-	if(line["iid"]:"" == iid)
-	    return line;
-	i = i + 1;
+global define boolean ServicesMatch (map a, map b) ``{
+    if (struct_match_sparse (a, b, ["script", "service", "protocol"]))
+    {
+	// Compare whether the server matches
+	// Watch out for tcpd, use basenames
+	// because the 8.2 UI produced server="in.ftpd (ftpd)"
+	string a_serverbn = GetServerBasename (a["server"]:nil,
+					       a["server_args"]:nil);
+	string b_serverbn = GetServerBasename (b["server"]:nil,
+					       b["server_args"]:nil);
+	if (a_serverbn == nil ||
+	    b_serverbn == nil ||
+	    a_serverbn == b_serverbn)
+	{
+	    return true;
+	}
     }
-
-    return $[];
+    return false;
 }
 
 /**
