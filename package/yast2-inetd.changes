@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb  9 15:50:35 CET 2004 - lslezak@suse.cz
+
+- testsuite: NI fixes, enabled agent testing
+- Inetd.ycp - removed empty statement
+- version 2.9.2
+
+-------------------------------------------------------------------
 Fri Feb  6 15:45:57 CET 2004 - lslezak@suse.cz
 
 - NI fixes (data types, globals)

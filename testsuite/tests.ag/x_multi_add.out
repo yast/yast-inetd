@@ -1,4 +1,4 @@
-(result (true))
+(`result (true))
 # where will the new service be added?
 #
 # additionally, there are no services in the dir initially.

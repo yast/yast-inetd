@@ -1,16 +1,8 @@
 //
 {
-    integer old = WFM::SCRGetDefault ();
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Inetd (WFM::Args (0))));
 
-    integer h = WFM::SCROpen ("ag_netd", false);
-    if (h < 1)
-    {
-	return;
-    }
-    WFM::SCRSetDefault (h);
-    SCR::Netd (WFM::Args (0));
-
-    list s = SCR::Read (.services);
+    list s = (list) SCR::Read (.test.inetd.services);
     map ns = $[
 	// no iid
 	"changed": true,
@@ -28,10 +20,7 @@
 	"server_args": "fam",
 	];
     s = add (s, ns);
-    boolean r = SCR::Write (.services, s);
-
-    WFM::SCRClose (h);
-    WFM::SCRSetDefault (old);
+    boolean r = (boolean) SCR::Write (.test.inetd.services, s);
 
     return r;
 }

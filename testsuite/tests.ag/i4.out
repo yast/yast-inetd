@@ -1,4 +1,4 @@
-(result ([$["comment":" /bin/true looks like a boolean, root is 0\n see bug 21804\n", "enabled":true, "group":"", "iid":"1:./tests.ag/i4.in.test", "max":"", "protocol":"tcp", "rpc_version":"", "script":"i4.in.test", "server":"/usr/sbin/tcpd", "server_args":"true", "service":"ftp", "socket_type":"stream", "user":"0", "wait":false]]))
+(`result ([$["comment":" /bin/true looks like a boolean, root is 0\n see bug 21804\n", "enabled":true, "group":"", "iid":"1:./tests.ag/i4.in.test", "max":"", "protocol":"tcp", "rpc_version":"", "script":"i4.in.test", "server":"/usr/sbin/tcpd", "server_args":"true", "service":"ftp", "socket_type":"stream", "user":"0", "wait":false]]))
 # /bin/true looks like a boolean, root is 0
 # see bug 21804
 ftp stream tcp nowait 0 /usr/sbin/tcpd true

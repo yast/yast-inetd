@@ -1,4 +1,4 @@
-(result (true))
+(`result (true))
 # CVS pserver (remote acces to your CVS repositories)
 # Please read the section on security and passwords in the CVS manual,
 # before you enable this.
