@@ -315,7 +315,7 @@ define symbol InetdDialog () ``{
     any ret = nil;
 
     /* Inetd configure dialog caption */
-    string caption = _("Network Services Configuration (xinetd)");
+    string caption = _("Network Service Configuration (xinetd)");
 
     // initialize GUI
     Wizard::SetContentsButtons(caption, contents, HELPS["c1"]:"",
