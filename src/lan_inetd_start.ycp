@@ -33,12 +33,32 @@
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////
-    // check if there is a default for inetd.conf, ele create one
+    // read START_INETD from rc.config
+    string start_inetd = SCR(`Read(.rc.system.START_INETD));
+    _debug("START_INET: ", start_inetd );
+    
+    // if( start_inetd == "no"  ) inetd_status = `off; //default is `off not needed
+
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // check if there is a default for inetd.conf, else create one
+    // differ inetd.conf and inetd.con.default set inetd_status = `on_custom 
     if ( !fileexist ("/etc/inetd.conf.default"))
     {
-       Shell( "/bin/cp /etc/inetd.conf /etc/inetd.conf.default" );  
+	SCR(`Execute(.target.bash, "/bin/cp /etc/inetd.conf /etc/inetd.conf.default" ));
+	if( start_inetd == "yes" ) inetd_status = `on_default;
     }
-
+    else
+    {
+	if (  SCR(`Execute(.target.bash, "/usr/bin/diff /etc/inetd.conf /etc/inetd.conf.default")) != 0 )
+	{
+	    if( start_inetd == "yes" ) inetd_status = `on_custom;
+	}
+	else
+	{
+	    if( start_inetd == "yes" ) inetd_status = `on_default;
+	}    
+    }
    
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // MAIN:
@@ -109,7 +129,8 @@ configuration for your needs in the next step.
     // Main dialog: Header
      UI(`SetContents(_("Network services"), contents, help_text, true, true));
 
-
+     if(  inetd_status == `on_custom )  UI(`ChangeWidget(`id(`next), `Label,  _("&Next") ) );
+     
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
    ////  Loop for User Input ....
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,28 +172,24 @@ configuration for your needs in the next step.
 		/////////////////////////////////////////////////////////////
 
 		user_settings = add( user_settings, "inetd_status", inetd_status );
-
-		map config_map = $[];
-		string comment = "start the inet daemon in multi-user? (\"yes\" or \"no\")\n# this is needed, if you have to telnet/rlogin to your own machine.\n# It is also needed for the man page formatter in SuSE Help system\n# and for starting the plp lp daemon.";
-
+		
 		if ( inetd_status == `off )
-		{
-		    config_map = add( config_map, "START_INETD", ["no", comment] );
+		{  
 		    _debug( "Writing START_INETD no" );
-		    SCR(`Write(.etc.rcconfig, config_map));
-		    Shell("/etc/init.d/inetd stop");
+		    SCR(`Write(.rc.system.START_INETD, "no"));
+
+		    SCR(`Execute(.target.bash, "/etc/init.d/inetd stop"));
 		}
 		else
 		{
-		    config_map = add( config_map, "START_INETD", ["yes", comment] );
 		    _debug( "Writing START_INETD yes" );
-		    SCR(`Write(.etc.rcconfig, config_map));
+		    SCR(`Write(.rc.system.START_INETD, "yes"));
 		    
 		    _debug( "Shell restart inetd" );
 		    if ( inetd_status == `on_default)
 		    {
-			Shell( "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );  
-			Shell( "/etc/init.d/inetd restart");
+			SCR(`Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" ));  
+			SCR(`Execute(.target.bash,  "/etc/init.d/inetd restart"));
 		    }
 		}
 	    }

@@ -427,7 +427,7 @@ _("<p>---</p>");
 	// Check for  sockettype: stream dgram raw rdm seqpacket
 	// therefore check EXISTANCE of <sockettype>protocol
 
-	string | void dgram_protocol = lookup( line, "dgram_protocol" );
+	string  dgram_protocol = lookup( line, "dgram_protocol" );
 
 	if ( dgram_protocol != nil )
 	{
@@ -436,7 +436,7 @@ _("<p>---</p>");
 	}
 	else
 	{
-	    string | void stream_protocol = lookup( line, "stream_protocol" );
+	    string  stream_protocol = lookup( line, "stream_protocol" );
 	    if ( stream_protocol != nil )
 	    {
 		line_map = add( line_map, "type",       "stream");
@@ -444,9 +444,9 @@ _("<p>---</p>");
 	    }
 	    else
 	    {
-		string | void raw_protocol       = lookup( line, "raw_protocol" );
-		string | void rdw_protocol       = lookup( line, "rdw_protocol" );
-		string | void seqpacket_protocol = lookup( line, "seqpacket_protocol" );
+		string  raw_protocol       = lookup( line, "raw_protocol" );
+		string  rdw_protocol       = lookup( line, "rdw_protocol" );
+		string  seqpacket_protocol = lookup( line, "seqpacket_protocol" );
 
 		if ( raw_protocol != nil )
 		{
@@ -536,8 +536,8 @@ _("<p>---</p>");
 	      // not tested yet!
 	      string send_line = "";
 	      _debug( "WriteLine: ", send_line );
-		Shell( "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" );
-		Shell( "/bin/rm /etc/inetd.conf " );  // if i have not the permission to move
+	      SCR(`Execute(.target.bash, "/bin/mv /etc/inetd.conf /etc/inetd.conf.sic" ));
+	      SCR(`Execute(.target.bash, "/bin/rm /etc/inetd.conf " ));  // if i have not the permission to move
 
 		list scr_write_input = maplist(`line, inetd_conf,
 		   ``{
@@ -558,7 +558,7 @@ _("<p>---</p>");
 						      lookup( line, "flags",    "error"),     
 						      lookup( line, "user",     "error"),     
 						      lookup( line, "servargs", "error"));
-			   send_line = "echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf";
+			   send_line = "/bin/echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf";
 		       }
 		       else
 		       {
@@ -569,16 +569,16 @@ _("<p>---</p>");
 						      lookup( line, "flags",    "error"),     
 						      lookup( line, "user",     "error"),     
 						      lookup( line, "servargs", "error"));
-			   send_line = "echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf" ;
+			   send_line = "/bin/echo \""+inetd_conf_line+ "\" >>/etc/inetd.conf" ;
 		       }
 		       }
 		       else
 		       {
-			   send_line = "echo \"# "+lookup( line, "comment", "")+ "\" >>/etc/inetd.conf";
+			   send_line = "/bin/echo \"# "+lookup( line, "comment", "")+ "\" >>/etc/inetd.conf";
 		       }
 		
 		       _debug( "WriteLine: ", send_line );
-		       Shell( send_line );
+		       SCR(`Execute(.target.bash,  send_line ));
 		   });
 
 	      _debug( "WWWWWWWWWWWWWWWWWWWVVVVVVV" );
@@ -747,9 +747,9 @@ _("<p>---</p>");
 //	  }
 //     });
 
-    Shell ("/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl");
+    SCR(`Execute(.target.bash, "/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl"));
     inetd_conf = Read( "/tmp/inetd_conf.ycp");
-    Shell ("/bin/rm /tmp/inetd_conf.ycp");
+    SCR(`Execute(.target.bash, "/bin/rm /tmp/inetd_conf.ycp"));
     
     list table_data = convertInternalToList( inetd_conf );
 
@@ -844,7 +844,7 @@ on the button edit you can change parameters of this service
 	    // notify a line is selected
 	    if ( w_id == nil ) w_id = 1; 
 
-	    list|void return_val       = [];
+	    list  return_val       = [];
 	    map       current_line     = $[ `status:`active,  "service":"", "type":"", "protocol":"", "flags":"", "servargs":"", "user":"", "line_number":w_id ];
 		
 	    ///////////////////////////////////////////
@@ -972,7 +972,7 @@ on the button edit you can change parameters of this service
 	    // notify a line is selected
 	    if ( w_id != nil )
 	    {
-		list|void return_val       = [];
+		list return_val       = [];
 		boolean   comment_x_1      = false;
 		string    editable_comment = "";
 		map       comment_line     = $[];
@@ -1105,7 +1105,7 @@ on the button edit you can change parameters of this service
 		writeInetdConfx( inetd_conf );
 
                 // todo error message if a failure occur
-		Shell("/etc/init.d/inetd restart");
+		SCR(`Execute(.target.bash, "/etc/init.d/inetd restart"));
 
 	    }
 
