@@ -33,7 +33,7 @@ string y2dir = exe["stdout"]:"";
 Directory::datadir = y2dir + "/data";
 
 // do it now, because during TEST we do not have a live SCR
-Inetd::EnsureDefaultConfLoaded ();
+//Inetd::EnsureDefaultConfLoaded ();
 
 include "testsuite.ycp";
 include "inetd/routines.ycp";

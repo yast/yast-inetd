@@ -488,6 +488,8 @@ global define services_t getChanged(services_t config) ``{
     list<map <string, any> > defaults = [];
     services_t changes  = [];
     map  def_line = $[];
+    if (config == nil)
+	return changes;
 
     defaults = default_conf;
 

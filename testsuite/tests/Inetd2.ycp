@@ -53,11 +53,9 @@ map READ = $[
 	"scripts" : $[
 	    "exists" : true,
             "runlevel": $[
-                "inetd":  service_off,
                 "xinetd": service_off,
             ],
             "comment": $[
-                "inetd":  $[],
                 "xinetd": $[],
             ],
 	]
@@ -66,9 +64,6 @@ map READ = $[
         "installed": true,
     ],
     "etc" : $[
-	"inetd_conf" : $[
-	    "services" : [ s ],
-	    ],
         "xinetd_conf": $[
             "services":  [ s ],
             ],
@@ -107,20 +102,9 @@ map EXECUTE = $[
 DUMP("\ninetd is stopped and will be started\n");
 DUMP("\nRead  --- read all services\n");
 
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
 TEST(``(Inetd::Read()),  [READInetd, WRITE, EXECUTE], nil);
 
-// filled by InetdDialog()
-Inetd::inetd_status     = 3;  // unused
-Inetd::xinetd_status    = -1; // not used
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 1;  // not installed
-
 // force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::inetd_conf;
-Inetd::configured_service = `inetd;
 Inetd::netd_status        = 0; // want to start
 
 DUMP("\nWrite --- write inetd");
@@ -134,87 +118,13 @@ DUMP("\n  ---\n");
  * inetd is running
  * User will save and use inetd
  */
-DUMP("\ninetd is running and will be reconfigured\n");
-DUMP("\nRead  --- read all services\n");
 
-// filled by PackageDialog()
-Inetd::netd_service = `both;
+DUMP("\nRead  --- read all services\n");
 
 TEST(``(Inetd::Read()),  [READInetd2, WRITE, EXECUTE], nil);
 
-// filled by InetdDialog()
-Inetd::inetd_status     = 0;  // running
-Inetd::xinetd_status    = -1; // not used
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 1;  // not installed
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::inetd_conf;
-Inetd::configured_service = `inetd;
-Inetd::netd_status        = 0; // want to start
 
 DUMP("\nWrite --- write inetd");
-DUMP("  inetd is installed and running\n");
-TEST(``(Inetd::Write()), [READInetd2, WRITE, EXECUTE], nil);
-
-DUMP("\n  ---\n");
-
-/*
- * inetd service is installed
- * inetd is stopped
- * User will stop inetd
- */
-DUMP("\ninetd is stopped and will be unchanged\n");
-DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
-TEST(``(Inetd::Read()),  [READInetd, WRITE, EXECUTE], nil);
-
-// filled by InetdDialog()
-Inetd::inetd_status     = 3;  // unused
-Inetd::xinetd_status    = -1; // not used
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 1;  // not installed
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::inetd_conf;
-Inetd::configured_service = `inetd;
-Inetd::netd_status        = -1; // want to stop
-
-DUMP("\nWrite --- write inetd");
-DUMP("  inetd is installed and stopped\n");
-TEST(``(Inetd::Write()), [READInetd, WRITE, EXECUTE], nil);
-
-DUMP("\n  ---\n");
-
-/*
- * inetd service is installed
- * inetd is running
- * User will stop inetd
- */
-DUMP("\ninetd is running and will be stopped\n");
-DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
-TEST(``(Inetd::Read()),  [READInetd2, WRITE, EXECUTE], nil);
-
-// filled by InetdDialog()
-Inetd::inetd_status     = 0;  // running
-Inetd::xinetd_status    = -1; // not used
-Inetd::inetd_installed  = 0;
-Inetd::xinetd_installed = 1;  // not installed
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::inetd_conf;
-Inetd::configured_service = `inetd;
-Inetd::netd_status        = -1; // want to stop
-
-DUMP("\nWrite --- write inetd");
-DUMP("  inetd is installed and running\n");
 TEST(``(Inetd::Write()), [READInetd2, WRITE, EXECUTE], nil);
 
 DUMP("\n  ---\n");

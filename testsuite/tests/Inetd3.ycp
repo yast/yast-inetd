@@ -53,11 +53,9 @@ map READ = $[
 	"scripts" : $[
 	    "exists" : true,
             "runlevel": $[
-                "inetd":  service_off,
                 "xinetd": service_off,
             ],
             "comment": $[
-                "inetd":  $[],
                 "xinetd": $[],
             ],
 	]
@@ -66,9 +64,6 @@ map READ = $[
         "installed": true,
     ],
     "etc" : $[
-	"inetd_conf" : $[
-	    "services" : [ s ],
-	    ],
         "xinetd_conf": $[
             "services":  [ s ],
             ],
@@ -104,117 +99,20 @@ map EXECUTE = $[
  * xinetd is stopped
  * User will save and use xinetd
  */
-DUMP("\nxinetd is stopped and will be started\n");
 DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
 
 TEST(``(Inetd::Read()),  [READXinetd, WRITE, EXECUTE], nil);
 
-// filled by InetdDialog()
-Inetd::inetd_status     = -1; // not used
-Inetd::xinetd_status    = 3;  // unused
-Inetd::inetd_installed  = 1;  // not installed
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::xinetd_conf;
-Inetd::configured_service = `xinetd;
-Inetd::netd_status        = 0; // want to start
 
 DUMP("\nWrite --- write xinetd");
-DUMP("  xinetd is installed and stopped\n");
 TEST(``(Inetd::Write()), [READXinetd, WRITE, EXECUTE], nil);
 
 DUMP("\n  ---\n");
 
-/*
- * xinetd service is installed
- * xinetd is running
- * User will save and use xinetd
- */
-DUMP("\nxinetd is running and will be reconfigured\n");
-DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
 
 TEST(``(Inetd::Read()),  [READXinetd2, WRITE, EXECUTE], nil);
 
-// filled by InetdDialog()
-Inetd::inetd_status     = -1; // not used
-Inetd::xinetd_status    = 0;  // running
-Inetd::inetd_installed  = 1;  // not installed
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::xinetd_conf;
-Inetd::configured_service = `xinetd;
-Inetd::netd_status        = 0; // want to start
-
 DUMP("\nWrite --- write xinetd");
-DUMP("  xinetd is installed and running\n");
-TEST(``(Inetd::Write()), [READXinetd2, WRITE, EXECUTE], nil);
-
-DUMP("\n  ---\n");
-
-/*
- * xinetd service is installed
- * xinetd is stopped
- * User will stop xinetd
- */
-DUMP("\nxinetd is stopped and will be unchanged\n");
-DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
-TEST(``(Inetd::Read()),  [READXinetd, WRITE, EXECUTE], nil);
-
-// filled by InetdDialog()
-Inetd::inetd_status     = -1; // not installed
-Inetd::xinetd_status    = 3;  // unused
-Inetd::inetd_installed  = 1;  // not installed
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::xinetd_conf;
-Inetd::configured_service = `xinetd;
-Inetd::netd_status        = -1; // want to stop
-
-DUMP("\nWrite --- write xinetd");
-DUMP("  xinetd is installed and stopped\n");
-TEST(``(Inetd::Write()), [READXinetd, WRITE, EXECUTE], nil);
-
-DUMP("\n  ---\n");
-
-/*
- * xinetd service is installed
- * xinetd is running
- * User will stop xinetd
- */
-DUMP("\nxinetd is running and will be stopped\n");
-DUMP("\nRead  --- read all services\n");
-
-// filled by PackageDialog()
-Inetd::netd_service = `both;
-
-TEST(``(Inetd::Read()),  [READXinetd2, WRITE, EXECUTE], nil);
-
-// filled by InetdDialog()
-Inetd::inetd_status     = -1; // not used
-Inetd::xinetd_status    = 0;  // running
-Inetd::inetd_installed  = 1;  // not installed
-Inetd::xinetd_installed = 0;
-
-// force inetd (by default filled by InetdDialog() according to user choice)
-Inetd::netd_conf          = Inetd::xinetd_conf;
-Inetd::configured_service = `xinetd;
-Inetd::netd_status        = -1; // want to stop
-
-DUMP("\nWrite --- write xinetd");
-DUMP("  xinetd is installed and running\n");
 TEST(``(Inetd::Write()), [READXinetd2, WRITE, EXECUTE], nil);
 
 DUMP("\n  ---\n");
