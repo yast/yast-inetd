@@ -335,9 +335,8 @@ global define symbol WhatToConfigureDialog() ``{
 
 /**
  * This function regenerates index_to_iid and iid_to_index maps
- * @return
  */
-global define indexTable() ``{
+global define void indexTable() ``{
     integer index = 0;   // (re)set index
     iid_to_index  = $[]; // clear data
     index_to_iid  = $[]; //   maps are not empty!
@@ -840,7 +839,7 @@ Internet super-server will be disabled."));
  * @param line line specifies new entry data-template
  * @return map nil on Cancel or new entry (map) for netd_conf on OK:
  */
-global define EditOrCreateServiceDlg(string title, map line) ``{
+global define map EditOrCreateServiceDlg(string title, map line) ``{
 
     /* Translators: Special widget for inetd */
     term    inetd_specific   = `IntField(`id(`max), _("Ma&x"), 0, 99999, 0); // inetd specific widgets
