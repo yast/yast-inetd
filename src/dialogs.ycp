@@ -534,7 +534,7 @@ global define symbol InetdDialog () ``{
 	    `HBox(
 		`Right(
 		    `HBox(
-			`HSquash(`MenuButton(`id(`toggle_menu), _("Status For All &Services"),
+			`HSquash(`MenuButton(`id(`toggle_menu), _("Status for All &Services"),
 			    expert_contents)),
 			`HSpacing(1)
 		    )
@@ -1034,7 +1034,7 @@ Enter valid values.
 	    else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--"))) {
 		/* Translators: sformat-ed() 3 strings */
-		Popup::Message(sformat(_("The user %1 is reserved only for internal servers only."), _("--default--")));
+		Popup::Message(sformat(_("The user %1 is reserved for internal server processes only."), _("--default--")));
 		input_failed = true;
 	    }
 	    // YES (input is OK) --- so save settings!
