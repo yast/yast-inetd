@@ -466,6 +466,10 @@ global define boolean WriteOnly () ``{
  */
 global define boolean Import (map settings) ``{
 //    sleep(3000);
+
+    // we do not want to install RPMs in autoinstallation mode...
+    auto_mode = true;
+
     if (settings == $[])
 	module_status = `not_configured;
     else
@@ -567,17 +571,35 @@ global define string mkePackageSummary() ``{
  * @return summary of the current configuration
  */
 global define list Summary() ``{
-    if(module_status == `not_configured)
-	return [ _("<p><big>Network services</big></p><p>Not configured yet.</p>"), [] ];
+    string S = "";
+    if(module_status == `not_configured) {
+	/*
+	 * Translators: Summary head, if nothing configured
+	 */
+	S = Summary::AddHeader(S, _("Network services"));
+	S = Summary::AddLine(S, Summary::NotConfigured());
+    }
+	//return [ _("<p><b>Network services</b></p><p>Not configured yet.</p>"), [] ];
     else {
-	string S = sformat(_("<p><big>Network services are managed via <b>%1</b></big></p>"),
+	/*
+	 * Translators: Summary head, if something configured
+	 */
+	string head = sformat(_("Network services are managed via %1"),
+	    configured_service == `inetd ? "inetd" : "xinetd");
+	S = Summary::AddHeader(S, head);
+	S = Summary::AddHeader(S, _("These services will be enabled"));
+	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
+	S = Summary::AddHeader(S, _("These packages will be installed"));
+	S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
+	/*string S = sformat(_("<p><big><b>Network services are managed via %1</b></big></p>"),
 	    configured_service == `inetd ? "inetd" : "xinetd");
 	S = sformat("%1<p><u>%2</u>", S, _("These services will be enabled"));
 	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
 	S = sformat("%1<p><u>%2</u>", S, _("These packages will be installed"));
 	S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
-	return [ S, [], ];
+	return [ S, [], ];*/
     }
+    return [ S, [] ];
     //return [ _("Configuration Summary..."), [] ];
 }
 
