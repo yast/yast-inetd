@@ -44,12 +44,6 @@ global map index_to_iid          = $[];
 global list table_data           = [];
 
 /**
- * is inetd or xinetd running: -1 means not initialized (not used yet
- */
-global integer inetd_running     = -1;
-global integer xinetd_running    = -1;
-
-/**
  * Whole configuration of inet
  */
 global define InetSequence () ``{
@@ -205,7 +199,7 @@ global define DetectService () ``{
 				_("use &inetd"), false)),
 			    `Label(""),
 			    `Left(`RadioButton(`id(`xinetd_service),
-				_("use &xinetd"), true)),
+				_("use &xinetd"), true)), //Preselected for default - if none of installed is running
 			    `Label("")
 			)
 		    )
@@ -215,30 +209,24 @@ global define DetectService () ``{
 
     // Set help text
     Wizard::RestoreHelp (DetectDialogHelp ());
-    // is inetd installed:  0 means yes, 1 means no
-    integer inetd_installed  = SCR::Execute(.target.bash, "/bin/rpm -q inetd",  []);
-    // is xinetd installed: 0 means yes, 1 means no
-    integer xinetd_installed = SCR::Execute(.target.bash, "/bin/rpm -q xinetd", []);
 
-    // is inetd running:    0 means yes, anything else means no or error
-    inetd_running            = Runlevel::ServiceStatus("inetd");
-    // is xinetd running:   0 means yes, anything else means no or error
-    xinetd_running           = Runlevel::ServiceStatus("xinetd");
+    // check for installed and running services
+    Inetd::GetInstalledServices();
+    Inetd::GetServicesStatus();
 
-//    y2milestone("Running: inetd: %1, xinetd: %2", inetd_running, xinetd_running);
     // enable user choice if booth are installed
-    if ((inetd_installed == 0) && (xinetd_installed == 0)) {
+    if ((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
 	Wizard::SetContentsButtons(caption, contents,
 	    DetectDialogHelp(), BackButtonLabel(), FinishButtonLabel());
 	Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
 	// set default service (xinetd) to configure
 	// if any service is running, this is selected
 	// if booth, xinetd is default
-	if (inetd_running == 0) {
+	if (Inetd::inetd_status == 0) {
 	    UI::ChangeWidget(`id(`inetd_service), `Value, true);
 	}
 	else {
-	    if (xinetd_running == 0) {
+	    if (Inetd::xinetd_status == 0) {
 		UI::ChangeWidget(`id(`xinetd_service), `Value, true);
 	    }
 	}
@@ -268,10 +256,10 @@ global define DetectService () ``{
     }
     // only one is installed or none
     else {
-	if (inetd_installed == 0) {
+	if (Inetd::inetd_installed == 0) {
 	    Inetd::netd_service = `inetd;
 	}
-	if (xinetd_installed == 0) {
+	if (Inetd::xinetd_installed == 0) {
 	    Inetd::netd_service = `xinetd;
 	}
     }
@@ -285,7 +273,7 @@ global define DetectService () ``{
     // set running status for next methods (like MainDialog())
     // check for inetd was selected
     if (Inetd::netd_service == `inetd) {
-	if (inetd_running == 0) {
+	if (Inetd::inetd_status == 0) {
 	    Inetd::netd_status = `on_custom;
 	}
 	else {
@@ -294,7 +282,7 @@ global define DetectService () ``{
     }
     else {
 	// no? so it must be xinetd :o)
-	if (xinetd_running == 0) {
+	if (Inetd::xinetd_status == 0) {
 	    Inetd::netd_status = `on_custom;
 	}
 	else {
@@ -318,7 +306,6 @@ global define ReadDialog () ``{
     // Read the configuration
 
     boolean was_ok = Inetd::Read(callback);
-    //boolean was_ok = Inetd::Read ( callback );
 
     // TODO FIXME possibly handle the abort
 
@@ -339,7 +326,7 @@ global define WriteDialog () ``{
     };
 
     // Write the configuration
-    boolean was_ok = Inetd::Write ( callback );
+    boolean was_ok = Inetd::Write (callback);
 
     return ( was_ok? `next : `abort );
 }
