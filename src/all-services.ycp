@@ -1,15 +1,24 @@
 // A mapping between all available services and rpm packages
 // Author: Martin Vidner <mvidner@suse.cz>
 // $Id$
-// Generated on Mon Feb 24 09:35:58 CET 2003
+// Generated on Wed Feb 26 11:00:44 CET 2003
 [
+$["package":"bootp-DD2", "service":"bootp", "protocol":"udp", "program":"bootpd"],
 $["package":"cups", "service":"printer", "protocol":"tcp", "program":"cups-lpd"],
 $["package":"fam-server", "service":"fam", "protocol":"tcp", "program":"fam"],
 $["package":"finger-server", "service":"finger", "protocol":"tcp", "program":"in.fingerd"],
 $["package":"ftpd", "service":"ftp", "protocol":"tcp", "program":"in.ftpd"],
 $["package":"nagios-nrpe", "service":"nagios-nrpe", "protocol":"", "program":"nrpe"],
 $["package":"pure-ftpd", "service":"ftp", "protocol":"tcp", "program":"pure-ftpd"],
+$["package":"rsh-server", "service":"exec", "protocol":"tcp", "program":"in.rexecd"],
+$["package":"rsh-server", "service":"login", "protocol":"tcp", "program":"in.rlogind"],
+$["package":"rsh-server", "service":"shell", "protocol":"tcp", "program":"in.rshd"],
 $["package":"rstatd", "service":"rstatd", "protocol":"udp", "program":"rpc.rstatd"],
+$["package":"rusers-server", "service":"rusersd", "protocol":"udp", "program":"rpc.rusersd"],
+$["package":"rwall-server", "service":"rwall", "protocol":"udp", "program":"rpc.rwalld"],
+$["package":"smtpd", "service":"smtpd", "protocol":"tcp", "program":"smtpd"],
+$["package":"talk-server", "service":"ntalk", "protocol":"udp", "program":"in.talkd"],
+$["package":"talk-server", "service":"talk", "protocol":"udp", "program":"in.talkd"],
 $["package":"telnet-server", "service":"telnet", "protocol":"tcp", "program":"in.telnetd"],
 $["package":"tftp", "service":"tftp", "protocol":"udp", "program":"in.tftpd"],
 $["package":"vnc", "service":"vnc10", "protocol":"tcp", "program":"Xvnc"],
