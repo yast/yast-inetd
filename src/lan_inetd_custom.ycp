@@ -799,7 +799,7 @@ UI(_("<p>With a click to an entry, and a second click
 on the button edit you can change parameters of this service
 </p>"));
 
-     help_text = help_text + "<p>(.13)<\p>";
+     help_text = help_text + "<p>(.13)</p>";
 
      // using SetContents (define in lan_inetd.ycp)
      UI(`SetContents(_("Enable/disable network services"), contents, help_text, true, true ));
