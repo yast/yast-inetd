@@ -195,18 +195,15 @@ global define list GetDefaults () ``{
 
 /**
  * This function merges real xinetd configuration (read by agent) and
- * available services packages generated for SuSE distribution (Inetd::xinetd_packages).
+ * available services packages generated for SuSE distribution
  * This function is automaticaly calld by CreateTableData() if Inetd::configured_service
  * is `xinetd.
 
- * Adds those from all-services that do not have a matching
- * (service,protocol,program) one in the working config.
- * Now that we handle also inetd, better(?) ask RPM
+ * Adds those from default_conf that do not have a matching
+ * service in the working config.
 
- * TODO rename this function, merge it with mWD
- * it really means AddNotInstalled
-
- * @param netd_conf not used in this function, but used for isServiceInstalled() call.
+ * @param netd_conf not used in this function, but used for
+ * isServiceMatchPresent call.
  * @param table_data Table data structure used as source data
  * @return list New table data
  */
@@ -378,14 +375,6 @@ global define symbol IsAnyServiceEnabled(list ready_conf) ``{
 	}
     });
     return ret;
-}
-
-/**
- * Reads xinetd defaults (see Inetd::xinetd_defauls for more details)
- * @return list Returnes Inetd::xinetd_defaults
- */
-global define list GetXinetdDefaults() ``{
-    return SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
 }
 
 /**
