@@ -76,14 +76,16 @@
 
     string help_text = "";
 
-    // helptext expert partitioning. 1 of 16
+    // helptext inetd configuration
     help_text =  UI(_("<p>Starting inetd will enable \"others\" to connect
 to network services installed on your server
 (e.g telnet, finger, ftp). Inetd is also
 needed for printing, as well as formatting the
 man-pages in the SuSE help package.
 Do you wish inetd to be started at boot time?
-</p>
+</p>")) +
+    // helptext inetd configuration
+UI(_("	
 <p>
 If you want to start the inetd, you can choose
 the SuSE default configuration. If you choose
@@ -91,7 +93,7 @@ the custom configuration, you can edit the default
 configuration for your needs in the next step.
 </p>"));
 
-    help_text = help_text + "<p>(.11)</p>";
+    help_text = help_text + "<p>(.12)</p>";
 
 
 
