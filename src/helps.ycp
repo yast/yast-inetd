@@ -36,8 +36,8 @@ Select which service packages to install.</p>
 Install them now?
 "),
 
-    "install_auto_query" : _("Select main package to install.
-One of these (or both) are required for running a super-server.
+    "install_auto_query" : _("Select the main package to install.
+One or both of these are required for running a superserver.
 "),
 
     /* ErrorPopup */

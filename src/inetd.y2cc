@@ -17,7 +17,7 @@ Group = Net_advanced
 Icon = inetd.png
 
 ; *one* *short* descriptive line for y2cc
-Helptext = _("Configure network services (inetd)")
+Helptext = _("Configure Network Services (inetd)")
 
 ; arguments, seperated by space
 Arguments = 
