@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 31 14:50:05 CEST 2004 - mvidner@suse.cz
+
+- autoyast - check arguments
+- updated the installable packages list (vnc)
+- 2.9.11
+
+-------------------------------------------------------------------
 Wed Mar 24 15:09:01 CET 2004 - mvidner@suse.cz
 
 - alert the user if he is not root (#35363)
