@@ -55,7 +55,7 @@ global define boolean Modified() ``{
 
 /**
  * Abort function
- * @return blah blah lahjk
+ * @return If AbortFunction not defined, returnes false
  */
 global define boolean Abort() ``{
     if(AbortFunction != nil)

@@ -27,10 +27,11 @@
      *   "server": string
      *   "server_args": string
      *   "comment": string	// possibly multiline, without #
+     *   "enabled": string	// service is active
      ** bookkeeping fields:
      *   "iid": string		// internal id, use as table `id
-     *      Iid is necessary because there may be multiple variants
-     *      of the same service.
+     *                          //   Iid is necessary because there may be multiple variants
+     *                          //   of the same service. See next for iid handling.
      *   "changed": boolean	// when writing, unchanged services are ignored
      *                          //   new services (created) must be set as changed
      *                          //   see changeLine() and addLine() for more details
@@ -42,18 +43,17 @@
      *
      * path netd = .whatever.inetd or .whatever.xinetd;
      *
-     * SCR::Read (netd + .services) -> list of service maps
-     *   There should be a warning if inetd and xinetd are both installed
-//     * SCR::Read (netd + .services + service_name) -> service map (or empty)
-//     * SCR::Read (netd + .services + service_name + field) -> (any) field
-     * SCR::Write (netd, nil) -> boolean
-     *   Commits changes performed by other writes (see below) to disk
-     * // Hm, maybe we should check that vaid fields are passed?
-     * SCR::Write (netd + .services, list of service maps) -> true
-     * SCR::Write (netd + .services + service_name, service map) -> true
-     * SCR::Write (netd + .services + service_name + field, any) -> true
-     *   This last one should be useful for autoyast - changing just
-     *   the "enabled" field.
+     * SCR::Read (.etc.inetd_conf.services) -> list of inetd configuration
+     * SCR::Read (.etc.xinetd_conf.services) -> list of xinetd configuration
+     * SCR::Write (.etc.inetd_conf.services, list) -> boolean
+     * SCR::Write (.etc.xinetd_conf.services, list) -> boolean
+     *
+     * "iid" handling
+     * The standard situation is something like "iid": "1:/etc/xinetd.d/chargen"
+     * If user adds new service, inetd module creates new unique iid based on word "new"
+     * and incremented number started with "1".
+     * The similar situation is, when managing xinetd and service packages are not installed.
+     * The "iid" has the same rules, but the word is "inst".
      */
 
 module "Inetd";
@@ -75,21 +75,28 @@ include "inetd/default_conf_xinetd.ycp";
 global block AbortFunction = nil;
 
 /**
- * Data was modified?
+ * Configuration was changed
  */
 global boolean modified = false;
 
+/**
+ * used in unused module inetd_proposal.ycp. This will be removed
+ */
 global boolean proposal_valid = false;
+
+/*
+ * For autoinstallation Write() process.
+ */
 global boolean write_only = false;
 
 /**
- * If autoinstallation mode (true), we do not want to install RPMs.
+ * If autoinstallation mode (true), we do not want to install RPMs during configuration.
  * Otherwise (false) we allow all.
  */
 global boolean auto_mode = false;
 
 /**
- * Data was modified?
+ * Data was modified? This function returnes modified variable.
  * @return true if modified
  */
 global define boolean Modified() ``{
@@ -100,8 +107,14 @@ global define boolean Modified() ``{
 /**
  * hold informations about installed services (rpm -q exit code).
  * 0 means installed, anything else means no or error
+ *
+ * inetd_installed  contains info about inetd
  */
 global integer inetd_installed   = -1;
+
+/**
+ * xinetd_installed contains info about xinetd
+ */
 global integer xinetd_installed  = -1;
 
 /**
@@ -114,50 +127,88 @@ global integer xinetd_installed  = -1;
 global symbol netd_service       = `none;
 
 /**
- * What service was configured?
+ * What service is in configuration process?
  * Same values as netd_service except `both
  */
 global symbol configured_service = `none;
 
 /**
- * These variables hold service's configuration
+ * These variable holds inetd configuration.
+ * This is list of maps. Each map has the following structure:
+ *   $[
+ *     "comment": String,
+ *     "comment_inside": String, // this is agent internal
+ *     "enabled": boolean,
+ *     "group": String,
+ *     "user": String,
+ *     "iid": String,
+ *     "protocol": String,
+ *     "rpc_version": String,
+ *     "server": String,
+ *     "server_args": String,
+ *     "service": String,
+ *     "socket_type": String,
+ *     "unparsed": String,       // agent internal
+ *     "wait": boolean
+ *  ]
  */
 global list inetd_conf           = [];
+
+/**
+ * This variable holds xinetd configuration.
+ * The structure is the same as inetd_conf.
+ */
 global list xinetd_conf          = [];
 
 /**
- * Holds configuration of selected service.
+ * Holds configuration of selected service (service in configuration process).
+ * The name of this service is stored in configured_service.
+ * Structure of this variable is the same as inetd_conf or xinetd_conf.
  */
 global list netd_conf            = [];
 
 /**
- * Holds package names which provides xinetd services (like ftp, ...)
+ * Holds package names which provides xinetd services (like ftp, ...).
+ * This list is filled by calling routine
+ *   xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
  */
 global list xinetd_packages      = [];
 
 /**
  * This variable holds informations about main package (inetd or xinetd)
+ * This variable is used in autoinstallation mode.
  */
 global list service_package      = [];
 
 /**
- * Required packages for Autoinstallation write
+ * Required packages for Autoinstallation write.
+ * Contains xinetd services package names (for more details please see xinetd_packages).
  */
 global list required_packages    = [];
 
 /**
  * Is inetd (or xinetd) running?
+ * These variables contains return values from Runlevel::ServiceStatus() calls.
  */
 global integer inetd_status      = -1;
+
+/**
+ * This contains return value of following call:
+ *   Runlevel::ServiceStatus("xinetd");
+ */
 global integer xinetd_status     = -1;
 
 /**
  * Status of edited service (see WhatToConfigureDialog() in dialogs.ycp)
+ * Values are the same as (x)inetd_status.
  */
 global integer netd_status       = -1;
 
 /**
  * Status of inetd module if autoinstallation mode.
+ * This is the state of whole module. This variable is filled by Import().
+ * Possible values are `configured     --- imported configuration data are valid
+ *                     `not_configured --- configuration data are invalid
  */
 global symbol module_status      = `not_configured;
 
@@ -600,7 +651,8 @@ global define list Summary() ``{
 	S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
 	return [ S, [], ];*/
     }
-    return [ S, [] ];
+    return S;
+    //return [ S, [] ];
     //return [ _("Configuration Summary..."), [] ];
 }
 
