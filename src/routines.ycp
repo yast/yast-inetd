@@ -13,7 +13,7 @@ textdomain "inetd";
 
 import "Inetd";
 import "Progress";
-import "Runlevel";
+import "Service";
 import "Directory";
 import "Popup";
 import "Require";
@@ -41,18 +41,18 @@ define integer GetXinetdInstalled() ``{
 
 /**
  * Return status of inetd service
- * @return Runlevel::ServiceStatus() result
+ * @return Service::Status() result
  */
 define integer GetInetdStatus() ``{
-    return Runlevel::ServiceStatus("inetd");
+    return Service::Status("inetd");
 }
 
 /**
  * Return status of xinetd service
- * @return Runlevel::ServiceStatus() result
+ * @return Service::Status() result
  */
 define integer GetXinetdStatus() ``{
-    return Runlevel::ServiceStatus("xinetd");
+    return Service::Status("xinetd");
 }
 
 /**
