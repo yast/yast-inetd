@@ -178,13 +178,13 @@ global list xinetd_packages      = [];
  * This variable holds informations about main package (inetd or xinetd)
  * This variable is used in autoinstallation mode.
  */
-global list service_package      = [];
+//global list service_package      = [];
 
 /**
  * Required packages for Autoinstallation write.
  * Contains xinetd services package names (for more details please see xinetd_packages).
  */
-global list required_packages    = [];
+//global list required_packages    = [];
 
 /**
  * Is inetd (or xinetd) running?
@@ -259,9 +259,7 @@ global define boolean Read() ``{
 	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
     }
     xinetd_packages = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
-//    y2milestone("%1", xinetd_defaults);
-    // in future: catch error
-    //if(false) Report::Error(_("Can not read the database1!"));
+
     sleep(sl);
 
     if(Abort()) return false;
@@ -284,7 +282,7 @@ global define boolean Read() ``{
 global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
 
     map new_entry = nil;
-    
+
     if(!auto_mode) {
     netd_conf = maplist(`new_line, netd_conf, ``{
 	new_entry = new_line;
@@ -346,23 +344,12 @@ global define boolean Write() ``{
 	""
     );
 
-/*    if(size(required_packages) != 0) {
-	y2milestone("Installing required packages...");
-	include "require.ycp";
-	DoInstallAndRemove(required_packages, []);
-	list old_conf = netd_conf;
-	netd_conf     = SCR::Read(.etc.xinetd_conf.services); // Refresh configuration
-	netd_conf     = mergeAfterInstall(netd_conf, old_conf);
-	} // done*/
-
     y2milestone("Calling write:\n");
     // write settings
     if(Abort()) return false;
-//    y2milestone("%1, %2", configured_service, netd_status);
     if (write_only) {
 	list new_conf = [];
 	if (configured_service == `inetd) {
-//	    new_conf = SCR::Read(.etc.inetd_conf.services);
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("inetd", "enable");
 	    }
@@ -375,8 +362,6 @@ global define boolean Write() ``{
 	else if (configured_service == `xinetd) {
 	    new_conf  = SCR::Read(.etc.xinetd_conf.services);
 	    netd_conf = mergeAfterInstall(new_conf, netd_conf);
-	    //y2milestone("\nnetd_conf = %1\n", netd_conf);
-	    //return;
 	    if (netd_status == 0) {
 		Runlevel::ServiceAdjust("xinetd", "enable");
 	    }
@@ -387,27 +372,6 @@ global define boolean Write() ``{
 	    SCR::Write(.etc.xinetd_conf.services, netd_conf);
 	}
     }
-    /*else {
-    if (netd_status != 0) {
-	y2milestone("Nothing changed  --- installed services will be stopped");
-	if (inetd_installed == 0) {
-	    y2milestone("inetd installed  --- stopping and diabling service");
-	    Runlevel::RunInitScript("inetd", "stop");
-	    Runlevel::ServiceAdjust("inetd", "disable");
-	}
-	else {
-	    y2milestone("inetd not installed --- nothing done");
-	}
-	if (xinetd_installed == 0) {
-	    y2milestone("xinetd installed --- stopping and disabling service");
-	    Runlevel::RunInitScript("xinetd", "stop");
-	    Runlevel::ServiceAdjust("xinetd", "disable");
-	}
-	else {
-	    y2milestone("xinetd not installed --- nothing done");
-	}
-    }
-    // custom*/
     else {
 	// configured service is inetd
 	if (configured_service == `inetd) {
@@ -465,7 +429,6 @@ global define boolean Write() ``{
 	    }
 	    y2milestone("writing xinetd cnfiguration");
 	    SCR::Write(.etc.xinetd_conf.services, netd_conf);
-//	    y2milestone("%1", netd_conf);
 	    // So, Restart service
 	    if (netd_status != 0) { // want to stop
 		if (xinetd_status == 0) {
@@ -530,8 +493,6 @@ global define list mergeWithDefaults(list changes) ``{
     list defaults = [];
     list new_conf = [];
 
-    //y2milestone("%1", changes);
-
     if(netd_service == `inetd) {
 	defaults = default_conf_inetd["netd_conf"]:[];
     }
@@ -559,7 +520,6 @@ global define list mergeWithDefaults(list changes) ``{
 	}
     });
 
-    //y2milestone("%1", defaults);
     return defaults;
 }
 
@@ -607,15 +567,15 @@ global define boolean Import (map settings) ``{
 	xinetd_conf   = default_conf_xinetd["netd_conf"]:[];
 	inetd_status  = 0;
 	xinetd_status = 0;
-	netd_service  = `both;
+	netd_service  = `none;
     }
     // common variables
-    service_package    = settings["service_package"]:[];
-    required_packages  = settings["xinetd_packages"]:[];
+    //service_package    = settings["service_package"]:[];
+    //required_packages  = settings["xinetd_packages"]:[];
     last_created       = settings["last_created"]:0;
     configured_service = netd_service;
-//    y2milestone("%1", settings);
-//    y2milestone("%1", service_package);
+//    required_packages  = [];
+//    service_package    = [];
     return true;
 }
 
@@ -647,8 +607,8 @@ global define map Export () ``{
     config = add(config, "netd_conf",       getChanged(netd_conf));
     config = add(config, "netd_service",    configured_service);
     config = add(config, "netd_status",     netd_status);
-    config = add(config, "service_package", service_package);
-    config = add(config, "xinetd_packages", required_packages);
+    //config = add(config, "service_package", service_package);
+    //config = add(config, "xinetd_packages", required_packages);
     config = add(config, "last_created",    last_created);
     y2milestone("%1", config);
     return config;
@@ -707,7 +667,6 @@ global define list Summary() ``{
 	S = Summary::AddHeader(S, _("Network services"));
 	S = Summary::AddLine(S, Summary::NotConfigured());
     }
-	//return [ _("<p><b>Network services</b></p><p>Not configured yet.</p>"), [] ];
     else {
 	/*
 	 * Translators: Summary head, if something configured
@@ -717,8 +676,8 @@ global define list Summary() ``{
 	S = Summary::AddHeader(S, head);
 	S = Summary::AddHeader(S, _("These services will be enabled"));
 	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
-	S = Summary::AddHeader(S, _("These packages will be installed"));
-	S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
+	//S = Summary::AddHeader(S, _("These packages will be installed"));
+	//S = sformat("%1<ul>%2</ul></p>", S, mkePackageSummary());
 	/*string S = sformat(_("<p><big><b>Network services are managed via %1</b></big></p>"),
 	    configured_service == `inetd ? "inetd" : "xinetd");
 	S = sformat("%1<p><u>%2</u>", S, _("These services will be enabled"));
@@ -728,8 +687,6 @@ global define list Summary() ``{
 	return [ S, [], ];*/
     }
     return S;
-    //return [ S, [] ];
-    //return [ _("Configuration Summary..."), [] ];
 }
 
 /**

@@ -185,92 +185,38 @@ global define symbol PackageAutoDialog() ``{
 	    `VSpacing(0.5)
 	);
 
-    // Detect main packages (syntax check)
-    string inetdp  = select(Inetd::service_package, 0, "");
-    string xinetdp = select(Inetd::service_package, 1, "");
 
-    // Main logic: :o)
-    if(size(Inetd::service_package) == 2) { // both must be correct
-	if((inetdp == "inetd") && (xinetdp == "xinetd")) {
-	    result = `next; // Correct
+    if(Inetd::netd_service == `none) {
+	UI::OpenDialog(contents);
+	any ret = UI::UserInput();
+	boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
+	boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
+	UI::CloseDialog();
+	// user press Cancel
+	if(ret == `back) {
+	    return ret;
 	}
-	else {
-	    result = `back; // error
+	ret = `back;
+	if(install_inetd) {
+	    Require::DoInstallAndRemoveTarget(["inetd"], []);
+	    Inetd::netd_service    = `inetd;
+	    Inetd::inetd_installed = 0;
+	    ret = `next;
 	}
-    }
-    else {
-	if(xinetdp != "") { // second parameter must be empty (default)
-	    result = `back;
+	else
+	    Inetd::inetd_installed = -1;
+	if(install_xinetd) {
+	    Require::DoInstallAndRemoveTarget(["xinetd"], []);
+	    Inetd::netd_service     = `xinetd;
+	    Inetd::xinetd_installed = 0;
+	    ret = `next;
 	}
-	else {
-	    if((inetdp == "inetd") || (inetdp == "xinetd")) {
-		result = `next;
-	    }
-	    else {
-	        result = `back;
-	    }
-	}
-    }
-
-    if(result == `next) {
-	return `next; // Skip package dialog
-    } //else continue selection
-
-    // Show Dialog
-    UI::OpenDialog(contents);
-    any ret = UI::UserInput();
-    boolean install_inetd  = UI::QueryWidget(`id(`inetd),  `Value);
-    boolean install_xinetd = UI::QueryWidget(`id(`xinetd), `Value);
-    UI::CloseDialog();
-    // user press Cancel
-    if(ret == `back) {
+	else
+	    Inetd::xinetd_installed = -1;
+	if(install_inetd && install_xinetd)
+	    Inetd::netd_service = `both;
 	return ret;
     }
-    // User will continue
-    else {
-	// Determine user selection
-	Inetd::inetd_installed  = -1;
-	Inetd::xinetd_installed = -1;
-	list packages = [];
-	if(install_inetd) {
-	    packages                = add(packages, "inetd");
-	    Inetd::inetd_installed  = 0;
-	}
-	if(install_xinetd) {
-	    packages                = add(packages, "xinetd");
-	    Inetd::xinetd_installed = 0;
-	}
-	if(size(packages) > 0) {
-	    //include "require.ycp";
-	    //DoInstallAndRemove(packages, []);
-	    Inetd::service_package  = packages;
-	    Require::DoInstallAndRemoveTarget(packages, []);
-	}
-	else {
-	    /* Translators: MessagePopup */
-	    UI::MessagePopup(_("No package was selected. Configuration aborted."));
-	    return `back;
-	}
-    }
-    // fillup global variables and obtain services status
-
-    // only inetd is installed
-    if(Inetd::inetd_installed == 0) {
-	Inetd::netd_service = `inetd;
-    }
-    // only xinetd is installed
-    if(Inetd::xinetd_installed == 0) {
-	Inetd::netd_service  = `xinetd;
-    }
-    // booth services are installed
-    if((Inetd::inetd_installed == 0) && (Inetd::xinetd_installed == 0)) {
-	Inetd::netd_service  = `both;
-    }
-    // none is installed
-    /*else {
-	Inetd::netd_service = `none;
-    }*/
-
     return `next;
 }
 
@@ -364,10 +310,7 @@ global define list GetProvidedPackage(term service_info) ``{
     info = add(info, "program",  select(service_info, 8, ""));
     info = add(info, "protocol", select(service_info, 5, ""));
     info = add(info, "service",  select(service_info, 3, ""));
-    //y2milestone("%1", info);
     foreach(`line, Inetd::xinetd_packages, ``{
-        //y2milestone("%1", info["program"]:"!" + " (" + line["package"]:"!" + ")");
-	//y2milestone("line:%1 info:%2", line["program"]:"", info["program"]:"!");
 	if ((line["program"]:"" + " (" + line["package"]:"" + ")") == info["program"]:"!") {
 	    if (line["protocol"]:"" == info["protocol"]:"!") {
 		if (line["service"]:"" == info["service"]:"!") {
@@ -400,8 +343,6 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     // if Autoinstallation mode --- we do not want to install packages yet...
     if (Inetd::auto_mode) {
 	// Add requested package into list...
-	Inetd::required_packages = add(Inetd::required_packages, package_name);
-	y2milestone("%1", package_name);
 	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
 	                The package name is stored in %1. This is MessagePopup. */
@@ -419,7 +360,6 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     }
     // we are in normal mode :-)))
     else {
-	//include "require.ycp";
 	// if installation failes
 	/* Translators: The package name is stored in %1. */
 	if (!Require::RequireAndConflict(package_name, [], sformat(_("Package %1 will be installed"),
@@ -444,9 +384,8 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	    ret = `installed;
 	    return ret;
 	}
-	//y2milestone("%1", "ahoj" + select(package_name, 0, ""));
     }
-    //y2milestone("%1", package_name);
+
     return ret;
 }
 
@@ -485,7 +424,7 @@ global define term GetSelectedService(any selected_item) ``{
     term current = select(filter(`line, table_data,
 	``(select(select(line, 0, "`id ( \"NI\")"), 0, "NI") == selected_item)), 0, "");
     ret = current;
-    //y2milestone("%1", ret);
+
     return ret;
 }
 
@@ -503,8 +442,8 @@ global define symbol InetdDialog () ``{
 		`RadioButtonGroup(
 		    `VBox(
 			/* Translators: Initial and target state of xinetd (or inetd) */
-			`RadioButton(`id(`stop),     `opt(`notify), _("D&isable"), true),
-			`RadioButton(`id(`editable), `opt(`notify), _("Enab&le"), false)
+			`Left(`RadioButton(`id(`stop),     `opt(`notify), _("D&isable"), true)),
+			`Left(`RadioButton(`id(`editable), `opt(`notify), _("Enab&le"), false))
 		    )
 		)
 	    ),
@@ -545,10 +484,6 @@ global define symbol InetdDialog () ``{
 	);
 
     any ret = nil;
-
-    //y2milestone("%1", Inetd::netd_service);
-    //y2milestone("%1", Inetd::inetd_installed);
-    //y2milestone("%1", Inetd::xinetd_installed);
 
     // Check for both services installed. Only one can run in real-time
     if(Inetd::netd_service == `both) {
@@ -725,8 +660,6 @@ global define symbol InetdDialog () ``{
 		    to_select       = selected_item;
 		}
 		else if (result == `auto) {
-		    //Inetd::last_created = Inetd::last_created + 1;
-		    //y2milestone("%1", selected_item);
 		    Inetd::modified = true;
 		    need_reindex    = true;
 		    need_rebuild    = true;
@@ -775,8 +708,6 @@ global define symbol InetdDialog () ``{
 		    to_select = selected_item;
 		}
 		else if (result == `auto) {
-		    //Inetd::last_created = Inetd::last_created + 1;
-		    //y2milestone("%1", selected_item);
 		    Inetd::modified = true;
 		    need_reindex    = true;
 		    need_rebuild    = true;
@@ -827,7 +758,7 @@ global define symbol InetdDialog () ``{
     }
 
     if(ret == `next) {
-	if(IsAnyServiceEnabled(Inetd::netd_conf) == `no) {
+	if((Inetd::netd_status == 0) && (IsAnyServiceEnabled(Inetd::netd_conf) == `no)) {
 	    Inetd::netd_status = -1;
 	    /* Translators: WarningPopup */
 	    UI::WarningPopup(_("All services are marked as disabled (locked).
@@ -877,12 +808,9 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
 			`TextEntry(`id(`rpc_version), _("RPC Versio&n"))
 		    ),
 		    `HSpacing(1),
-		    //`VBox(
-			//`VSpacing(),
-			// service status (running or stopped)
+		    // service status (running or stopped)
 		    `Bottom(`CheckBox(`id(`status), _("Service is acti&ve."),
 			lookup(line, "enabled", false)))
-		    //)
 		)
 	    ),
 	    `HBox(
@@ -914,14 +842,6 @@ global define map EditOrCreateServiceDlg(string title, map line) ``{
 		    `HWeight(1, `ComboBox(`id(`user), _("&User"), local_users)),
 		    `HSpacing(1),
 		    `HWeight(1, `ComboBox(`id(`group), _("&Group"), local_groups))
-		    /*`VBox(
-			`HSpacing(40),
-			`ComboBox(`id(`user), _("&User"), local_users)
-		    ),
-		    `VBox(
-			`ComboBox(`id(`group), _("&Group"), local_groups),
-			`HSpacing(10)
-		    )*/
 		),
 		// Server arguments
 		`TextEntry(`id(`server), _("S&erver")),

@@ -1,80 +1,73 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <title>Network Services (inetd) - YaST2 configuration module - module inside</title>
-             
+  <title>Network Services (inetd) - YaST2 configuration module - module
+inside</title>
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-2">
 </head>
-  <body>
-   
+<body>
 <h1>Network Services (inetd) - YaST2 configuration module</h1>
-   
 <h1 align="center">module inside</h1>
-     $Id$<br>
-     <i><a href="mailto:mvidner@suse.cz">Martin Vidner</a><br>
-     <a href="mailto:phadraba@suse.cz">Petr Hadraba</a></i><br>
-   
+<p> $Id$</p>
+<i><a href="mailto:mvidner@suse.cz">Martin Vidner</a><br>
+<a href="mailto:phadraba@suse.cz">Petr Hadraba</a></i><br>
 <h2>Workflow</h2>
-   
 <div align="center"><a href="workflow.png" target="_blank"><img
- src="workflow.png" alt="Workflow" width="707" height="1000" border="0">
-  </a><br>
-   
+ src="workflow.png" alt="Workflow" width="707" height="1000" border="0"> </a><br>
 <div align="left"><br>
-  </div>
-  </div>
-  <br>
-   
+</div>
+</div>
+<br>
 <h2>Main scheme - main sequence</h2>
- packages(<tt>PackageDialog()</tt>) -&gt; read(<tt>ReadDialog()</tt>) -&gt; 
-main(<tt>InetdDialog()</tt>) -&gt; write(<tt>WriteDialog()</tt>)<br>
- <i>Note: The `-&gt;' means, that previews step terminates successfuly.<br>
- </i> 
+packages(<tt>PackageDialog()</tt>) -&gt; read(<tt>ReadDialog()</tt>)
+-&gt; main(<tt>InetdDialog()</tt>) -&gt; write(<tt>WriteDialog()</tt>)<br>
+<i>Note: The `-&gt;' means, that previews step terminates successfuly.<br>
+</i>
 <h3>Package detection, installation - <tt>PackageDialog()</tt></h3>
- This dialog obtains status of installed packages (inetd or xinetd). The
-status is stored into <tt>Inetd::inetd_installed</tt> and <tt>Inetd::xinetd_installed</tt>. 
-Used functions are <tt>GetInetdInstalled()</tt> and <tt>GetXinetdInstalled()</tt> 
-in <tt>routines.ycp</tt>. I'm using `<tt>rpm -q [package_name] 2&gt;&amp;1 
-&gt; /dev/nul</tt>' called with<br>
+This dialog obtains status of installed packages (inetd or xinetd). The
+status is stored into <tt>Inetd::inetd_installed</tt> and <tt>Inetd::xinetd_installed</tt>.
+Used functions are <tt>GetInetdInstalled()</tt> and <tt>GetXinetdInstalled()</tt>
+in <tt>routines.ycp</tt>. I'm using `<tt>rpm -q [package_name]
+2&gt;&amp;1 &gt; /dev/nul</tt>' called with<br>
 <blockquote><tt>SCR::Execute(.target.bash, ... )</tt>.<br>
 </blockquote>
- If no packages are installed, the dialog is displayed for user choice, what 
-to install. Note, that only one package of inetd or xinetd is installed, the
-dialog is skipped.<br>
- <tt>PackageDialog()</tt> fills <tt>Inetd::netd_service</tt> (<tt>`inetd</tt>, 
-<tt>`xinetd</tt>, <tt>`both</tt>), <tt>Inetd::inetd_status</tt> (with <tt>GetInetdStatus()</tt>), 
-<tt>Inetd::xinetd_status</tt> (with <tt>GetXinetdStatus()</tt>).<br>
- If only one service (inetd or xinetd) is installed, the <tt>Inetd::netd_status</tt> 
+If no packages are installed, the dialog is displayed for user choice,
+what to install. Note, that only one package of inetd or xinetd is
+installed, the dialog is skipped.<br>
+<tt>PackageDialog()</tt> fills <tt>Inetd::netd_service</tt> (<tt>`inetd</tt>,<tt>`xinetd</tt>,<tt>`both</tt>),<tt>Inetd::inetd_status</tt>
+(with <tt>GetInetdStatus()</tt>), <tt>Inetd::xinetd_status</tt> (with <tt>GetXinetdStatus()</tt>).<br>
+If only one service (inetd or xinetd) is installed, the <tt>Inetd::netd_status</tt>
 is also filled with <tt>Inetd::[.*]netd_status</tt>.<br>
- 
 <h3>read - <tt>ReadDialog()</tt></h3>
- <tt>ReadDialog()</tt> calls <tt>Inetd::Read()</tt>.<br>
+<tt>ReadDialog()</tt> calls <tt>Inetd::Read()</tt>.<br>
 <tt>Inetd::Read()</tt> reads configuration depending on <tt>netd_service</tt>
-value. If inetd and xinetd are installed, both configuration is loaded. The
-variables are <tt>inetd_conf</tt> and <tt>xinetd_conf</tt>.<br>
+value. If inetd and xinetd are installed, both configuration is loaded.
+The variables are <tt>inetd_conf</tt> and <tt>xinetd_conf</tt>.<br>
 <tt>Inetd::Read()</tt> also initialize <tt>xinetd_packages</tt> variable
 with the following SCR call<br>
-<blockquote><tt>SCR::Read(.target.ycp, Direcorty::Datadir + "/all-services.ycp");</tt><br>
+<blockquote><tt>SCR::Read(.target.ycp, Direcorty::Datadir +
+"/all-services.ycp");</tt><br>
 </blockquote>
-all-services.ycp will be generated during distribution build and contains
-informations about packages with services that needs xinetd.<br>
+all-services.ycp will be generated during distribution build and
+contains informations about packages with services that needs xinetd.<br>
 <h3>main - <tt>InetdDialog()</tt></h3>
-After reading configuration, main configuration dialog is displayed. This
-dialog is implemented in <tt>InetdDialog()</tt> in dialogs.ycp.<br>
-If both services (inetd and xinetd) are installed, the dialog about what
-to configure is displayed. This is made by calling <tt>WhatToConfigureDialog()</tt>.<br>
-Finally, <tt>Inetd::configured_service</tt> is filled according to selected
-(or installed) service. The configuration of this service is stored into
-default variable <tt>Inetd::netd_conf</tt>.<br>
-There is, in new version of YaST2 Inetd module, new feature. Main table now
-remeberes last selected item. This feature is implemented in <tt>indexTable()</tt>
+After reading configuration, main configuration dialog is displayed.
+This dialog is implemented in <tt>InetdDialog()</tt> in dialogs.ycp.<br>
+If both services (inetd and xinetd) are installed, the dialog about
+what to configure is displayed. This is made by calling <tt>WhatToConfigureDialog()</tt>.<br>
+Finally, <tt>Inetd::configured_service</tt> is filled according to
+selected (or installed) service. The configuration of this service is
+stored into default variable <tt>Inetd::netd_conf</tt>.<br>
+There is, in new version of YaST2 Inetd module, new feature. Main table
+now remeberes last selected item. This feature is implemented in <tt>indexTable()</tt>
 function and <tt>iid_to_index</tt> and <tt>index_to_iid</tt> variables.<br>
 <h3>write - <tt>WriteDialog()</tt></h3>
 <tt>WriteDialog()</tt> calls <tt>Inetd::Write()</tt>.<br>
-<tt>Inetd::Write()</tt> simply writes configuration and if in autoinstallation
-mode, required packages are installed first. After installing packages, the
-<tt>mergeAfterInstall()</tt> function is called. This function merges new
-configuration of new packages with user changes in "old" configuration.<br>
+<tt>Inetd::Write()</tt> simply writes configuration and if in
+autoinstallation mode, required packages are installed first. After
+installing packages, the <tt>mergeAfterInstall()</tt> function is
+called. This function merges new configuration of new packages with
+user changes in "old" configuration.<br>
 </body>
 </html>
