@@ -30,7 +30,10 @@ ynclude_DATA =			\
 config_DATA =			\
 	inetd.y2cc
 
+desktop_DATA =			\
+	inetd.desktop
+
 module_DATA =			\
 	Inetd.ycp
 
-EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA) $(ydata_DATA)
+EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA) $(ydata_DATA) $(desktop_DATA)
