@@ -62,6 +62,7 @@ textdomain "inetd";
 import "Progress";
 import "Report";
 import "Summary";
+import "Directory";
 
 include "inetd/routines.ycp";
 include "inetd/default_conf_inetd.ycp";
@@ -124,6 +125,11 @@ global list xinetd_conf          = [];
 global list netd_conf            = [];
 
 /**
+ * Holds package names which provides xinetd services (like ftp, ...)
+ */
+global list xinetd_defaults      = [];
+
+/**
  * Is inetd (or xinetd) running?
  */
 global integer inetd_status      = -1;
@@ -174,8 +180,10 @@ global define boolean Read() ``{
     else if(netd_service == `xinetd) {
 	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
     }
+    xinetd_defaults = SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
+//    y2milestone("%1", xinetd_defaults);
     // in future: catch error
-    if(false) Report::Error(_("Can not read the database1!"));
+    //if(false) Report::Error(_("Can not read the database1!"));
     sleep(sl);
 
     if(Abort()) return false;

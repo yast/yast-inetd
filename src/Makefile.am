@@ -10,6 +10,9 @@ client_DATA =			\
 	inetd_proposal.ycp	\
 	inetd_write.ycp
 
+ydata_DATA =                     \
+	all-services.ycp
+
 ynclude_DATA =			\
 	helps.ycp		\
 	wizards.ycp		\
@@ -25,4 +28,4 @@ config_DATA =			\
 module_DATA =			\
 	Inetd.ycp
 
-EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA)
+EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(config_DATA) $(module_DATA) $(ydata_DATA)

@@ -34,4 +34,5 @@ Summary:	Configuration of inetd
 @scrconfdir@/etc_inetd.scr
 @scrconfdir@/etc_xinetd.scr
 @agentdir@/ag_netd
+@ydatadir@/all-services.ycp
 %doc @docdir@

@@ -87,19 +87,19 @@ Choose a inetd to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>"),
 
     /* Configure1 dialog help 1/2 */
-    "c1" : _("<p><b><big>Ineternet super-server configuration</big></b><br>
-Click the <b>Enable super-server</b> checkbox to enable custom super-server
+    "c1" : _("<p><b><big>Network services configuration</big></b><br>
+Click the <b>Enable</b> to enable network services managed by super-server
 (inetd or xinetd - it depends on what you have installed) configuration.
-If you want to stop super-server, please leave the checkbox unchecked.</p>") +
+If you want to stop super-server, please click the <b>Disable</b>.</p>") +
 "<p><br></p>" +
-    _("<p><b><big>Editation services status:</big></b><br>
+    _("<p><b><big>Configuration service status:</big></b><br>
 All services marked with <b>X</b> in column <b>Ch</b> was edited
 and will be changed in system configuration.</p>") +
     _("<p><b><big>Services status:</big></b><br>
 All services marked with <b>---</b> are inactive (locked),
 All services marked with <b>On</b> are active (unlocked).</p>") +
     _("<p><b><big>Changing services status:</big></b><br>
-Select the service you want to enable (disable) and press <b>Active ro Deactivate</b>.</p>") +
+Select the service you want to enable (disable) and press <b>Toggle status On/Off</b>.</p>") +
     _("<p><b><big>Editting services:</big></b><br>
 Select the service you want to edit and press <b>Edit</b>.</p>") +
     _("<p><b><big>Deleting services:</big></b><br>

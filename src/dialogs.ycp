@@ -312,8 +312,8 @@ global define symbol InetdDialog () ``{
 	    `Left(
 		`RadioButtonGroup(
 		    `VBox(
-			`RadioButton(`id(`stop),     `opt(`notify), _("Super-server &off"), true),
-			`RadioButton(`id(`editable), `opt(`notify), _("S&uper-server on"), false)
+			`RadioButton(`id(`stop),     `opt(`notify, `key_F6), _("D&isable"), true),
+			`RadioButton(`id(`editable), `opt(`notify, `key_F7), _("Enab&le"), false)
 		    )
 		)
 		//`CheckBox(`id(`editable), `opt(`notify), _("Enable s&uper-server"), false)
@@ -329,14 +329,19 @@ global define symbol InetdDialog () ``{
 	    `HBox(
 		`Left(
 		    `HBox(
-			`PushButton(`id(`create), _("&Add...") ),
-			`PushButton(`id(`edit),   _("&Edit...") ),
-			`PushButton(`id(`delete), _("&Delete") )
+			`HSpacing(1),
+			`PushButton(`id(`create), `opt(`key_F2), _("&Add") ),
+			`HSpacing(1),
+			`PushButton(`id(`edit),   `opt(`key_F4), _("&Edit") ),
+			`HSpacing(1),
+			`PushButton(`id(`delete), `opt(`key_F8), _("&Delete") )
 		    )
 		),
 		`VSpacing(),
 		`Right(
-		    `PushButton(`id(`switch_active), _("&Toggle status (On/Off)") )
+		    `HBox(
+			`PushButton(`id(`switch_active), `opt(`key_F3), _("&Toggle status (On/Off)")),
+			`HSpacing(1))
 		)
 	    ),
 	    `VSpacing(2)
@@ -365,7 +370,7 @@ global define symbol InetdDialog () ``{
     }
 
     /* Inetd configure dialog caption */
-    string caption = _("Internet super-server configuration");
+    string caption = _("Network services configuration");
     if(Inetd::configured_service == `inetd) {
 	caption = caption + " (inetd)";
     }
@@ -388,7 +393,7 @@ global define symbol InetdDialog () ``{
 	new_state = true;
     }
     UI::ChangeWidget(`id(`editable),      `Value,   new_state);
-    //UI::ChangeWidget(`id(`table),         `Enabled, new_state);
+    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
     UI::ChangeWidget(`id(`create),        `Enabled, new_state);
     UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
     UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
@@ -417,7 +422,7 @@ global define symbol InetdDialog () ``{
 
         if((ret == `editable) || (ret == `stop)) {
 	    boolean new_state = UI::QueryWidget(`id(`editable), `Value);
-	    //UI::ChangeWidget(`id(`table),         `Enabled, new_state);
+	    UI::ChangeWidget(`id(`table),         `Enabled, new_state);
 	    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
