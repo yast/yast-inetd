@@ -98,7 +98,12 @@ Read	.init.scripts.runlevel "inetd" $["inetd":$["start":["3", "5"], "stop":["3",
 Read	.init.scripts.comment "inetd" $["inetd":$[], "xinetd":$[]]
 Execute	.target.bash_output "/sbin/insserv -r /etc/init.d/inetd" $["exit":0, "stderr":"", "stdout":""]
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
+Read	.init.scripts.exists "xinetd" true
+Read	.init.scripts.exists "xinetd" true
+Read	.init.scripts.runlevel "xinetd" $["inetd":$["start":["3", "5"], "stop":["3", "5"]], "xinetd":$["start":[], "stop":[]]]
+Read	.init.scripts.comment "xinetd" $["inetd":$[], "xinetd":$[]]
+Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/xinetd" $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash "/etc/init.d/xinetd start" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	  ---
