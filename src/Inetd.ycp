@@ -631,8 +631,6 @@ define map ConvertSles8Profile (map settings) ``{
 global define boolean Import (map settings) ``{
     EnsureDefaultConfLoaded ();
 
-    // we do not want to install RPMs in autoinstallation mode...
-    auto_mode = true;
     modified  = false;
 
     if (settings == $[])
@@ -671,11 +669,13 @@ global define boolean Import (map settings) ``{
     }
     // no service detected --- loading defaults
     else if (settings["netd_service"]:`none == `none) {
+	netd_service  = `none;
 	inetd_conf    = default_conf_inetd["netd_conf"]:[];
 	xinetd_conf   = default_conf_xinetd["netd_conf"]:[];
-	inetd_status  = 0;
-	xinetd_status = 0;
-	netd_service  = `none;
+	inetd_status  = -1;
+	xinetd_status = -1;
+	netd_status   = -1;
+	netd_conf     = [];
     }
     // common variables
     last_created       = settings["last_created"]:0;
