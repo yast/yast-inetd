@@ -652,7 +652,7 @@ global define string mkeServiceSummary() ``{
 	}
     });
     if(S == "")
-	S = _("<ul><i>All services are marked as stopped.</i></ul>");
+	S = _("<p><ul><i>All services are marked as stopped.</i></ul></p>");
     return S;
 }
 
@@ -682,7 +682,6 @@ global define string mkePackageSummary() ``{
 
 /**
  * Create a textual summary and a list of unconfigured cards
- * // @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
 global define list Summary() ``{
@@ -730,9 +729,8 @@ global define list Overview() ``{
 /**
  * delete line in netd_conf
  * @param line_number "iid" geted from table's item ID
- * @return map If success returns updated line
  */
-global define deleteLine(any line_number) ``{
+global define void deleteLine(any line_number) ``{
     // delete
     map current_line = select(filter(`line, netd_conf,
 	``(lookup(line, "iid", "0") == line_number)), 0, $[]);
@@ -766,9 +764,8 @@ global define void addLine(map new_line) ``{
  * Change a line in DB
  * @param new_line new_line contains changes for entry in netd_conf
  * @param line_number line_number contains iid of changed entry in netd_conf
- * @return map If success, returnes updated line
  */
-global define changeLine(map new_line, any line_number) ``{
+global define void changeLine(map new_line, any line_number) ``{
     // entry was changed - so set "changed" flag to true
     new_line  = add(new_line, "changed", true);
     netd_conf = maplist(`line, netd_conf, ``{

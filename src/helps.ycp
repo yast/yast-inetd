@@ -36,9 +36,8 @@ Select which service packages to install.</p>
 Install them now?
 "),
 
-    "install_auto_query" : _("Please, select main package you want to install.
-One of theese (or both) are required for running super-server.
-Please remembere, that only one service (inetd or xinetd) can be used at run-time.
+    "install_auto_query" : _("Select main package to install.
+One of these (or both) are required for running a super-server.
 "),
 
     /* ErrorPopup */
