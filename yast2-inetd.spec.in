@@ -30,6 +30,7 @@ Summary:	Configuration of inetd
 %dir @yncludedir@/inetd
 @yncludedir@/inetd/*
 @clientdir@/inetd*.ycp
+@clientdir@/xinetd*.ycp
 @moduledir@/Inetd.ycp
 @moduledir@/Inetd.ybc
 @desktopdir@/inetd.desktop
