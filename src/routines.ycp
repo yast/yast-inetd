@@ -91,6 +91,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
 	    if (lookup(line, "deleted", false) != true) {
 
 		// determine service is enabled (enabled text)
+		string changed_text = (lookup(line, "changed", false) == false) ? "" : "X";
 		any status = lookup(line, "enabled", true);
 		if (status == true) {
 		    status_text = _("On");
@@ -120,6 +121,7 @@ global define list(term) CreateTableData(list netd_conf) ``{
 		}
 		// create line for table structure
 		term entry = `item(`id(lookup(line, "iid", "0")),
+		    changed_text,
 		    status_text,
 		    service,
 		    lookup(line, "socket_type", ""),
