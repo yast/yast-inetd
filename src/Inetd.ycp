@@ -136,16 +136,15 @@ global define boolean Read() ``{
 	return false;
 
     if(netd_service == `both) {
-	inetd_conf  = SCR::Read(.etc.inetd.services);
-	xinetd_conf = SCR::Read(.etc.xinetd.services);
+	inetd_conf  = SCR::Read(.etc.inetd_conf.services);
+	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
     }
     else if(netd_service == `inetd) {
-	inetd_conf = SCR::Read(.etc.inetd.services);
+	inetd_conf = SCR::Read(.etc.inetd_conf.services);
     }
     else if(netd_service == `xinetd) {
-	xinetd_conf = SCR::Read(.etc.xinetd.services);
+	xinetd_conf = SCR::Read(.etc.xinetd_conf.services);
     }
-
     // in future: catch error
     if(false) Report::Error(_("Can not read the database1!"));
     sleep(sl);
@@ -223,7 +222,7 @@ global define boolean Write() ``{
 		y2milestone("xinetd not installed --- nothing done");
 	    }
 	    y2milestone("writing inetd configuration");
-	    SCR::Write(.etc.inetd.services, netd_conf);
+	    SCR::Write(.etc.inetd_conf.services, netd_conf);
 	    // So, Restart service
 	    // if inetd is running - only reload
 	    if (inetd_status == 0) {
@@ -249,7 +248,7 @@ global define boolean Write() ``{
 		y2milestone("inetd not installed --- nothing done");
 	    }
 	    y2milestone("writing xinetd cnfiguration");
-	    SCR::Write(.etc.xinetd.services, netd_conf);
+	    SCR::Write(.etc.xinetd_conf.services, netd_conf);
 	    // So, Restart service
 	    // if xinetd is running - only reload
 	    if (inetd_status == 0) {

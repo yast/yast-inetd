@@ -14,11 +14,11 @@ textdomain "inetd";
 import "Runlevel";
 
 global define integer GetInetdInstalled() ``{
-    return SCR::Execute(.target.bash, "/bin/rpm -q inetd", []);
+    return SCR::Execute(.target.bash, "/bin/rpm -q inetd 2>&1 > /dev/null", []);
 }
 
 global define integer GetXinetdInstalled() ``{
-    return SCR::Execute(.target.bash, "/bin/rpm -q xinetd", []);
+    return SCR::Execute(.target.bash, "/bin/rpm -q xinetd 2>&1 > /dev/null", []);
 }
 
 global define integer GetInetdStatus() ``{
@@ -170,7 +170,6 @@ global define symbol IsAnyServiceEnabled(list ready_conf) ``{
 	    }
 	}
     });
-    y2milestone("%1", ret);
     return ret;
 }
 

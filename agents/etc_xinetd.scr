@@ -1,4 +1,4 @@
-.etc.xinetd
+.etc.xinetd_conf
 `ag_netd (
     Xinetd ("/etc/xinetd.conf")
 )
