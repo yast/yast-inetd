@@ -1,0 +1,23 @@
+//
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
+
+    list s = (list) SCR::Read (.test.inetd.services);
+    map ns = $[
+	// no iid
+	"changed": true,
+	"comment": " Dys is mai servis",
+	"enabled": true,
+	"service": "finger",
+	"socket_type": "stream",
+	"protocol": "tcp",
+	"wait": false,
+	"user": "nobody",
+	"server": "/usr/sbin/tcpd",
+	"server_args": "in.fingerd -w",
+	];
+    s = add (s, ns);
+    boolean r = (boolean) SCR::Write (.test.inetd.services, s);
+
+    return r;
+}

@@ -1,0 +1,568 @@
+-------------------------------------------------------------------
+Tue Feb  8 10:31:01 CET 2005 - mvidner@suse.cz
+
+- Merged proofread texts.
+- 2.11.7
+
+-------------------------------------------------------------------
+Mon Feb  7 11:01:46 CET 2005 - visnov@suse.cz
+
+- resubmit
+- 2.11.7
+
+-------------------------------------------------------------------
+Fri Feb  4 08:39:57 CET 2005 - mlazar@suse.cz
+
+- removed @ydatadir@/default_conf_(x)inetd.ycp from spec.in file
+
+-------------------------------------------------------------------
+Wed Feb  2 10:19:06 CET 2005 - mlazar@suse.cz
+
+- 2.11.6
+- deleted src/default_conf_inetd.ycp
+- default_conf is now included instead of read in run-time
+- updated src/default_conf_xinetd.ycp
+- updated testsuite
+- all-services.sh, default_conf_create.ycp: don't generate
+  defaults for inetd
+- default_conf_create.ycp: avoid select() and lookup()
+
+-------------------------------------------------------------------
+Tue Feb  1 21:23:35 CET 2005 - nashif@suse.de
+
+- Fixed testsuite, again..
+- 2.11.5
+
+-------------------------------------------------------------------
+Tue Feb  1 09:31:19 CET 2005 - mlazar@suse.cz
+
+- fixed testsuite
+- 2.11.4
+
+-------------------------------------------------------------------
+Mon Jan 31 16:20:55 CET 2005 - mlazar@suse.cz
+
+- removed inetd from testsuites
+- 2.11.3
+
+-------------------------------------------------------------------
+Mon Jan 31 13:41:21 CET 2005 - mlazar@suse.cz
+
+- improved command line
+- 2.11.2
+
+-------------------------------------------------------------------
+Fri Jan 28 14:06:06 CET 2005 - mlazar@suse.cz
+
+- command line support: summary
+- removed rdm socket type (not in xinetd)
+- preliminary LiMaL interface
+
+-------------------------------------------------------------------
+Thu Jan 27 10:51:22 CET 2005 - mlazar@suse.cz
+
+- changed texts: flag wait/nowait -> wait yes/no
+- updated help texts for xinetd and wait/nowait
+
+-------------------------------------------------------------------
+Tue Jan 25 14:00:36 CET 2005 - mlazar@suse.cz
+
+- removed inetd support
+
+-------------------------------------------------------------------
+Tue Jan 25 09:17:46 CET 2005 - mlazar@suse.cz
+
+- Progress::on()/off() replaced with Progress::set() 
+
+-------------------------------------------------------------------
+Mon Jan 24 10:40:58 CET 2005 - mlazar@suse.cz
+
+- added minimal command line mode support
+
+-------------------------------------------------------------------
+Fri Jan 21 10:30:34 CET 2005 - mlazar@suse.cz
+
+- 2.11.1
+
+-------------------------------------------------------------------
+Tue Nov 23 11:23:50 CET 2004 - mlazar@suse.cz
+
+- updated MAINTAINER file
+- changed texts from Inetd to Xinetd (#45164)
+
+-------------------------------------------------------------------
+Thu Nov  4 14:14:31 CET 2004 - mvidner@suse.cz
+
+- Replaced selects by brackets, fixing build.
+- 2.11.0
+
+-------------------------------------------------------------------
+Thu Sep 30 19:49:24 CEST 2004 - mvidner@suse.cz
+
+- Hopefully final autoyast fixes (#45463):
+  Read defaults on first start
+  If a change in the module was canceled, it would clear the
+  modified flag and the module would not export anything even though
+  there were previous changes.
+  Summary would show Not Configured unless a change was canceled or
+  the data read from a file.
+  Changes would be lost on re-entering the module
+- 2.10.6
+
+-------------------------------------------------------------------
+Wed Sep 29 17:29:09 CEST 2004 - mvidner@suse.cz
+
+- Incremental autoyast fixes (#45463).
+- 2.10.5
+
+-------------------------------------------------------------------
+Tue Sep 28 17:12:45 CEST 2004 - mvidner@suse.cz
+
+- Autoyast: 
+  Fixed cloning (#45463).
+  Do not choose between inetd and xinetd.
+- 2.10.4
+
+-------------------------------------------------------------------
+Mon Sep 20 16:22:14 CEST 2004 - mvidner@suse.cz
+
+- Autoyast:
+  Export in current data format, not the imported one.
+  Don't import when creating summary (nashif).
+- 2.10.3
+
+-------------------------------------------------------------------
+Wed Sep 15 15:32:20 CEST 2004 - mvidner@suse.cz
+
+- Disable installing inetd, it's dropped.
+- Use Package instead of Require.
+- Make an alias, "yast2 xinetd".
+- 2.10.2
+
+-------------------------------------------------------------------
+Fri Sep  3 16:12:43 CEST 2004 - mvidner@suse.cz
+
+- Added GetModified, SetModified for autoyast (#43904, nashif).
+- 2.10.1
+
+-------------------------------------------------------------------
+Wed Aug 18 03:10:20 CEST 2004 - nashif@suse.de
+
+- Using xorg-x11 instead of XFree86. 
+
+-------------------------------------------------------------------
+Mon Jun 21 10:34:10 CEST 2004 - mvidner@suse.cz
+
+- Added "testedfiles" to test cases to make it work with the new testsuite.
+- Cleaned up Inetd::Write
+- 2.10.0
+
+-------------------------------------------------------------------
+Fri Apr  2 14:57:52 CEST 2004 - mvidner@suse.cz
+
+- changed license to GPL
+- 2.9.12
+
+-------------------------------------------------------------------
+Wed Mar 31 14:50:05 CEST 2004 - mvidner@suse.cz
+
+- autoyast - check arguments
+- updated the installable packages list (vnc)
+- 2.9.11
+
+-------------------------------------------------------------------
+Wed Mar 24 15:09:01 CET 2004 - mvidner@suse.cz
+
+- alert the user if he is not root (#35363)
+- Runlevel -> Service
+- 2.9.10
+
+-------------------------------------------------------------------
+Thu Mar 18 15:36:07 CET 2004 - mvidner@suse.cz
+
+- added autoyast compatibility for SL8.1/SLES8 (#28067)
+
+-------------------------------------------------------------------
+Fri Mar 12 15:47:56 CET 2004 - mvidner@suse.cz
+
+- updated the installable packages list
+- added wizard icons (jhumpol)
+- using Sequencer
+- re-enabled testsuite
+- 2.9.9
+
+-------------------------------------------------------------------
+Wed Mar 10 12:38:40 CET 2004 - mvidner@suse.cz
+
+- disabled testsuite because of Wizard problems
+- 2.9.8
+
+-------------------------------------------------------------------
+Wed Mar 10 01:48:49 CET 2004 - nashif@suse.de
+
+- adapted for new wizard
+
+-------------------------------------------------------------------
+Sun Mar  7 12:01:07 CET 2004 - kkaempf@suse.de
+
+- adapt testsuite
+
+-------------------------------------------------------------------
+Fri Mar  5 17:39:46 CET 2004 - mvidner@suse.cz
+
+- added type information
+- 2.9.4
+
+-------------------------------------------------------------------
+Tue Feb 10 18:07:36 CET 2004 - lslezak@suse.cz
+
+- removed *.y2cc files
+- agent testsuite fix (mvidner)
+- version 2.9.3
+
+-------------------------------------------------------------------
+Mon Feb  9 15:50:35 CET 2004 - lslezak@suse.cz
+
+- testsuite: NI fixes, enabled agent testing
+- Inetd.ycp - removed empty statement
+- version 2.9.2
+
+-------------------------------------------------------------------
+Fri Feb  6 15:45:57 CET 2004 - lslezak@suse.cz
+
+- NI fixes (data types, globals)
+- build fixes (ycp hook, pack ybc file, needed packages)
+- testsuite update (NI fixes, agent testing disabled)
+- version 2.9.1
+
+-------------------------------------------------------------------
+Fri Oct 31 12:58:40 CET 2003 - mvidner@suse.cz
+
+- Fixed retrieving the lists of users and groups (#32783).
+- Handling the window close button properly.
+- 2.9.0
+
+-------------------------------------------------------------------
+Sun Sep 14 20:46:03 CEST 2003 - adrian@suse.de
+
+- make it working in kcontrol
+
+-------------------------------------------------------------------
+Tue Sep  9 00:49:54 CEST 2003 - nashif@suse.de
+
+- #30291: Added function Packages to auto client to return 
+  list of required packages
+
+-------------------------------------------------------------------
+Wed Aug 27 08:58:23 CEST 2003 - lslezak@suse.de
+
+- use users module for reading users/groups
+- version 2.8.6
+
+-------------------------------------------------------------------
+Wed Aug 20 15:14:41 CEST 2003 - jsuchome@suse.de
+
+- removed redundant "initialization dialog" (#28779)
+- 2.8.5
+
+-------------------------------------------------------------------
+Mon Aug 18 13:30:43 CEST 2003 - lslezak@suse.cz
+
+- 'Finish' button label at the main dialog
+- version 2.8.4
+
+-------------------------------------------------------------------
+Mon Aug 11 09:23:41 CEST 2003 - lslezak@suse.de
+
+- merged proofread texts
+- version 2.8.3
+
+-------------------------------------------------------------------
+Mon Aug  4 16:36:34 CEST 2003 - mvidner@suse.cz
+
+- Updated the installable packages list.
+- Added desktop file (supersedes y2cc file).
+- 2.8.2
+
+-------------------------------------------------------------------
+Tue Jul 22 14:31:46 CEST 2003 - mvidner@suse.cz
+
+- Autoinstalation:
+ * improved service matching
+ * export only changed fields from the UI
+- Can enable/disable all services at once (phadraba).
+- When a package is installed, the used button does not have
+  to be pressed again.
+- If we have an includedir (for xinetd we do), create new services
+  in their own files there (#26999).
+- Using Label and Popup.
+- 2.8.1
+
+-------------------------------------------------------------------
+Fri Mar 14 17:42:15 CET 2003 - mvidner@suse.de
+
+- Autoinstallation fixes (phadraba, #25317).
+ * server path
+ * multiple services in a package
+ * editing an added service
+- 2.7.10
+
+-------------------------------------------------------------------
+Tue Mar 11 12:51:53 CET 2003 - mvidner@suse.de
+
+- Updated the installable packages list, final for 8.2 (#24671-24693).
+- 2.7.9
+
+-------------------------------------------------------------------
+Mon Mar  3 13:41:07 CET 2003 - mvidner@suse.de
+
+- Texts from final proofreading.
+- Updated the installable packages list.
+- 2.7.8
+
+-------------------------------------------------------------------
+Thu Feb 27 11:22:08 CET 2003 - mvidner@suse.de
+
+- Fix skipping consecutive modified services when writing (#24379).
+- 2.7.7
+
+-------------------------------------------------------------------
+Wed Feb 26 10:39:58 CET 2003 - mvidner@suse.de
+
+- includedir was lost after adding and removing a xinetd service (#24270).
+- Updated the installable packages list.
+- 2.7.6
+
+-------------------------------------------------------------------
+Mon Feb 24 18:10:47 CET 2003 - mvidner@suse.de
+
+- updated installable packages list
+- autoinstallation: (phadraba)
+ * now uses Require.ycp
+ * service package dialog - updated text
+ * now exports only changed services
+- screenshots for documentation are now smaller (phadraba)
+- 2.7.5
+
+-------------------------------------------------------------------
+Mon Feb 17 17:04:01 CET 2003 - mvidner@suse.de
+
+- Autoinstallation fixes (phadraba).
+- Changed _auto::Result to Export (nashif).
+- 2.7.4
+
+-------------------------------------------------------------------
+Mon Feb 10 13:24:26 CET 2003 - jsuchome@suse.de
+
+- Merged proofread texts (3rd round). 
+
+-------------------------------------------------------------------
+Fri Feb  7 12:49:39 CET 2003 - jsrain@suse.de
+
+- Merged texts from 2nd proofreading
+
+-------------------------------------------------------------------
+Tue Feb  4 16:32:12 CET 2003 - mvidner@suse.de
+
+- Fixed re-reading the files (don't keep the old services).
+
+-------------------------------------------------------------------
+Mon Feb  3 09:40:38 CET 2003 - mvidner@suse.de
+
+- Merged proofread texts.
+- 2.7.3
+
+-------------------------------------------------------------------
+Thu Jan 16 15:07:14 CET 2003 - mvidner@suse.de
+
+- Fixed disabling a xinetd service.
+- The agent can now re-read the files (eg. when a new one is installed).
+- Disregard line numbers in the agent testsuite.
+
+-------------------------------------------------------------------
+Fri Jan 10 14:45:15 CET 2003 - mvidner@suse.de
+
+- Prevent agent from returning strings as integers/booleans (~#21804).
+
+-------------------------------------------------------------------
+Wed Jan  8 17:02:05 CET 2003 - phadraba@suse.de
+
+- Autoinstallation of inetd/xinetd is implemented
+
+-------------------------------------------------------------------
+Thu Dec 19 14:18:24 CET 2002 - phadraba@suse.de
+
+- Updated source code to default YaST2 module skeleton
+- New UI uses new SCR
+- Module handles inetd and xinetd configuration
+- SCR by mvidner, UI by phadraba
+
+-------------------------------------------------------------------
+Tue Dec 10 16:00:43 CET 2002 - mvidner@suse.de
+
+- Extended to work with xinetd apart from inetd
+- UI by phadraba, SCR by mvidner
+- 2.7.0
+
+-------------------------------------------------------------------
+Mon Oct  7 16:20:23 CEST 2002 - mvidner@suse.cz
+
+- The temporary file is created in /var/lib/YaST2, not /tmp (#16420).
+- In autoyast mode, services can be only enabled and disabled
+  so the Create, Edit and Delete buttons are disabled (#20524).
+- 2.6.8
+
+-------------------------------------------------------------------
+Tue Sep 10 14:55:13 CEST 2002 - msvec@suse.cz
+
+- provide/obsolete old translation package
+- 2.6.7
+
+-------------------------------------------------------------------
+Sat Sep  7 01:34:08 EDT 2002 - nashif@suse.de
+
+- enable service network also
+- dont try to remove inetd.conf if it's not there..
+
+-------------------------------------------------------------------
+Mon Sep  2 23:19:40 EDT 2002 - nashif@suse.de
+
+- use Directory module for bin files
+- Activate service in WriteOnly mode
+- 2.6.5
+
+-------------------------------------------------------------------
+Fri Aug 30 13:13:39 CEST 2002 - mike@suse.de
+
+- bugfixes  15501 16420 16132 18266
+ - network service editor misses lines from inetd.conf,
+ - does not work,
+ - create does not work
+
+-------------------------------------------------------------------
+Tue Aug 27 20:00:00 CEST 2002 - jsuchome@suse.cz
+
+- provide/obsolete old translation packages
+
+-------------------------------------------------------------------
+Thu Aug 15 11:42:10 CEST 2002 - jsuchome@suse.cz
+
+- Merged proofread texts for the second translation round. 
+
+-------------------------------------------------------------------
+Fri Jul 12 16:30:08 CEST 2002 - arvin@suse.de
+
+- use proper namespace for Args and CallFunction (#16776)
+
+-------------------------------------------------------------------
+Thu Jul 04 21:31:21 CEST 2002 - arvin@suse.de
+
+- moved non binary files to /usr/share/YaST2
+
+-------------------------------------------------------------------
+Mon Jul  1 18:29:44 CEST 2002 - msvec@suse.cz
+
+- added minimal testsuite
+- renamed to yast2-inetd
+- 2.6.1
+
+-------------------------------------------------------------------
+Mon Feb 11 17:53:37 CET 2002 - nashif@suse.de
+
+- updates for autoinstall
+
+-------------------------------------------------------------------
+Mon Jan 28 12:05:43 EST 2002 - nashif@suse.de
+
+- Added WriteOnly: Write without starting any services
+- adapted _write
+- 2.5.2
+
+-------------------------------------------------------------------
+Tue Jan 22 04:38:33 CET 2002 - nashif@suse.de
+
+- use Wizard, Sequencer
+- USe skeleton
+- Added _write, _auto for autoinstallation
+
+-------------------------------------------------------------------
+Mon Jan 21 15:39:22 EST 2002 - nashif@suse.de
+
+ - migration to devtools
+ - use standard copyright files
+ - removed old menu entry
+ - added testsuite
+ - fixed syntax (select and lookup)
+
+-------------------------------------------------------------------
+Thu Sep  6 18:47:43 CEST 2001 - jbuch@suse.de
+
+- Read -> SCR::Read(..)
+
+-------------------------------------------------------------------
+Mon Apr 30 10:21:51 CEST 2001 - jbuch@suse.de
+
+- fixed bug with return nil to list | void
+
+-------------------------------------------------------------------
+Tue Apr 24 07:16:21 CEST 2001 - jbuch@suse.de
+
+- define -> global define
+
+-------------------------------------------------------------------
+Tue Apr 17 17:20:41 CEST 2001 - kkaempf@suse.de
+
+- name change to "yast2-config-inet"
+  package as .bz2
+
+-------------------------------------------------------------------
+Thu Jan 18 15:09:51 CET 2001 - mike@suse.de
+
+- fix: now translates properly
+
+-------------------------------------------------------------------
+Wed Dec 13 18:56:38 CET 2000 - mike@suse.de
+
+- new menuentry
+
+-------------------------------------------------------------------
+Sat Jul 15 16:42:24 MEST 2000 - kkaempf@suse.de
+
+- typo fixed
+  version 1.0.5
+
+-------------------------------------------------------------------
+Fri Jul 14 15:41:24 MEST 2000 - gs@suse.de
+
+- deleting file in tmp
+
+-------------------------------------------------------------------
+Thu Jul 13 15:59:38 CEST 2000 - mike@suse.de
+
+- fix in specfile: perlscript now included
+
+-------------------------------------------------------------------
+Tue Jul 11 14:48:08 CEST 2000 - mike@suse.de
+
+- fix: read inetd.conf now with perl
+
+------------------------------------------------------------------
+Thu Jun 29 14:28:39 CEST 2000 - kkaempf@suse.de
+
+- requires y2t_inet
+
+-------------------------------------------------------------------
+Thu Jun 29 17:43:37 MEST 2000 - gs@suse.de
+
+- fixes in comments
+
+-------------------------------------------------------------------
+Tue Jun 27 13:57:47 MEST 2000 - gs@suse.de
+
+- bugfix writing /etc/rc.config
+
+-------------------------------------------------------------------
+Mon Jun 26 11:51:42 CEST 2000 - kkaempf@suse.de
+
+- initial version
+
