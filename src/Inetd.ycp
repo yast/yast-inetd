@@ -78,10 +78,6 @@ import "Report";
 import "Summary";
 import "Directory";
 
-// FIXME: initialize Security module (used by Userscache.pm)
-// remove this later when module initialization works from other languages
-import "Security";
-
 typedef map<string, any> service_t;
 typedef list<service_t> services_t;
 
@@ -641,6 +637,37 @@ global define services_t MergeAyProfile (services_t target, services_t changes) 
 }
 
 /**
+ * Convert from SLES8 AI profile
+ */
+define map ConvertSles8Profile (map settings) ``{
+    boolean start = settings["start_inetd"]:false;
+    if (start)
+    {
+	typedef map<string, string> s8_t;
+	services_t services = maplist (
+	    s8_t service, (list<s8_t>) settings["inetd_services"]:[], ``(
+		$[
+		    "service": service["service_name"]:"?",
+		    "enabled": service["service_status"]:"?" == "enable",
+		    ]
+		));
+	return $[
+	    "netd_service": `inetd,
+	    "netd_status": 0,
+	    "netd_conf": services,
+	    ];
+    }
+    else
+    {
+	return $[
+	    "netd_service": `inetd,
+	    "netd_status": 1,
+	    "netd_conf": [],
+	    ];
+    }
+}
+
+/**
  * Get all inetd settings from the first parameter
  * (For use by autoinstallation.)
  * @param settings The YCP structure to be imported.
@@ -657,6 +684,11 @@ global define boolean Import (map settings) ``{
 	module_status = `not_configured;
     else
 	module_status = `configured;
+
+    if (haskey (settings, "start_inetd") || haskey (settings, "inetd_services"))
+    {
+	settings = ConvertSles8Profile (settings);
+    }
 
     //y2milestone("settings = %1", settings);
     /*

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 18 15:36:07 CET 2004 - mvidner@suse.cz
+
+- added autoyast compatibility for SL8.1/SLES8 (#28067)
+
+-------------------------------------------------------------------
 Fri Mar 12 15:47:56 CET 2004 - mvidner@suse.cz
 
 - updated the installable packages list
