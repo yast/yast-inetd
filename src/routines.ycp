@@ -274,5 +274,34 @@ global define list GetXinetdDefaults() ``{
     return SCR::Read(.target.ycp, Directory::datadir + "/all-services.ycp");
 }
 
+/**
+ * Find map with given `iid' in given list.
+ * @param data list with maps to look into for iid
+ * @param iid iid to find
+ * @return first ocurence of map with iid `iid' in the list
+ */
+global define map findiidMapinList(list data, string iid) ``{
+    integer count = size(data);
+    integer i     = 0; // index
+
+    while(i < count) {
+	map line = select(data, i, $[]);
+	if(line["iid"]:"" == iid)
+	    return line;
+	i = i + 1;
+    }
+
+    return $[];
+}
+
+global define string getenv(string environment) ``{
+    string command = sformat("echo $%1", environment);
+    map result     = SCR::Execute(.target.bash_output, command, []);
+    if(result["stdout"]:"" == "")
+	return nil;
+    else
+        return result["stdout"]:"";
+}
+
 /* EOF */
 }
