@@ -1,0 +1,30 @@
+(result ([$["comment":"#\n# Now the definitions of the different services\n#\n#\n", "comment_inside":"\tserver_args\t= -a\n", "enabled":true, "group":"", "iid":"1:./tests.ag/x_double.in.test", "protocol":"tcp", "rpc_version":"", "server":"/usr/sbin/in.ftpd", "server_args":"", "service":"ftp", "socket_type":"stream", "unparsed":"        instances       = UNLIMITED\n", "user":"root", "wait":false], $["comment":"", "comment_inside":"\tonly_from\t= localhost\n", "enabled":true, "group":"", "iid":"19:./tests.ag/x_double.in.test", "protocol":"tcp", "rpc_version":"", "server":"/usr/sbin/in.telnetd", "server_args":"-n", "service":"telnet", "socket_type":"stream", "unparsed":"\tno_access\t=\n", "user":"root", "wait":false]]))
+##
+## Now the definitions of the different services
+##
+##
+
+service ftp
+{
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = root
+	server          = /usr/sbin/in.ftpd 
+#	server_args	= -a
+        instances       = UNLIMITED
+}
+
+
+
+service telnet
+{
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = root
+	server          = /usr/sbin/in.telnetd
+	server_args	= -n
+#	only_from	= localhost
+	no_access	=
+}

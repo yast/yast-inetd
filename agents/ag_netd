@@ -689,6 +689,9 @@ while ( <STDIN> )
     {
 	if ($path eq ".services")
 	{
+	    # must clear before re-reading
+	    # but not in parse_file, that would break includedir
+	    @services = ();
 	    $netd->parse_file ($base_file);
 	    ycp::Return (\@services, 1);
 	}
