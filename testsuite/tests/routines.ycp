@@ -25,6 +25,8 @@ import "Directory";
 
 Report::DisplayErrors(false, 0);
 
+typedef list< map<string, any> > services_t;
+
 // make it respect Y2DIR
 string y2dir = lookup ((map) SCR::Execute (.target.bash_output,
 				     "echo -n ${Y2DIR-/usr/share/YaST2}"),
@@ -34,7 +36,7 @@ Directory::datadir = y2dir + "/data";
 // do it now, because during TEST we do not have a live SCR
 Inetd::EnsureDefaultConfLoaded ();
 
-list<map> netd_conf = [
+services_t netd_conf = [
 	$["iid": "whatever",
 	    "comment": "My service",
 	    "enabled": true,
@@ -47,7 +49,7 @@ list<map> netd_conf = [
 	    "server_args": "in.fingerd -w"]
 	];
 
-list<map> netd_conf_none = [
+services_t netd_conf_none = [
 	$["iid": "whatever",
 	    "comment": "My service",
 	    "enabled": false,
