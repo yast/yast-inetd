@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Wed Sep 15 15:26:57 CEST 2004 - mvidner@suse.cz
+Wed Sep 15 15:32:20 CEST 2004 - mvidner@suse.cz
 
+- Disable installing inetd, it's dropped.
 - Use Package instead of Require.
 - Make an alias, "yast2 xinetd".
 - 2.10.2
