@@ -213,6 +213,12 @@ global integer netd_status       = -1;
 global symbol module_status      = `not_configured;
 
 /**
+ * This variable is used for new iid "generator"
+ */
+global integer last_created      = 0;
+
+
+/**
  * Read all inetd settings
  * @return true on success
  */
@@ -600,6 +606,7 @@ global define boolean Import (map settings) ``{
     // common variables
     service_package    = settings["service_package"]:[];
     required_packages  = settings["xinetd_packages"]:[];
+    last_created       = settings["last_created"]:0;
     configured_service = netd_service;
 //    y2milestone("%1", settings);
 //    y2milestone("%1", service_package);
@@ -636,6 +643,7 @@ global define map Export () ``{
     config = add(config, "netd_status",     netd_status);
     config = add(config, "service_package", service_package);
     config = add(config, "xinetd_packages", required_packages);
+    config = add(config, "last_created",    last_created);
     y2milestone("%1", config);
     return config;
 }

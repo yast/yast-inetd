@@ -148,7 +148,7 @@ global define symbol PackageDialog() ``{
     else {
 	Inetd::netd_service = `none;
     }
-    
+
     return `next;
 }
 
@@ -385,7 +385,7 @@ global define list GetProvidedPackage(term service_info) ``{
  * @return symbol Status of operation
  */
 global define symbol InstallProvidedPackage(term service_info) ``{
-    symbol ret = `next;
+    symbol ret       = `next;
 
     // service (package) is installed and its configuration is known,
     // so simply skip dialog
@@ -401,17 +401,25 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     if (Inetd::auto_mode) {
 	// Add requested package into list...
 	Inetd::required_packages = add(Inetd::required_packages, package_name);
+	y2milestone("%1", package_name);
 	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
 	                The package name is stored in %1. This is MessagePopup. */
 	UI::MessagePopup(sformat(_("Package %1 will be installed during the write process."),
 	    select(package_name, 0, "")));
+	string package = select(package_name, 0, "");
+	foreach(`line, table_data, ``{
+	    if(find(select(line, 8, "!"), package) != -1) {
+		InstallSelectedService(line, line == service_info ? true : false);
+	    }
+	});
+//	InstallSelectedService(selected_item);
 	ret = `auto;
 	return ret;
     }
     // we are in normal mode :-)))
     else {
-	include "require.ycp";
+	//include "require.ycp";
 	// if installation failes
 	/* Translators: The package name is stored in %1. */
 	if (!InstallAndRemove(package_name, [], sformat(_("Package %1 will be installed"),
@@ -440,6 +448,25 @@ global define symbol InstallProvidedPackage(term service_info) ``{
     }
     //y2milestone("%1", package_name);
     return ret;
+}
+
+/**
+ * Install service in auto-mode.
+ * @param service_info Service description (line form all-services.ycp)
+ * @param new_state New state for service (enabled or disabled)
+ * @return `OK
+ */
+global define symbol InstallSelectedService(term service_info, boolean new_state) ``{
+    string n_service    = select(service_info, 3, "");
+    string n_protocol   = select(service_info, 5, "");
+    string n_server     = select(service_info, 8, "");
+    Inetd::last_created = Inetd::last_created + 1;
+    map  new_line  = $["enabled":new_state, "service":n_service, "max":"",
+	"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
+	"user":"root", "group":"", "comment":"",
+	"iid":"inst" + Inetd::last_created, "created":true, "server":n_server];
+    Inetd::addLine(new_line);
+    return `OK;
 }
 
 /**
@@ -575,9 +602,6 @@ global define symbol InetdDialog () ``{
     indexTable();
     UI::ChangeWidget(`id(`table),         `Items,   table_data);
 
-    //used for new iid "generator"
-    integer last_created = 0;
-
 //    // Generate default configuration
 //    SCR::Write(.target.ycp, "/default_conf.ycp", Inetd::xinetd_conf);
     // main loop
@@ -612,14 +636,14 @@ global define symbol InetdDialog () ``{
 	}
 	// create new entry
 	else if (ret == `create) {
-	    any selected_item = UI::QueryWidget(`id(`table), `CurrentItem);
-	    any return_val = [];
-	    last_created   = last_created + 1; // need uniq
+	    any selected_item   = UI::QueryWidget(`id(`table), `CurrentItem);
+	    any return_val      = [];
+	    Inetd::last_created = Inetd::last_created + 1; // need uniq
 	    // default parameters for new service
 	    map  new_line  = $["enabled":true, "service":"", "max":"",
 		"socket_type":"stream", "protocol":"tcp", "wait":false, "server_args":"",
 		"user":"root", "group":"", "comment":"",
-		"iid":"new" + last_created, "created":true];
+		"iid":"new" + Inetd::last_created, "created":true];
 	    // execute dialog
 	    /* Translators: Caption for EditOrCreateServiceDlg() */
 	    return_val = EditOrCreateServiceDlg(_("Add a New Service Entry"), new_line);
@@ -630,7 +654,7 @@ global define symbol InetdDialog () ``{
 		Inetd::modified = true;
 		need_reindex    = true;                 // iid_to_index and index_to_iid and
 		need_rebuild    = true;                 //   table_data must be rebuild
-		to_select       = "new" + last_created; // select new entry
+		to_select       = "new" + Inetd::last_created; // select new entry
 	    }
 	    else {
 		need_reindex = false;                // nothing changed
@@ -701,21 +725,12 @@ global define symbol InetdDialog () ``{
 		    to_select       = selected_item;
 		}
 		else if (result == `auto) {
-		    last_created   = last_created + 1;
+		    //Inetd::last_created = Inetd::last_created + 1;
 		    //y2milestone("%1", selected_item);
-		    term service_info = GetSelectedService(selected_item);
-		    string n_service  = select(service_info, 3, "");
-		    string n_protocol = select(service_info, 5, "");
-		    string n_server   = select(service_info, 8, "");
-		    map  new_line  = $["enabled":true, "service":n_service, "max":"",
-			"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
-			"user":"root", "group":"", "comment":"",
-			"iid":"inst" + last_created, "created":true, "server":n_server];
-		    Inetd::addLine(new_line);
 		    Inetd::modified = true;
 		    need_reindex    = true;
 		    need_rebuild    = true;
-		    to_select       = "inst" + last_created;
+		    to_select       = "inst" + Inetd::last_created;
 		}
 		else if (result == `installed) {
 		    Inetd::modified = true;
@@ -760,21 +775,12 @@ global define symbol InetdDialog () ``{
 		    to_select = selected_item;
 		}
 		else if (result == `auto) {
-		    last_created   = last_created + 1;
+		    //Inetd::last_created = Inetd::last_created + 1;
 		    //y2milestone("%1", selected_item);
-		    term service_info = GetSelectedService(selected_item);
-		    string n_service  = select(service_info, 3, "");
-		    string n_protocol = select(service_info, 5, "");
-		    string n_server   = select(service_info, 8, "");
-		    map  new_line  = $["enabled":true, "service":n_service, "max":"",
-			"socket_type":"stream", "protocol":n_protocol, "wait":false, "server_args":"",
-			"user":"root", "group":"", "comment":"",
-			"iid":"inst" + last_created, "created":true, "server":n_server];
-		    Inetd::addLine(new_line);
 		    Inetd::modified = true;
 		    need_reindex    = true;
 		    need_rebuild    = true;
-		    to_select       = "inst" + last_created;
+		    to_select       = "inst" + Inetd::last_created;
 		}
 		else if (result == `installed) {
 		    Inetd::modified = true;
