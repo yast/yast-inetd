@@ -78,8 +78,13 @@
 	if (!file_read) {
 	    changed_conf = false;
 	    SCR::Execute(.target.bash, "/usr/lib/YaST2/bin/build_inetd_conf_ycp.pl");
-	    inetd_conf =  SCR::Read(.target.ycp, "/tmp/inetd_conf.ycp");
-	    SCR::Execute(.target.bash, "/bin/rm /tmp/inetd_conf.ycp");
+	    inetd_conf =  SCR::Read(.target.ycp, "/var/lib/YaST2/inetd_conf.ycp");
+	    SCR::Execute(.target.bash, "/bin/rm /var/lib/YaST2/inetd_conf.ycp");
+	    if (inetd_conf == nil)
+	    {
+		inetd_conf = [];
+	    }
+
 	    if (size(inetd_conf)>0)
 	    {
 		file_read = true;

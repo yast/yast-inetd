@@ -16,6 +16,7 @@ textdomain "inetd";
 import "Wizard";
 import "Progress";
 import "Inetd";
+import "Mode";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
@@ -439,6 +440,15 @@ global define ConfigureDialog() ``{
     Wizard::SetContents(_("Enable/disable network services"), contents, ConfigureHelp(), true, true );
     // changing Label to Finish
     UI::ChangeWidget(`id(`next), `Label, FinishButtonLabel()  );
+
+    // Bug 20524: autoyast can only enable/disable services.
+    // Too late to fix it properly, just disable the buttons.
+    if (Mode::config)
+    {
+	UI::ChangeWidget (`id (`create), `Enabled, false);
+	UI::ChangeWidget (`id (`delete), `Enabled, false);
+	UI::ChangeWidget (`id (`edit),   `Enabled, false);
+    }
 
      symbol ret = `next;
 
