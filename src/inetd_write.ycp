@@ -52,7 +52,7 @@
     }
 
     Progress::off ();
-    boolean ret = Inetd::Write ( ``{ return false; } );
+    boolean ret = Inetd::WriteOnly ( ``{ return false; } );
     Progress::on ();
     return ret;
 }

@@ -93,6 +93,28 @@
     }
 
     /**
+     * Changes configuration only, services are not started
+     * @return boolean
+     */
+    global define boolean WriteOnly()``{
+	if (changed_conf && inetd_status == `on_custom ) {
+	    WriteInetdConf();
+	}
+	
+	if (inetd_status == `off)
+	{
+	    y2milestone("Turning service inetd off");
+	    Runlevel::ServiceAdjust("inetd", "disable");	 
+	}
+	else {		
+	    Runlevel::ServiceAdjust("inetd", "enable");
+	    if (inetd_status == `on_default)
+		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
+		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );	    	
+	}
+	return true;
+    }
+    /**
      * Update the SCR according to Inetd settings
      * @param abort A block that can be called by Write to find
      *	      out whether abort is requested. Returns true if abort
