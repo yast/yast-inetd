@@ -346,16 +346,19 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	Require::DoInstallAndRemoveTarget(package_name, []);
 	/* Translators: In autoinstallation mode:
 	                The package name is stored in %1. This is MessagePopup. */
-	UI::MessagePopup(sformat(_("Package %1 will be installed during the write process."),
-	    select(package_name, 0, "")));
-	string package = select(package_name, 0, "");
-	foreach(`line, table_data, ``{
-	    if(find(select(line, 8, "!"), package) != -1) {
-		InstallSelectedService(line, line == service_info ? true : false);
-	    }
-	});
+	if(UI::ContinueCancelPopup(sformat(_("Package %1 will be installed during the write process."),
+	    select(package_name, 0, "")))) {
+	    string package = select(package_name, 0, "");
+	    foreach(`line, table_data, ``{
+		if(find(select(line, 8, "!"), package) != -1) {
+		    InstallSelectedService(line, line == service_info ? true : false);
+		}
+	    ret = `auto;
+	    return ret;
+	    });
+	}
 //	InstallSelectedService(selected_item);
-	ret = `auto;
+	ret = `none;
 	return ret;
     }
     // we are in normal mode :-)))
@@ -434,6 +437,20 @@ global define term GetSelectedService(any selected_item) ``{
  */
 global define symbol InetdDialog () ``{
 
+    list expert_contents =
+	[
+	    `item(`id(`all_on),  _("&Activate All Services")),
+	    `item(`id(`all_off), _("&Deactivate All Services")),
+	];
+
+    /* These special options are available if `expert_inetd' parameter is given into command-line */
+    if(select(WFM::Args(), 0, "") == "expert_inetd")
+	expert_contents = add(expert_contents, `menu("E&xpert tools",
+	    [
+		`item(`id(`all_rev), "&Invert Status"),
+		`item(`id(`clear_changed), "&Clear \"CHANGED\" flag")
+	    ]));
+
     /* Main dialog contents */
     term contents =
 	`VBox(
@@ -472,12 +489,22 @@ global define symbol InetdDialog () ``{
 			`PushButton(`id(`delete), `opt(`key_F5), _("&Delete") )
 		    )
 		),
-		`VSpacing(),
+//		`VSpacing(),
 		`Right(
 		    `HBox(
 			/* Translators: Change service status */
-			`PushButton(`id(`switch_active), _("&Toggle Status (On or Off)")),
-			`HSpacing(1))
+			`HSquash(`PushButton(`id(`switch_active), _("&Toggle Status (On or Off)"))),
+			`HSpacing(1)
+		    )
+		)
+	    ),
+	    `HBox(
+		`Right(
+		    `HBox(
+			`HSquash(`MenuButton(`id(`toggle_menu), _("Status For All &Services"),
+			    expert_contents)),
+			`HSpacing(1)
+		    )
 		)
 	    ),
 	    `VSpacing(2)
@@ -531,6 +558,7 @@ global define symbol InetdDialog () ``{
     UI::ChangeWidget(`id(`create),        `Enabled, new_state);
     UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
     UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
+    UI::ChangeWidget(`id(`toggle_menu),   `Enabled, new_state);
     UI::ChangeWidget(`id(`switch_active), `Enabled, new_state);
 
     table_data = CreateTableData(Inetd::netd_conf);
@@ -561,7 +589,9 @@ global define symbol InetdDialog () ``{
 	    UI::ChangeWidget(`id(`create),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`delete),        `Enabled, new_state);
 	    UI::ChangeWidget(`id(`edit),          `Enabled, new_state);
+	    UI::ChangeWidget(`id(`toggle_menu),   `Enabled, new_state);
 	    UI::ChangeWidget(`id(`switch_active), `Enabled, new_state);
+
 	    if(new_state) {
 		Inetd::netd_status = 0;
 	    }
@@ -684,6 +714,61 @@ global define symbol InetdDialog () ``{
 		need_rebuild = false;
 		to_select    = "";
 	    }
+	}
+	// activate all services
+	else if (ret == `all_on) {
+	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
+		if(lookup(line, "deleted", false) != true) {
+		    line = add(line, "changed", true);
+		    line = add(line, "enabled", true);
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// deactivate all services
+	else if (ret == `all_off) {
+	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
+		if(lookup(line, "deleted", false) != true) {
+		    line = add(line, "changed", true);
+		    line = add(line, "enabled", false);
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// invert status for all services
+	else if (ret == `all_rev) {
+	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
+		if(lookup(line, "deleted", false) != true) {
+		    line = add(line, "changed", true);
+		    line = add(line, "enabled", !(line["enabled"]:false));
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
+	}
+	// clear changed flag
+	else if (ret == `clear_changed) {
+	    Inetd::netd_conf = maplist(`line, Inetd::netd_conf, ``{
+		if(lookup(line, "deleted", false) != true) {
+		    line = add(line, "changed", false);
+		}
+		return line;
+	    });
+	    Inetd::modified = true;
+	    need_reindex    = true;
+	    need_rebuild    = true;
+	    to_select       = UI::QueryWidget(`id(`table), `CurrentItem);
 	}
 	// edit service
 	else if (ret == `edit) {
