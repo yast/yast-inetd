@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb  4 08:39:57 CET 2005 - mlazar@suse.cz
+
+- removed @ydatadir@/default_conf_(x)inetd.ycp from spec.in file
+
+-------------------------------------------------------------------
 Wed Feb  2 10:19:06 CET 2005 - mlazar@suse.cz
 
 - 2.11.6
