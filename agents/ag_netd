@@ -184,11 +184,12 @@ sub write_file ()
 	# because then we would have to "unget" it in both implementations
 	# of parse_service.
 	# Therefore we don't use the traditional "while(<>) {...}" loop.
-	# $lineno is still the line number of the contents of $_
+	# Loop rewritten to fix missing consecutive modified services (#24379).
 	$if->{lineno} = 0;
-	do
+	while (1)
 	{
-	    print $OF $_ unless $if->{lineno} == 0;
+	    # now $lineno is the line number of the contents of $_
+	    # and $_ or its replacement has been output
 
 	    if (defined ($linenos[0]) && $if->{lineno}+1 == $linenos[0])
 	    {
@@ -199,13 +200,24 @@ sub write_file ()
 		$class->write_service ($OF, $service)
 		    unless $service->{deleted};
 		$class->parse_service ($if); #discard the old data
-		# ...
 	    }
+	    else
+	    {
+		$_ = $if->{fh}->getline;
+		if (!defined $_)
+		{
+		    # On eof, the branch with parse_service will not be taken
+		    # because that would mean we think there are services
+		    # past eof. Even in that case, parse_service will simply
+		    # return and @linenos will be exhausted and we get here.
+		    last;
+		}
+		++$if->{lineno};
+		y2debug ($if->{name}, $if->{lineno}, "copy");
 
-	    ++$if->{lineno};
-	    y2debug ($if->{name}, ": ", $if->{lineno});
+		print $OF $_;
+	    }
 	}
-	while (defined ($_ = $if->{fh}->getline));
 
 	# can we add new services?
 	foreach my $service (@new_services)
@@ -257,6 +269,7 @@ sub parse_service ($)
 {
     my $class = shift;
     ::DEBUG ("$class\n");
+    y2debug ("parse_service");
 
     my $file = shift;
 
@@ -266,6 +279,8 @@ sub parse_service ($)
     while (defined ($_ = $file->{fh}->getline))
     {
 	++$file->{lineno};
+	y2debug ($file->{name}, $file->{lineno}, "parse");
+
 	chomp;
 	next if /^$/;
 	$reclineno ||= $file->{lineno};
@@ -341,6 +356,7 @@ sub write_service ($$)
 {
     my $class = shift;
     ::DEBUG ("$class\n");
+    y2debug ("write_service");
 
     my $f = shift;
     my $s = shift;
@@ -384,6 +400,7 @@ sub parse_service ($)
 {
     my $class = shift;
     ::DEBUG ("$class\n");
+    y2debug ("parse_service");
 
     my $file = shift;
     my $service = undef;
@@ -396,6 +413,8 @@ sub parse_service ($)
     while (defined ($_ = $file->{fh}->getline))
     {
 	++$file->{lineno};
+	y2debug ($file->{name}, $file->{lineno}, "parse");
+
 	chomp;
 	next if /^$/;
 	$reclineno ||= $file->{lineno};
@@ -562,6 +581,7 @@ sub write_service ($$)
 {
     my $class = shift;
     ::DEBUG ("$class\n");
+    y2debug ("write_service");
 
     my $f = shift;
     my $s = shift;
