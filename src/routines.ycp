@@ -16,7 +16,7 @@ import "Progress";
 import "Service";
 import "Directory";
 import "Popup";
-import "Require";
+import "Package";
 import "UsersCache";
 
 define term ServiceToTableItem (map service, integer ni_index);
@@ -441,7 +441,7 @@ define boolean IsInstalled (string rpm) ``{
     boolean result = rpm == ""? true: is_installed_cache[rpm]:nil;
     if (result == nil)
     {
-	result = Require::IsPackageInstalledTarget (rpm);
+	result = Package::Installed (rpm);
 	is_installed_cache = add (is_installed_cache, rpm, result);
     }
     y2debug ("%1: %2", rpm, result);

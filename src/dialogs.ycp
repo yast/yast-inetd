@@ -13,7 +13,7 @@ textdomain "inetd";
 
 import "Inetd";
 
-import "Require";
+import "Package";
 import "Wizard";
 import "Popup";
 import "Label";
@@ -124,8 +124,7 @@ define symbol PackageDialog() ``{
 		packages = add(packages, "xinetd");
 	    }
 	    if(size(packages) > 0) {
-		//include "require.ycp";
-		Require::DoInstallAndRemoveTarget(packages, []);
+		Package::DoInstallAndRemove (packages, []);
 		IsInstalledClearCache ();
 	    }
 	    // Check for installed packages
@@ -218,7 +217,7 @@ define symbol PackageAutoDialog() ``{
 	}
 	ret = `back;
 	if(install_inetd) {
-	    Require::DoInstallAndRemoveTarget(["inetd"], []);
+	    Package::DoInstallAndRemove (["inetd"], []);
 	    IsInstalledClearCache ();
 	    Inetd::netd_service    = `inetd;
 	    Inetd::inetd_installed = 0;
@@ -227,7 +226,7 @@ define symbol PackageAutoDialog() ``{
 	else
 	    Inetd::inetd_installed = -1;
 	if(install_xinetd) {
-	    Require::DoInstallAndRemoveTarget(["xinetd"], []);
+	    Package::DoInstallAndRemove (["xinetd"], []);
 	    IsInstalledClearCache ();
 	    Inetd::netd_service     = `xinetd;
 	    Inetd::xinetd_installed = 0;
@@ -390,7 +389,7 @@ define symbol InstallProvidedPackage(string selected_item) ``{
 	    package_name[0]:"")))
 	{
 	    // Add requested package into list...
-	    Require::DoInstallAndRemoveTarget(package_name, []);
+	    Package::DoInstallAndRemove (package_name, []);
 	    IsInstalledClearCache ();
 	    ret = `auto;
 	}
@@ -403,8 +402,7 @@ define symbol InstallProvidedPackage(string selected_item) ``{
     else {
 	// if installation failes
 	/* Translators: The package name is stored in %1. */
-	if (!Require::RequireAndConflict(package_name, [], sformat(_("Package %1 will be installed"),
-	    select(package_name, 0, "")))) {
+	if (!Package::InstallAll (package_name)) {
 	//if (true) { // for debugging
 	    /* Translators: The package name is stored in %1. This is Popup::Message. */
 	    Popup::Message(sformat(_("Package %1 was not installed. The service cannot be edited."),
