@@ -26,5 +26,5 @@ configure inet.
 @YAST2DIR@/clients/lan_inetd.ycp
 @YAST2DIR@/clients/inetd_*.ycp
 @YAST2DIR@/modules/Inetd.ycp
-@YAST2DIR@/menuentries/menuentry_lan_inetd.y2cc
+@YAST2DIR@/config/lan_inetd.y2cc
 %doc @DOCDIR@

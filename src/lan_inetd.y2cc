@@ -5,7 +5,7 @@
 ; $Id$
 ;
 
-[Y2Module lan_inetd]
+[Y2Module inetd]
 
 ; name of the entry, shown in y2cc
 Name = _("Start/stop services (inetd)")
@@ -35,4 +35,6 @@ SortKey =
 ; which textdomain to use for translations (important!)
 Textdomain = lan_inetd
 
+; Autoinstall features
+Autoinst = all
 ; vim:syntax=dosini

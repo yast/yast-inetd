@@ -87,7 +87,13 @@
 	    inetd_conf =  SCR::Read(.target.ycp, "/tmp/inetd_conf.ycp");
 	    SCR::Execute(.target.bash, "/bin/rm /tmp/inetd_conf.ycp");
 	    if (size(inetd_conf)>0)
+	    {
 		file_read = true;
+	    }
+	    if (Mode::config)
+	    {
+		inetd_conf = makeAllInactive();
+	    }
 	}
 	return;
     }
@@ -99,22 +105,28 @@
     global define boolean WriteOnly()``{
 	if (changed_conf && inetd_status == `on_custom ) {
 	    WriteInetdConf();
+	    return true;
 	}
 	
 	if (inetd_status == `off)
 	{
 	    y2milestone("Turning service inetd off");
-	    Runlevel::ServiceAdjust("inetd", "disable");	 
+	    Runlevel::ServiceAdjust("inetd", "disable");
+	    return true;
 	}
 	else
 	{		
 	    Runlevel::ServiceAdjust("inetd", "enable");
 	    if (inetd_status == `on_default)
 		if (SCR::Read(.target.size, "/etc/inetd.conf.default")>0)
-		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );	    	
+		    SCR::Execute(.target.bash,   "/bin/cp /etc/inetd.conf.default /etc/inetd.conf" );
+	    return true;
 	}
 	return true;
     }
+
+
+    
     /**
      * Update the SCR according to Inetd settings
      * @param abort A block that can be called by Write to find
@@ -186,54 +198,35 @@
 		 "status":"enable"
 		 ]
      ]
-     */
-
- 
-    
+     */     
     global define boolean Import (map settings) ``{
 	if (size (settings) == 0)
 	{	
 	    return false;
 	}
 	    
-	if (settings["start_inetd"]:false && size(settings["services"]:[])>0)
-	{
-	    inetd_status = `on_custom;
-	    ReadFile();
-	    foreach(`s, settings["inetd_services"]:[], ``{
-		if (s["service_status"]:"" == "enable" || s["service_status"]:"" == "disable") {
-		    ChangeServiceStatus(s["service_service"]:"none", s["service_status"]:"none");
-		}
-	    });
-	    
-	}
-	else if (settings["start_inetd"]:false && size(settings["services"]:[])==0)
-	{
-	    inetd_status = `on_default;
-	} else {
-	    inetd_status = `off;
-	}
-
-	
-	
+	Set(settings);		
 	return true;
     }
 
     /**
      * Find a service in the parsed file
      * @return map: service map
-     */
-	
-	
+     */		
     define map FindService(string service)``{
 	return (select( filter( `line,
 				inetd_conf,
 				``(line["service"]:"none" == service)
 				), 0 , $[]));
     }
-
     
-    global define ChangeServiceStatus(string service, string status)
+    /**
+     * Change service status 
+     * @param service service to change 
+     * @param status new status
+     * @return true on success
+     */
+    global define boolean ChangeServiceStatus(string service, string status)
 	``{
 	ReadFile();
 	map service_line = FindService(service);
@@ -244,7 +237,7 @@
 		change(service_line,`status,`inactive);
 	}
 	changeLine( service_line, service_line["line_number"]:0);
-	
+	return true;
     }
 
     
@@ -257,9 +250,17 @@
 	boolean start_inetd = false;
 	if (inetd_status != `off)
 	    start_inetd = true;
-
-		
-	return $["start_inetd":start_inetd, "services":[]];
+	list services = [];
+	foreach(`line, inetd_conf,
+		``{
+	    symbol status = lookup(line, `status, `comment);
+	    if ( status == `active)
+	    {
+		services = add(services,$["service_name": line["service"]:"",
+					  "service_status": "enable"]);
+	    }
+	});
+	return $["start_inetd":start_inetd, "inetd_services":services];
     }
 
     /**
@@ -267,12 +268,72 @@
      * something similar.
      * @return Summary of the configuration.
      */
-    global define string Summary () ``{
+    global define string Summary ()
+	``{
+	list services = [];
+	foreach(`line, inetd_conf,
+		``{
+	    symbol status = lookup(line, `status, `comment);
+	    if ( status == `active)
+	    {
+		services = add(services,$["service_name": line["service"]:"",
+					  "service_status": "enable"]);
+	    }
+	});
 	
-	return _("Summary of the configuration...");
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("Enabled Services"));
+	if (size(services)==0)
+	{
+	    summary = Summary::AddLine(summary,  Summary::NotConfigured ());
+	}
+	else
+	{
+	    summary = Summary::OpenList(summary);
+	    foreach(`s,services,``{
+		summary = Summary::AddListItem(summary, s["service_name"]:"error");
+	    });
+	    summary = Summary::CloseList(summary);
+	}
+	return summary;
     }
 
- 
+
+
+
+
+
+
+
+
+
+    
+     /**
+     * Build a textual summary that can be used e.g. in inst_hw_config () or
+     * something similar.
+     * @return Summary of the configuration.
+     */
+    global define void Set (map settings) ``{
+	if (settings["start_inetd"]:false && size(settings["inetd_services"]:[])>0)
+	{
+	    inetd_status = `on_custom;
+	    ReadFile();
+	    foreach(`s, settings["inetd_services"]:[], ``{
+		if (s["service_status"]:"" == "enable" || s["service_status"]:"" == "disable") {
+		    ChangeServiceStatus(s["service_name"]:"none", s["service_status"]:"none");
+		}
+	    });
+	    
+	}
+	else if (settings["start_inetd"]:false && size(settings["inetd_services"]:[])==0)
+	{
+	    inetd_status = `on_default;
+	} else {
+	    inetd_status = `off;
+	}
+
+	return;
+    }
 
 
     global define deleteLine (  integer line_number )
@@ -323,7 +384,7 @@
     
     /**	
      * Change a line in DB    
-     * Return value: internal-DB map     
+     * @return  internal-DB map     
      */
 
     global define changeLine (   map new_line, integer line_number )
@@ -346,7 +407,7 @@
 
     /**
      * Convert SCR-DB Line to internal DB line     
-     * Return value: internal-DB map     
+     * @return internal-DB map     
      */
 
     global define convertScrLineToInternal ( map line, string service, symbol status, integer line_number )
@@ -407,11 +468,25 @@
     };
 
 
+    /**
+     * Make all services inactive
+     * @return List-DB map     
+     */
 
-
+    global define makeAllInactive ()
+    ``{
+	list table_input = [];
+	
+	return maplist(`line, inetd_conf, ``{
+	    if (line[`status]:`none == `active)
+		line[`status] = `inactive;
+	    return line;
+	});
+    }
+    
     /**
      * Convert Internal Map into the Format, the list widget needs     
-     * Return value: List-DB map     
+     * @return List-DB map     
      */
 
     global define convertInternalToList ( )
@@ -421,11 +496,15 @@
 	foreach(`line, inetd_conf, ``{
 
 	    symbol status = lookup(line, `status, `comment);
-
+	   
 	    if ( status != `comment )
 	    {
-		string                   status_str = "  #   ";
-		if ( status == `active ) status_str = "Active!  ";
+		string status_str = "  #   ";
+		
+		if ( status == `active )
+		{
+		    status_str    = "Active!  ";
+		}
 
 		// todo: fix widget
 		// if line to long, helptext is too small
@@ -461,7 +540,7 @@
      * Write inetd_conf to disk
      * - Convert internal DB into SCR format
      * - write      
-     * Return value: -     
+     * @return -     
      */
 
     global define WriteInetdConf ( )
@@ -506,9 +585,13 @@
 	    file = file + inetd_conf_line;
 
 	});
-	if (size(file)>0) {
+	
+	if (size(file)>0)
+	{
 	    SCR::Write(.target.string, "/etc/inetd.conf", file);
-	} else {
+	}
+	else
+	{
 	    Report::Error(_("Configuration is empty"));
 	}
     }
