@@ -27,6 +27,7 @@ y2milestone("Inetd auto started");
 
 import "Inetd";
 include "inetd/wizards.ycp";
+include "inetd/dialogs.ycp";
 
 list args = WFM::Args();
 if(size(args) <= 0) {
@@ -42,8 +43,15 @@ if(!is(WFM::Args(0), map)) {
 map settings = select(args, 0, $[]);
 y2milestone("Imported: (%1)", settings);
 
+symbol ret = PackageAutoDialog();
+y2debug("ret=%1", ret);
+if(ret == `back) {
+    return $[];
+}
+
 Inetd::Import(settings);
-symbol ret = InetdAutoSequence();
+
+ret = InetdAutoSequence();
 y2debug("ret=%1", ret);
 
 y2milestone("Inetd auto finished");

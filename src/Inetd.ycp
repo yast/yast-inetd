@@ -64,6 +64,8 @@ import "Report";
 import "Summary";
 
 include "inetd/routines.ycp";
+include "inetd/default_conf_inetd.ycp";
+include "inetd/default_conf_xinetd.ycp";
 
 /**
  * Abort function
@@ -213,6 +215,29 @@ global define boolean Write() ``{
     // write settings
     if(Abort()) return false;
 //    y2milestone("%1, %2", configured_service, netd_status);
+    if (write_only) {
+	if (configured_service == `inetd) {
+	    if (netd_status == 0) {
+		Runlevel::ServiceAdjust("inetd", "enable");
+	    }
+	    else {
+		Runlevel::ServiceAdjust("inetd", "disable");
+	    }
+	    Runlevel::ServiceAdjust("xinetd", "disable");
+	    SCR::Write(.etc.inetd_conf.services, netd_conf);
+	}
+	else if (configured_service == `xinetd) {
+	    if (netd_status == 0) {
+		Runlevel::ServiceAdjust("xinetd", "enable");
+	    }
+	    else {
+		Runlevel::ServiceAdjust("xinetd", "disable");
+	    }
+	    Runlevel::ServiceAdjust("inetd", "disable");
+	    SCR::Write(.etc.xinetd_conf.services, netd_conf);
+	}
+    }
+    else {
     if (netd_status != 0) {
 	y2milestone("Nothing changed  --- installed services will be stopped");
 	if (inetd_installed == 0) {
@@ -287,7 +312,8 @@ global define boolean Write() ``{
 	    }
 	}
     }
-    
+    }
+
     y2milestone("Writting done\n");
 
     // in future: catch errors
@@ -304,14 +330,49 @@ global define boolean Write() ``{
 }
 
 /**
+ * Only Write settings
+ * @return boolean True on success
+ */
+global define boolean WriteOnly () ``{
+    write_only = true;
+    return Write();
+}
+
+/**
  * Get all inetd settings from the first parameter
  * (For use by autoinstallation.)
  * @param settings The YCP structure to be imported.
  * @return boolean True on success
  */
 global define boolean Import (map settings) ``{
-    // TODO FIXME: your code here (fill the above mentioned variables)...
-    sleep(3000);
+//    sleep(3000);
+    /*
+     * if map contains "netd_service", whole configuration is filled from this map.
+     * if "netd_service" is not found, configuration is generated from default values
+     * stored if default_conf_*.ycp.
+     */
+    if (settings["netd_service"]:`none == `inetd) {
+	inetd_conf    = settings["netd_conf"]:[];
+        inetd_status  = 0;
+	netd_service  = `inetd;
+	netd_status   = settings["netd_status"]:-1;
+	netd_conf     = inetd_conf;
+    }
+    else if (settings["netd_service"]:`none == `xinetd) {
+	xinetd_conf   = settings["netd_conf"]:[];
+        xinetd_status = 0;
+	netd_service  = `xinetd;
+	netd_status   = settings["netd_status"]:-1;
+	netd_conf     = xinetd_conf;
+    }
+    else if (settings["netd_service"]:`none == `none) {
+	inetd_conf    = default_conf_inetd["netd_conf"]:[];
+	xinetd_conf   = default_conf_xinetd["netd_conf"]:[];
+	inetd_status  = 0;
+	xinetd_status = 0;
+	netd_service  = `both;
+    }
+    configured_service = netd_service;
     return true;
 }
 
@@ -321,9 +382,14 @@ global define boolean Import (map settings) ``{
  * @return map Dumped settings (later acceptable by Import ())
  */
 global define map Export () ``{
-    // TODO FIXME: your code here (return the above mentioned variables)...
-    sleep(3000);
-    return $[];
+//    sleep(3000);
+    map config = $[];
+    config = add(config, "netd_conf",    netd_conf);
+    config = add(config, "netd_service", configured_service);
+    config = add(config, "netd_status",  netd_status);
+    y2milestone("%1", config);
+    return config;
+//    return $[];
 }
 
 /**

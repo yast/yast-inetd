@@ -45,6 +45,7 @@ if(!Inetd::Import(settings))
     return false;
 
 Progress::off();
+
 boolean ret = Inetd::WriteOnly();
 Progress::on();
 
