@@ -422,7 +422,7 @@ global define symbol InstallProvidedPackage(term service_info) ``{
 	//include "require.ycp";
 	// if installation failes
 	/* Translators: The package name is stored in %1. */
-	if (!InstallAndRemove(package_name, [], sformat(_("Package %1 will be installed"),
+	if (!Require::RequireAndConflict(package_name, [], sformat(_("Package %1 will be installed"),
 	    select(package_name, 0, "")))) {
 	//if (true) { // for debugging
 	    /* Translators: The package name is stored in %1. This is MessagePopup. */
