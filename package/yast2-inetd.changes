@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug  4 16:36:34 CEST 2003 - mvidner@suse.cz
+
+- Updated the installable packages list.
+- Added desktop file (supersedes y2cc file).
+- 2.8.2
+
+-------------------------------------------------------------------
 Tue Jul 22 14:31:46 CEST 2003 - mvidner@suse.cz
 
 - Autoinstalation:
