@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Aug 15 11:42:10 CEST 2002 - jsuchome@suse.cz
+
+- Merged proofread texts for the second translation round. 
+
+-------------------------------------------------------------------
 Fri Jul 12 16:30:08 CEST 2002 - arvin@suse.de
 
 - use proper namespace for Args and CallFunction (#16776)
