@@ -174,74 +174,15 @@ define symbol PackageDialog() ``{
 /**
  * Ask user for packages to install (inetd, xinetd, both)
  * in autoyast mode.
- * @return `back for abort, `next for continue
+ * Now that inetd is dropped, don't display anything and select xinetd
+ * @return `next for continue
  */
 define symbol PackageAutoDialog() ``{
-    any result = `both;
-
-    term contents =
-	`VBox(
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(2),
-		`Left(`Label(HELPS["install_auto_query"]:"")),
-		`HSpacing(2)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(6),
-		`VBox(
-		    /* Translators: Like PackageDialog() (previous). This is also messagebox. */
-		    `Left(`CheckBox(`id(`inetd),  _("Install &inetd"))),
-		    `Left(`CheckBox(`id(`xinetd), _("Install &xinetd"), true))
-		)
-	    ),
-	    `VSpacing(0.5),
-	    `HBox(
-		`PushButton(`id(`next), `opt(`default), Label::OKButton()),
-		`PushButton(`id(`back), Label::CancelButton())
-		//`HSpacing(2)
-	    ),
-	    `VSpacing(0.5)
-	);
-
-
     if(Inetd::netd_service == `none) {
-	UI::OpenDialog(contents);
-	any ret = UI::UserInput();
-	if (ret == `cancel)	// window-close button
-	{
-	    ret = `back;
-	}
-	boolean install_inetd  = (boolean) UI::QueryWidget(`id(`inetd),  `Value);
-	boolean install_xinetd = (boolean) UI::QueryWidget(`id(`xinetd), `Value);
-	UI::CloseDialog();
-	// user press Cancel
-	if(ret == `back) {
-	    return (symbol) ret;
-	}
-	ret = `back;
-	if(install_inetd) {
-	    Package::DoInstallAndRemove (["inetd"], []);
-	    IsInstalledClearCache ();
-	    Inetd::netd_service    = `inetd;
-	    Inetd::inetd_installed = 0;
-	    ret = `next;
-	}
-	else
-	    Inetd::inetd_installed = -1;
-	if(install_xinetd) {
 	    Package::DoInstallAndRemove (["xinetd"], []);
 	    IsInstalledClearCache ();
 	    Inetd::netd_service     = `xinetd;
 	    Inetd::xinetd_installed = 0;
-	    ret = `next;
-	}
-	else
-	    Inetd::xinetd_installed = -1;
-	if(install_inetd && install_xinetd)
-	    Inetd::netd_service = `both;
-	return (symbol) ret;
     }
     return `next;
 }
