@@ -136,6 +136,11 @@ global list netd_conf            = [];
 global list xinetd_packages      = [];
 
 /**
+ * This variable holds informations about main package (inetd or xinetd)
+ */
+global list service_package      = [];
+
+/**
  * Required packages for Autoinstallation write
  */
 global list required_packages    = [];
@@ -208,6 +213,39 @@ global define boolean Read() ``{
 }
 
 /**
+ * This function solves differences between new (after installing requested packages)
+ * xinetd configuration and old small configuration created by user.
+ * @param netd_conf holds new configuration
+ * @param old_conf  holds old configuration
+ * @return list Returnes new solved xinetd configuration (ready for Write()).
+ */
+global define list mergeAfterInstall(list netd_conf, list old_conf) ``{
+    foreach(`oldline, old_conf, ``{
+	if(find(oldline["iid"]:"", "inst") != -1) { // found new package entry
+	    foreach(`newline, netd_conf, ``{
+		if(newline["service"]:"" == oldline["service"]:"!") { // check for selected service
+		    if(newline["protocol"]:"" == oldline["protocol"]:"!") {
+			if(find(newline["server"]:"", oldline["server"]:"!") != -1) { // change status
+			    if(oldline["enabled"]:false == true) {
+				newline = add(newline, "enabled", true);
+				newline = add(newline, "changed", true);
+				netd_conf = add(netd_conf, newline);
+			    }
+			    else {
+				newline = add(newline, "enabled", false);
+				newline = add(newline, "changed", true);
+				netd_conf = add(netd_conf, newline);
+			    }
+			}
+		    }
+		}
+	    });
+	}
+    });
+    return netd_conf;
+}
+
+/**
  * Write all inetd settings
  * @return true on success
  */
@@ -229,6 +267,15 @@ global define boolean Write() ``{
 	],
 	""
     );
+
+    if(size(required_packages) != 0) {
+	y2milestone("Installing required packages...");
+	include "require.ycp";
+	DoInstallAndRemove(required_packages, []);
+	list old_conf = netd_conf;
+	netd_conf     = SCR::Read(.etc.xinetd_conf.services); // Refresh configuration
+	netd_conf     = mergeAfterInstall(netd_conf, old_conf);
+	} // done
 
     y2milestone("Calling write:\n");
     // write settings
@@ -424,6 +471,8 @@ global define boolean Import (map settings) ``{
 	xinetd_status = 0;
 	netd_service  = `both;
     }
+    service_package    = settings["service_package"]:[];
+    required_packages  = settings["xinetd_packages"]:[];
     configured_service = netd_service;
     return true;
 }
@@ -436,9 +485,11 @@ global define boolean Import (map settings) ``{
 global define map Export () ``{
 //    sleep(3000);
     map config = $[];
-    config = add(config, "netd_conf",    netd_conf);
-    config = add(config, "netd_service", configured_service);
-    config = add(config, "netd_status",  netd_status);
+    config = add(config, "netd_conf",       netd_conf);
+    config = add(config, "netd_service",    configured_service);
+    config = add(config, "netd_status",     netd_status);
+    config = add(config, "service_package", service_package);
+    config = add(config, "xinetd_packages", required_packages);
     y2milestone("%1", config);
     return config;
 //    return $[];

@@ -143,6 +143,7 @@ global define symbol PackageDialog() ``{
  * @return `back for abort, `next for continue
  */
 global define symbol PackageAutoDialog() ``{
+    any result = `both;
 
     term contents =
 	`VBox(
@@ -175,6 +176,37 @@ global define symbol PackageAutoDialog() ``{
     //Inetd::inetd_installed  = GetInetdInstalled();
     //Inetd::xinetd_installed = GetXinetdInstalled();
 
+    // Detect main packages (syntax check)
+    string inetdp  = select(Inetd::service_package, 0, "");
+    string xinetdp = select(Inetd::service_package, 1, "");
+
+    // Main logic: :o)
+    if(size(Inetd::service_package) == 2) { // both must be correct
+	if((inetdp == "inetd") && (xinetdp == "xinetd")) {
+	    result = `next; // Correct
+	}
+	else {
+	    result = `back; // error
+	}
+    }
+    else {
+	if(xinetdp != "") { // second parameter must be empty (default)
+	    result = `back;
+	}
+	else {
+	    if((inetdp == "inetd") || (inetdp == "xinetd")) {
+		result = `next;
+	    }
+	    else {
+	        result = `back;
+	    }
+	}
+    }
+
+    if(result == `next) {
+	return `next; // Skip package dialog
+    } //else continue selection
+
     // Show Dialog
     UI::OpenDialog(contents);
     any ret = UI::UserInput();
@@ -198,8 +230,9 @@ global define symbol PackageAutoDialog() ``{
 	    Inetd::xinetd_installed = 0;
 	}
 	if(size(packages) > 0) {
-	    include "require.ycp";
-	    DoInstallAndRemove(packages, []);
+	    //include "require.ycp";
+	    //DoInstallAndRemove(packages, []);
+	    Inetd::service_package  = packages;
 	}
     }
 
