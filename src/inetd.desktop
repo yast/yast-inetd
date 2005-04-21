@@ -17,7 +17,7 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=
 X-SuSE-YaST-AutoInstClonable=true
 
-Icon=inetd
+Icon=yast-inetd
 Exec=/sbin/yast2 inetd 
 
 Name=Network Services (xinetd)
