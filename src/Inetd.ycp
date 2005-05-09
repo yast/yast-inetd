@@ -717,25 +717,25 @@ global list<string> ServiceAttributes(string id)
     return maplist(string attribute, any val, netd_conf[tointeger(id)]:$[], {return attribute;});
 }
 
-global string ServiceGetStr(string id, string attribute, string default)
+global string ServiceGetStr(string id, string attribute, string dflt)
 {
     if (haskey(netd_conf[tointeger(id)]:$[], attribute))
 	return (string)netd_conf[tointeger(id), attribute]:nil;
-    return default;
+    return dflt;
 }
 
-global integer ServiceGetInt(string id, string attribute, integer default)
+global integer ServiceGetInt(string id, string attribute, integer dflt)
 {
     if (haskey(netd_conf[tointeger(id)]:$[], attribute))
 	return (integer)netd_conf[tointeger(id), attribute]:nil;
-    return default;
+    return dflt;
 }
 
-global boolean ServiceGetTruth(string id, string attribute, boolean default)
+global boolean ServiceGetTruth(string id, string attribute, boolean dflt)
 {
     if (haskey(netd_conf[tointeger(id)]:$[], attribute))
 	return (boolean)netd_conf[tointeger(id), attribute]:nil;
-    return default;
+    return dflt;
 }
 
 global boolean ServiceEnabled(string id)
