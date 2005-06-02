@@ -322,7 +322,7 @@ global define boolean Write() ``{
 		y2milestone("%1 was stopped --- enabling and starting service", "xinetd");
 		if (!write_only)
 		    Service::Start ("xinetd");
-		Service::Enable ("xionetd");
+		Service::Enable ("xinetd");
 	    }
 	}
     }
