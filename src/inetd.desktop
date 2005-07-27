@@ -21,7 +21,7 @@ Icon=yast-inetd
 Exec=/sbin/yast2 inetd 
 
 Name=Network Services (xinetd)
-GenericName=Configure Network Services (xinetd)
+GenericName=Configure network services (xinetd)
 Name[cs]=Síťové služby (xinetd)
 GenericName[cs]=Konfigurovat síťové služby (xinetd)
 Name[de]=Netzwerkdienste (xinetd)
