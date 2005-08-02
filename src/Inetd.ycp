@@ -175,6 +175,7 @@ global list<map <string, any> > netd_conf            = [];
  * These variables contains return values from Service::Status() calls.
  */
 global integer netd_status       = -1;
+global integer netd_status_read  = netd_status;
 
 /**
  * This variable is used for new iid "generator"
@@ -208,6 +209,7 @@ global define boolean Read() ``{
     netd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
     
     netd_status = Service::Status("xinetd");
+    netd_status_read = netd_status;
 
     if(Abort()) return false;
     ProgressNextStage(_("Finished"));
@@ -300,7 +302,7 @@ global define boolean Write() ``{
 	SCR::Write(.etc.xinetd_conf.services, netd_conf);
 
 	if (netd_status != 0) { // want to stop
-	    if (netd_status==0) { // was running --- stop
+	    if (netd_status_read==0) { // was running --- stop
 		y2milestone("%1 was running --- stoping and disabling service", "xinetd");
 		if (!write_only)
 		    Service::Stop ("xinetd");
@@ -312,7 +314,7 @@ global define boolean Write() ``{
 	}
 	else { // want to start
 	    // current is running - only reload
-	    if (netd_status==0) {
+	    if (netd_status_read==0) {
 		y2milestone("%1 was running --- calling force-reload", "xinetd");
 		if (!write_only)
 		    Service::RunInitScript("xinetd", "force-reload");
