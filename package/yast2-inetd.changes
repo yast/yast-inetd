@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug  2 14:12:35 CEST 2005 - locilka@suse.cz
+
+- fixed bug #77113, xinetd activation didn't work
+- 2.12.3
+
+-------------------------------------------------------------------
 Tue Aug  2 10:31:48 CEST 2005 - locilka@suse.cz
 
 - changing maintainer
