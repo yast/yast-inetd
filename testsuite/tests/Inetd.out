@@ -31,6 +31,13 @@ Dump	Write --- write xinetd
 Dump	  inetd and xinetd are installed and only inetd is running
 Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd stop" $["TERM":"raw"] 0
+Read	.init.scripts.exists "xinetd" true
+Read	.init.scripts.exists "xinetd" true
+Read	.init.scripts.exists "xinetd" true
+Read	.init.scripts.runlevel "xinetd" $["xinetd":$["start":[], "stop":[]]]
+Read	.init.scripts.comment "xinetd" $["xinetd":$[]]
 Return	true
 Dump	
 Dump	  ---
