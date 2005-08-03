@@ -2,6 +2,7 @@
 Tue Aug  2 14:12:35 CEST 2005 - locilka@suse.cz
 
 - fixed bug #77113, xinetd activation didn't work
+- fixed testsuites
 - 2.12.3
 
 -------------------------------------------------------------------
