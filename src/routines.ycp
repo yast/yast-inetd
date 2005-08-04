@@ -240,6 +240,36 @@ define term ServiceToTableItem (map service, integer ni_index) ``{
 }
 
 /**
+ * Sorts items for table of xinetd services
+ *
+ * @param  list <term> unsorted_terms
+ * @return list <term> sorted_terms
+ */
+define list <term> SortTableData (list <term> unsorted_terms, integer sort_by) {
+    list <term> sorted_terms = [];
+
+    // string as the service name
+    // list of integers of position in unsorted list (the same service name can exist twice or more)
+    map <string, list <integer> > helper_sorting_map = $[];
+    integer position = 0;
+    string service_name = "";
+    foreach (term item, unsorted_terms, {
+	service_name = (string) item[sort_by]:"";
+	helper_sorting_map[service_name] = add(helper_sorting_map[service_name]:[], position);
+	position = position + 1;
+    });
+
+    // map is sorted by the string service name by defualt
+    foreach (string service_name, list <integer> term_ids, helper_sorting_map, {
+	foreach (integer term_id, term_ids, {
+	    sorted_terms = add (sorted_terms, unsorted_terms[term_id]:`item(""));
+	});
+    });
+
+    return sorted_terms;
+}
+
+/**
  * Converts configuration format from agent to table data structures
  * @param netd_conf netd_conf handles whole configuration of configured service
  * @return returnes table data
@@ -265,6 +295,11 @@ define list<term> CreateTableData(list<map <string, any> > netd_conf) ``{
     // table_input = find out which are installed
     // but that would require a better data model.
     // let's try doing with the current one.
+
+    // OK, let's start with sorting the data by the service name
+    // term field '2' is the service name
+    table_input = SortTableData(table_input, 3);
+
     return table_input;
 }
 

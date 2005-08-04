@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug  4 09:59:05 CEST 2005 - locilka@suse.cz
+
+- fixed bug #73052, table of services is sorted by the service name
+  by default
+- 2.12.4 
+
+-------------------------------------------------------------------
 Tue Aug  2 14:12:35 CEST 2005 - locilka@suse.cz
 
 - fixed bug #77113, xinetd activation didn't work
