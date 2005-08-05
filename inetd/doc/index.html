@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Network Services (inetd) - YaST2 configuration module</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-2">
+</head>
+<body>
+<h1>Network Services (inetd) - YaST2 configuration module</h1>
+<p> $Id$</p>
+<i><a href="mailto:mvidner@suse.cz">Martin Vidner</a><br>
+<a href="mailto:phadraba@suse.cz">Petr Hadraba</a></i><br>
+<h2>Features</h2>
+The inetd module handles configuration for inetd and xinetd.<br>
+<h3>Inetd</h3>
+The configuration of inetd is stored in /etc/inetd.conf. All services
+are specified in this file.<br>
+<h3>XInetd</h3>
+The configuration of xinetd is stored in /etc/xinetd.conf and in
+/etd/xinetd.d  directory. Each service has configuration stored in his
+own file there in  this directory.<br>
+Internet super-server (inetd and xinetd) is executing services (like
+finger,  echo, telnet...) acording to the network requests.<br>
+<h2>Background Documentation</h2>
+<ul>
+  <li><a href="man:inetd%288%29">man inetd(8)</a> </li>
+  <li><a href="man:xinetd%288%29">man xinetd(8)</a> </li>
+  <li><a href="http://www.linuxbase.org/spec/gLSB/gLSB/iniscrptact.html">Linux
+Standard  Base, Init Script Actions</a> </li>
+</ul>
+<h2>Workflow</h2>
+<h3> Changes since SL 8.1</h3>
+The main change is handling xinetd. Xinetd was selected as default for
+SL 8.2.<br>
+The configuration scheme is the following:<br>
+Each service (like proftpd, finger-server, telnet-server, ...) has his
+own xinetd configuration in his own .rpm package. YaST2 module handles
+informations  about all installable services using xinetd. User can
+install these packages  using this inetd module (see screenshots).<br>
+<h3>Overview<br>
+</h3>
+<div align="center"><a href="workflow.png" target="_blank"><img
+ src="workflow.png" alt="workflow" width="552" height="1000" border="0"
+ align="middle"> </a> </div>
+<h3>Inetd module in autoyast environment</h3>
+<ul>
+  <li><a href="autoyast.html">autoyast</a></li>
+</ul>
+<br>
+<h3>Individual dialogs</h3>
+<p><img src="inetd-2-packagecheck-000.png" alt="packagecheck"
+ width="296" height="174">     <img src="inetd-4-servicechoice-000.png"
+ alt="servicechoice" width="235" height="138"> </p>
+<p><img src="inetd-5-maindialog-000.png" alt="maindialog - inetd"
+ width="800" height="600"> </p>
+<p><img src="inetd-5-maindialog-001.png" alt="maindialog - xinetd"
+ width="800" height="600"> </p>
+<p><img src="inetd-6-servicedetails-000.png"
+ alt="servicedetails - inetd" width="800" height="600"> </p>
+<p><img src="inetd-6-servicedetails-001.png"
+ alt="servicedetails - xinetd" width="800" height="600"> </p>
+<p><img
+ src="inetd-5-maindialog-002.png"
+ alt="servicecheck" width="307" height="104"> </p>
+<h2>Implementation</h2>
+<ul>
+  <li><a href="inside.html">module inside</a> </li>
+  <li><a href="autodocs/">Autodocs</a></li>
+</ul>
+<p><br>
+</p>
+</body>
+</html>

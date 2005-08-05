@@ -1,0 +1,152 @@
+/**
+ * File:	include/inetd/helps.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Help texts of all the dialogs
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "inetd";
+
+/**
+ * All helps are here
+ */
+map HELPS = $[
+
+    /* Popup::Error */
+    "no_install" : _("No packages selected. Configuration aborted."),
+
+    /* Not used! */
+    "install_packages" : _("Selected packages will be installed."),
+
+    /* Read dialog help 1/2 */
+    "read" : _("<p><b><big>Initializing xinetd Configuration</big></b><br>
+Please wait...<br></p>
+") +
+
+    /* Read dialog help 2/2 */
+    _("<p><b><big>Aborting the Initialization Process:</big></b><br>
+Safely abort the configuration utility by pressing <b>Abort</b> now.</p>
+"),
+
+    /* Write dialog help 1/2 */
+    "write" : _("<p><b><big>Saving xinetd Configuration</big></b><br>
+Please wait...<br></p>
+") +
+
+    /* Write dialog help 2/2 */
+_("<p><b><big>Aborting the Save Process:</big></b><br>
+Abort saving by pressing <b>Abort</b>.
+An additional dialog will inform you whether it is safe to do so.
+</p>
+"),
+
+    /* Configure1 dialog help 1/2 */
+    "c1" : _("<p><b><big>Network Service Configuration</big></b><br>
+Click <b>Enable</b> to enable network services managed by a super-server
+configuration. To stop the super-server, click <b>Disable</b>.</p>
+") +
+"<p><br></p>" +
+    _("<p><b><big>Configuration Service Status:</big></b><br>
+All services marked with <b>X</b> in column <b>Ch</b> were edited
+and will be changed in the system configuration.</p>
+") +
+    _("<p><b><big>Services Status:</big></b><br>
+All services marked with <b>---</b> are inactive (locked).
+All services marked with <b>On</b> are active (unlocked).
+All services marked with <b>NI</b> are not installed and cannot be configured.</p>") +
+    _("<p><b><big>Changing Service Status:</big></b><br>
+Select the service to enable or disable and press <b>Toggle Status (On or Off)</b>.</p>
+") +
+    _("<p><b><big>Editing Services:</big></b><br>
+Select the service to edit and press <b>Edit</b>.</p>
+") +
+    _("<p><b><big>Deleting Services:</big></b><br>
+Select the service to delete and press <b>Delete</b>.</p>
+") +
+_("<p><b><big>Adding a New Entry:</big></b>
+Click <b>Create</b> and complete the form.</p>
+") +
+"<p><br></p>" +
+    _("<p><b><big>Aborting Configuration:</big></b>
+Abort the configuration by pressing the <b>Abort</b> button.
+If you do so, all your changes will be lost and the original configuration will remain untouched.</p>
+"),
+
+];
+
+    /**
+     * Help for the EditOrCreateServiceDlg () dialog.
+     * @return The help text.
+     */
+    define string EditCreateHelp () ``{
+
+	return _("
+<p>To create a valid entry (service) for the super-server,
+enter</p>
+")+
+
+_("<ul>
+<li>service name
+<li>RPC version (optional)
+<li>socket type
+<li>protocol
+<li>wait/nowait
+<li>user
+<li>group
+<li>server program
+<li>server program arguments
+</ul>")+
+
+_("<p>This is a short description. For details, see <b>info xinetd.conf</b>.</p>
+")+
+
+_("<p>Enter a valid service name into the <b>service</b> field.
+</p>
+")+
+
+_("<p>The <b>socket type</b> should be stream, dgram, raw, or seqpacket,
+depending on whether the service is stream-based, is datagram-based,
+requires direct access to IP, or requires reliable sequential datagram
+transmission.</p>
+")+
+
+_("<p>The <b>protocol</b> must be a valid protocol as specified in /etc/protocols.
+Examples include <i>tcp</i>,<i>udp</i>,<i>rpc/tcp</i>, and <i>rpc/udp</i>.
+</p>
+")+
+
+_("<p>The <b>wait/nowait</b> entry determines if the service is
+single-threaded or multithreaded and whether xinetd accepts the
+connection or the server program accepts the connection. If its value is
+<b>yes</b>, the service is single-threaded. This means that xinetd 
+starts the server then stops handling requests for the service
+until the server dies and that the server software accepts the
+connection. If the attribute value is <b>no</b>, the service is
+multithreaded and xinetd keeps handling new service requests and
+xinetd accepts the connection. 
+<i>udp/dgram</i> services normally expect the value to be <b>yes</b>,
+because udp is not connection oriented. <i>tcp/stream</i> servers
+normally expect the value to be <b>no</b>.</p>
+")+
+
+_("<p>The server will be run with the permissions of the user selected in
+<b>User</b>. This is useful to make services run with permissions
+less than root.
+</p>
+")+
+
+_("<p>In <b>Server</b>, enter the path name of the program to
+be executed by the super-server when a request reaches its socket.
+Parameters for this program can be specified in <b>Server Arguments</b>.
+
+</p>
+");
+
+    }
+
+/* EOF */
+}

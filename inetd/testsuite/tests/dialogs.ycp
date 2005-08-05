@@ -1,0 +1,75 @@
+/**
+ * File:        testsuite/tests/dialogs.ycp
+ * Package:     Configuration of inetd
+ * Summary:     Testsuite for routines in dialogs.ycp and dialogs.ycp
+ * Authors:     Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ *
+ * This is testsuite for dialogs.ycp source file.
+ * These tests are checking routines implemented
+ * in dialogs.ycp.
+ *
+ * Tested functions:
+ *   indexTable()
+ */
+
+{
+    // testedfiles: dialogs.ycp Testsuite.ycp
+
+include "testsuite.ycp";
+import "Inetd";
+include "inetd/dialogs.ycp";
+import "Report";
+
+Report::DisplayErrors(false, 0);
+
+// already in dialogs.ycp
+// typedef list< map<string, any> > services_t;
+
+services_t netd_conf = [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": true,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w"]
+	];
+
+services_t netd_conf_none = [
+	$["iid": "whatever",
+	    "comment": "My service",
+	    "enabled": false,
+	    "service": "finger",
+	    "socket_type": "stream",
+	    "protocol": "tcp",
+	    "wait": false,
+	    "user": "nobody",
+	    "server": "/usr/sbin/tcpd",
+	    "server_args": "in.fingerd -w",
+            "deleted": true]
+	];
+
+DUMP("\nAll services are available\n");
+
+Inetd::netd_conf = netd_conf;
+
+indexTable();
+
+DUMP(iid_to_index);
+DUMP(index_to_iid);
+
+DUMP("\nAll services are marked as deleted\n");
+
+Inetd::netd_conf = netd_conf_none;
+
+indexTable();
+
+DUMP(iid_to_index);
+DUMP(index_to_iid);
+
+}

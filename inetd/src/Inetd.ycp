@@ -1,0 +1,769 @@
+/**
+ * File:	modules/Inetd.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Data for configuration of inetd, input and output functions.
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of inetd.
+ * Input and output routines.
+ */
+
+{
+
+    /**
+     * @struct service
+     * <pre>
+     * A service map looks like this:
+     * $[
+     ** as seen on TV^H^H (x)inetd.conf:
+     *   "service": string      // * different from equally named field above
+     *   "rpc_version": string
+     *   "socket_type": string
+     *   "protocol": string
+     *   "wait": boolean
+     *   "max": integer         // inetd only
+     *   "user": string         // *
+     *   "group": string
+     *   "server": string
+     *   "server_args": string
+     *   "comment": string      // possibly multiline, without #
+     *   "enabled": boolean     // service is active
+     ** bookkeeping fields:
+     *   "iid": string          // internal id, use as table `id
+     *                          //   Iid is necessary because there may be multiple variants
+     *                          //   of the same service. See next for iid handling.
+     *   "changed": boolean     // when writing, unchanged services are ignored
+     *                          //   new services (created) must be set as changed
+     *                          //   see changeLine() and see addLine() for more details
+     *   "deleted": boolean     // when deleting, this is set to TRUE and changed
+     *                          // must be set too (see deleteLine())
+     *   "script": string	// which configuration file this comes from
+     *   "package": string	// which rpm it is in
+     ** other fields:
+     * When handling existing maps, take care to preserve any other fields
+     * that may be present!
+     *
+     *  "unparsed": string	// what the agent could not parse
+     * ]
+     *
+     * path netd = .whatever.inetd or .whatever.xinetd;
+     *
+     * SCR::Read (.etc.inetd_conf.services) -> list of inetd configuration
+     * SCR::Read (.etc.xinetd_conf.services) -> list of xinetd configuration
+     * SCR::Write (.etc.inetd_conf.services, list) -> boolean
+     * SCR::Write (.etc.xinetd_conf.services, list) -> boolean
+     *
+     * "iid" handling:
+     * The agent (ag_netd) uses it to locate the service in the config
+     * files.  Its value should be considered opaque, except that
+     * ag_netd will check whether it contains a colon (:) and if not,
+     * consider it a new service.
+     * Thus new services get "new"+number.
+     * Non-installed services:
+     *   in normal ui they appear only in the table and get "NI"+number
+     *   in autoyast ui they get "inst"+number
+     * Where number is last_created
+     * </pre>
+     * @see <a href="../autoyast_proto.xhtml">autoyast docs</a>.
+     */
+
+module "Inetd";
+textdomain "inetd";
+
+import "Service";
+import "Progress";
+import "Report";
+import "Summary";
+import "Directory";
+import "String";
+
+typedef map<string, any> service_t;
+typedef list<service_t> services_t;
+
+global define services_t mergeAfterInstall(services_t system_c, services_t user_c);
+global define services_t MergeAyProfile (services_t target, services_t changes);
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global block<boolean> AbortFunction = nil;
+
+global define boolean Modified();
+
+include "inetd/default_conf_xinetd.ycp";
+include "inetd/routines.ycp";
+
+/**
+ * Abort function
+ * @return If AbortFunction not defined, returnes false
+ */
+global define boolean Abort() ``{
+    if(AbortFunction != nil)
+	return eval(AbortFunction) == true;
+    return false;
+}
+
+/**
+ * Configuration was changed
+ */
+global boolean modified = false;
+
+/**
+ * used in unused module inetd_proposal.ycp. This will be removed
+ */
+global boolean proposal_valid = false;
+
+/**
+ * For autoinstallation Write() process.
+ * Write_only means that the service will not be actually started,
+ * because it is done by init later.
+ * But also that the service data are only a patch to be applied to the system.
+ */
+global boolean write_only = false;
+
+/**
+ * If autoinstallation mode (true), we do not want to install RPMs during configuration.
+ * Otherwise (false) we allow all.
+ */
+global boolean auto_mode = false;
+
+/**
+ * Autoyast now does not initially call Import $[] anymore. But our
+ * design is so broken that we need it and will work hard to achieve it.
+ */
+global boolean autoyast_initialized = false;
+
+/**
+ * Data was modified? This function returnes modified variable.
+ * @return true if modified
+ */
+global define boolean Modified() ``{
+    //y2debug("modified=%1",modified);
+    return modified;
+};
+
+/**
+ * <pre>
+ * These variable holds inetd configuration.
+ * This is list of maps. Each map has the following structure:
+ *   $[
+ *     "comment": String,
+ *     "comment_inside": String, // this is agent internal
+ *     "enabled": boolean,
+ *     "group": String,
+ *     "user": String,
+ *     "iid": String,
+ *     "protocol": String,
+ *     "rpc_version": String,
+ *     "server": String,
+ *     "server_args": String,
+ *     "service": String,
+ *     "socket_type": String,
+ *     "unparsed": String,       // agent internal
+ *     "wait": boolean
+ *  ]
+ * </pre>
+ */
+global list<map <string, any> > netd_conf            = [];
+
+/**
+ * Is xinetd running?
+ * These variables contains return values from Service::Status() calls.
+ */
+global integer netd_status       = -1;
+global integer netd_status_read  = netd_status;
+
+/**
+ * This variable is used for new iid "generator"
+ */
+global integer last_created      = 0;
+
+/**
+ * Read all inetd settings
+ * @return true on success
+ */
+global define boolean Read() ``{
+
+    /* Inetd read dialog caption */
+    string caption = _("Initializing inetd Configuration");
+
+    integer steps = 1;
+
+    Progress::New( caption, " ", steps, [
+	    _("Read the Configuration"),
+	], [
+	    _("Reading the configuration..."),
+	    _("Finished")
+	],
+	""
+    );
+
+    integer read_status = 0;
+    // read database
+    if(Abort()) return false;
+
+    netd_conf = (list<map <string, any> >) SCR::Read(.etc.xinetd_conf.services);
+    
+    netd_status = Service::Status("xinetd");
+    netd_status_read = netd_status;
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+
+    if(Abort()) return false;
+    modified = false;
+    Progress::Finish();
+    return true;
+}
+
+/**
+ * This function solves differences between new
+ * (after installing requested packages)
+ * xinetd configuration and the configuration edited by the user.
+ * <pre>
+ * <b>In normal mode</b>:
+ * take the system services
+ *   if it matches a service in the ui (ServicesMatch)
+ *     use the ui data
+ * (not-installed ones are not a part of netd_conf, they
+ * only enter the table in mergexinetdconfs)
+ * Deleted services: OK.
+ * Added services: a separate pass needed
+ * </pre>
+ * TODO reduce the quadratic complexity.
+ * @param system_conf holds new configuration (on the system)
+ * @param edited_conf holds old configuration (UI)
+ * @return list Returnes new solved xinetd configuration (ready for Write()).
+ */
+global define services_t MergeEditedWithSystem (services_t system_conf, services_t edited_conf) ``{
+    service_t new_entry = nil;
+
+    // Take system services as the basis
+    // (they include the newly installed ones)
+    // and replace most of them with their edited counterparts
+    // that also takes care of deleted services
+    // but not of added ones
+    system_conf = maplist(map<string, any> system_s, system_conf, ``{
+	new_entry = system_s;
+	foreach(map<string, any> edited_s, edited_conf, ``{
+	    if (ServicesMatch (system_s, edited_s))
+	    {
+		new_entry = edited_s;
+	    }
+	});
+	return new_entry;
+    });
+
+    // now the added services
+    services_t added = filter (service_t edited_s, edited_conf,
+			 ``( find (edited_s["iid"]:"", "new") == 0 ));
+    return flatten ([system_conf, added]);
+}
+
+/**
+ * Write all inetd settings
+ * @return true on success
+ */
+global define boolean Write() ``{
+
+    /* Inetd read dialog caption */
+    string caption = _("Saving inetd Configuration");
+
+    integer steps = 1;
+
+    Progress::New(caption, " ", steps, [
+	    _("Write the settings"),
+	], [
+	    _("Writing the settings..."),
+	    _("Finished")
+	],
+	""
+    );
+
+    y2milestone("Calling write:\n");
+    // write settings
+    if(Abort()) return false;
+
+    if (write_only) {
+	// enable/disable the current service
+	Service::Adjust ("xinetd", (netd_status == 0)? "enable": "disable");
+	// YUCK, looks like autoinst part, should be done in inetd_auto.ycp
+	services_t new_conf = [];
+	new_conf  = (services_t) SCR::Read(.etc.xinetd_conf.services);
+	netd_conf = mergeAfterInstall(new_conf, netd_conf);
+	SCR::Write(.etc.xinetd_conf.services, netd_conf);
+    }
+    else {
+
+	SCR::Write(.etc.xinetd_conf.services, netd_conf);
+
+	if (netd_status != 0) { // want to stop
+	    if (netd_status_read==0) { // was running --- stop
+		y2milestone("%1 was running --- stoping and disabling service", "xinetd");
+		if (!write_only)
+		    Service::Stop ("xinetd");
+		Service::Disable ("xinetd");
+	    } // else --- leave stopped
+	    else {
+		y2milestone("%1 was stopped --- leaving unchanged", "xinetd");
+	    }
+	}
+	else { // want to start
+	    // current is running - only reload
+	    if (netd_status_read==0) {
+		y2milestone("%1 was running --- calling force-reload", "xinetd");
+		if (!write_only)
+		    Service::RunInitScript("xinetd", "force-reload");
+	    }
+	    // if stopped - enable and start
+	    else {
+		y2milestone("%1 was stopped --- enabling and starting service", "xinetd");
+		if (!write_only)
+		    Service::Start ("xinetd");
+		Service::Enable ("xinetd");
+	    }
+	}
+    }
+
+
+    y2milestone("Writing done\n");
+
+    // in future: catch errors
+    if(false) Report::Error (_("Cannot write settings!"));
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+
+    if(Abort()) return false;
+    Progress::Finish();
+    return true;
+}
+
+/**
+ * Only Write settings
+ * @return boolean True on success
+ */
+global define boolean WriteOnly () ``{
+    write_only = true;
+    return Write();
+}
+
+/**
+ * Merges autoinstall profile into the system configuration.
+ * @param system_c holds new configuration (on the system)
+ * @param user_c  holds old configuration (auto: profile + defaults)
+ * @return list Returnes new solved xinetd configuration (ready for Write()).
+ * @see MergeAyProfile
+ */
+global define services_t mergeAfterInstall(services_t system_c, services_t user_c) ``{
+    return MergeAyProfile (system_c, user_c);
+}
+
+/**
+ * merges imported changes with services defaults
+ * @param changes imported changes
+ * @return complete configuration with user changes
+ * @see MergeAyProfile
+ */
+global define services_t mergeWithDefaults(services_t changes) ``{
+    return MergeAyProfile (default_conf, changes);
+}
+
+/**
+ * Removes keys from a map. Unlike the remove builtin, does not mind if
+ * the keys are already removed.
+ * @param m a map
+ * @param keys list of keys to remove
+ * @return the map without the specified keys
+ */
+global define map SafeRemove (map m, list keys) ``{
+    foreach (any key, keys, ``{
+	if (haskey (m, key))
+	{
+	    m = remove (m, key);
+	}
+    });
+    return m;
+}
+
+/**
+ * Merges AY profile items into a target list (defaults or system).
+ * @param target base list of services
+ * @param changes imported changes
+ * @return merged list of services
+ * @see <a href="../autoyast_proto.xhtml">autoyast docs</a>.
+ */
+global define services_t MergeAyProfile (services_t target, services_t changes) ``{
+    // for each change in the patch list:
+    foreach (map<string, any> change_s, changes, ``{
+	integer matches = 0;
+	// For compatibility and as a hook for workarounds
+	// if the matching turns out to be too clever:
+	// skip matching
+	string change_iid = change_s["iid"]:"";
+	if (find (change_iid, "new") != 0
+	    /* || find (change_iid, "inst") == 0*/ ) // do nothing if matches is 0 and we add the service
+	{
+	    // apply the change to the target list:
+	    target = maplist(service_t target_s, target, ``{
+		service_t new_entry = target_s;
+		if (ServicesMatch (change_s, target_s))
+		{
+		    // yippee, it matches
+		    matches = matches + 1;
+
+		    // Cannot do a simple union, because we don't
+		    // want to merge the "server" key field:
+		    // The "basename (package)" content generated by the
+		    // AY UI must be avoided.
+		    // And while merging, iid must be also preserved
+		    map to_merge = SafeRemove (change_s, ["server", "iid"]);
+		    new_entry = (service_t) union (new_entry, to_merge);
+		    new_entry = add (new_entry, "changed", true);
+		    // "enabled" is true - if not present
+		    new_entry = add (new_entry, "enabled",
+				     change_s["enabled"]:true);
+		}
+		return new_entry;
+	    });
+	}
+	/*
+	 * Not found in target? Three states happened:
+	 *  - Service is new (user wants forEx. telnet on port #53;-)
+	 *  - Service is from non-SuSE package
+	 *  - Service name or description is invalid
+	 */
+	if (matches == 0)
+	{
+	    target = add(target, change_s);
+	}
+	else if (matches > 1)
+	{
+	    y2warning ("Ambiguous match (%1): %2", matches, change_s);
+	}
+    });
+
+    //y2milestone("%1", changes);
+    //y2milestone("%1", target);
+
+    return target;
+}
+
+/**
+ * Get all inetd settings from the first parameter
+ * (For use by autoinstallation.)
+ * @param settings The YCP structure to be imported.
+ * @return boolean True on success
+ */
+global define boolean Import (map settings) ``{
+
+    //y2milestone("settings = %1", settings);
+    netd_conf   = mergeWithDefaults(settings["netd_conf"]:[]);
+    netd_status   = settings["netd_status"]:-1;
+
+    // common variables
+    last_created       = settings["last_created"]:0;
+    //y2milestone("%1", netd_conf);
+    return true;
+}
+
+/**
+ * Get only changed entries
+ * @param config complete configuration
+ * @return Returnse list of changes only
+ */
+global define services_t getChanged(services_t config) ``{
+    list<map <string, any> > defaults = [];
+    services_t changes  = [];
+    map  def_line = $[];
+    if (config == nil)
+	return changes;
+
+    defaults = default_conf;
+
+    // defaults not loaded --- get all services listed in config
+    if(defaults == [])
+	return config;
+
+    // Deleted services: so far they are exported
+    // But maybe better to allow only deleting added services (~ undo)
+    // and thus not export them.
+    foreach(map<string, any> line, config, ``{
+	// only changed ones...
+	if (line["changed"]:false) {
+	    // now trim the fields that are not necessary, because
+	    // they are a part of the defaults
+
+	    // new or installed services (iid is `^new.*' or `^inst.*')
+	    // are not trimmed
+	    string line_iid = line["iid"]:"";
+	    if (find(line_iid, "new") == 0 || find(line_iid, "inst") == 0) {
+		changes = add(changes, line);
+		return; // skip the following code
+	    }
+
+	    // Find coresponding entry in `defaults'.
+	    // Could use iid here because we started editing
+	    // with the defaults list
+	    // but it broke the testsuite.
+	    def_line = find (map<string, any> default_s, defaults, ``(
+				 ServicesMatch (line, default_s)
+				 ));
+
+	    // item not found
+	    // So, write this entry into `changes'
+	    if (def_line == nil) {
+		changes = add(changes, line);
+		return; // skip the following code
+	    }
+
+	    // especially for inetd, server must not be tcpd, because
+	    // we could trow away the real server which distinguishes
+	    // a service among its variants
+	    if (line["server"]:"" == "/usr/sbin/tcpd")
+	    {
+		string s = String::FirstChunk (line["server_args"]:"", " \t");
+		line = (map<string, any>) add (line, "server", s);
+	    }
+
+	    // for each item of the map
+	    foreach(string name, any val, line, ``{
+		// Remove it if its value is the default
+		// and it's not a key field or "enabled" (*).
+		// In particular, iid is trimmed here.
+		if (val == def_line[name]:nil &&
+		    !contains (["script", "protocol", "service", "server",
+				"enabled"], name))
+
+		{
+		    line = (map<string, any>) remove(line, name);
+		}
+	    });
+
+	    // "changed" is implicitly true for all Exported/Imported services
+	    line = (map<string, any>) remove (line, "changed");
+	    // "enabled" defaults to true in _Import_, so it would
+	    // have been wrong above (*) to match it against the
+	    // _system_ default of false.
+	    if (line["enabled"]:false)
+	    {
+		line = (map<string, any>) remove (line, "enabled");
+	    }
+
+	    changes = add(changes, line);
+	}
+    });
+
+    //y2milestone("%1", changes);
+    return changes;
+}
+
+/**
+ * Dump the inetd settings to a single map
+ * (For use by autoinstallation.)
+ * @return map Dumped settings (later acceptable by Import ())
+ */
+global define map Export () ``{
+//    sleep(3000);
+    map config = $[];
+    config = add(config, "netd_conf",       getChanged(netd_conf));
+    config = add(config, "netd_status",     netd_status);
+    config = add(config, "last_created",    last_created);
+    y2milestone("%1", config);
+    return config;
+}
+
+/**
+ * Create unsorted list of enabled services
+ * @return string Returnes string with RichText-formated list
+ */
+global define string mkeServiceSummary() ``{
+    string S = "";
+    foreach(map<string, any> line, netd_conf, ``{
+	//"enabled" defaults to true
+	if(line["enabled"]:true && !line["deleted"]:false) {
+	    S = sformat("%1<li>%2 <i>(%3)</i>",
+			S,
+			line["service"]:"",
+			line["protocol"]:"");
+	}
+    });
+    if(S == "")
+	S = _("<p><ul><i>All services are marked as stopped.</i></ul></p>");
+    return S;
+}
+
+/**
+ * Create a textual summary and a list of unconfigured cards
+ * @return summary of the current configuration
+ */
+global define string Summary() ``{
+    string S = "";
+    if(netd_conf == []) {
+	/*
+	 * Translators: Summary head, if nothing configured
+	 */
+	S = Summary::AddHeader(S, _("Network services"));
+	S = Summary::AddLine(S, Summary::NotConfigured());
+    }
+    else {
+	/*
+	 * Translators: Summary head, if something configured
+	 */
+	string head = sformat(_("Network services are managed via %1"), "xinetd");
+	S = Summary::AddHeader(S, head);
+	S = Summary::AddHeader(S, _("These services will be enabled"));
+	S = sformat("%1<ul>%2</ul></p>", S, mkeServiceSummary());
+    }
+    return S;
+}
+
+/**
+ * delete line in netd_conf
+ * @param line_number "iid" geted from table's item ID
+ */
+global define void deleteLine(any line_number) ``{
+    // delete
+    service_t current_line = find (service_t line, netd_conf,
+				   ``(line["iid"]:"0" == line_number));
+    if (current_line == nil)
+    {
+	y2internal ("can't happen");
+	current_line = $[];
+    }
+    // set "deleted" flag to true
+    current_line = add(current_line, "changed", true);
+    current_line = add(current_line, "deleted", true);
+    netd_conf    = maplist(map<string, any> line, netd_conf, ``{
+	if (line["iid"]:"0" == line_number) {
+	    return(current_line);
+	}
+	else {
+	    return(line);
+	}
+    });
+};
+
+/**
+ * add a line in DB
+ * @param new_line new_line contains new entry for global netd_conf configuration
+ * @return void
+ */
+global define void addLine(service_t new_line) ``{
+    // add
+    new_line  = add(new_line, "changed", true);
+    netd_conf = add(netd_conf, new_line);
+    return;
+}
+
+/**
+ * Change a line in DB
+ * @param new_line new_line contains changes for entry in netd_conf
+ * @param line_number line_number contains iid of changed entry in netd_conf
+ */
+global define void changeLine(service_t new_line, any line_number) ``{
+    // entry was changed - so set "changed" flag to true
+    new_line  = add(new_line, "changed", true);
+    netd_conf = maplist(map<string, any> line, netd_conf, ``{
+	if (line["iid"]:"0" == line_number) {
+	    return(new_line);
+	}
+	else {
+	    return(line);
+	}
+    });
+};
+/**
+ * Return required packages for auto-installation
+ * FIXME: Need to make this return the needed packages during installation
+ * @return map of packages to be installed and to be removed
+ */
+global define map AutoPackages() ``{
+	return ($["install": [], "remove": []]);
+
+}
+
+global void DBG (string i) {
+    y2internal ("%1", i);
+    y2milestone ("  netd_conf: %1",   netd_conf);
+}
+
+/* LiMaL interface */
+
+global list<string> GetServicesId(service_t mask)
+{
+    list<string> ids = [];
+    integer i = 0;
+    
+    while(size(netd_conf) > i) {
+	boolean fit = true;
+	if (mask != nil) {
+	    foreach(string key, any val, mask, {
+		if (fit && val != netd_conf[i,key]:nil)
+		    fit = false;
+	    });
+	}
+	if (fit)
+	    ids = add(ids, tostring(i));
+	i = i+1;
+    };
+    return ids;
+}
+
+global list<string> ServiceAttributes(string id)
+{
+    return maplist(string attribute, any val, netd_conf[tointeger(id)]:$[], {return attribute;});
+}
+
+global string ServiceGetStr(string id, string attribute, string dflt)
+{
+    if (haskey(netd_conf[tointeger(id)]:$[], attribute))
+	return (string)netd_conf[tointeger(id), attribute]:nil;
+    return dflt;
+}
+
+global integer ServiceGetInt(string id, string attribute, integer dflt)
+{
+    if (haskey(netd_conf[tointeger(id)]:$[], attribute))
+	return (integer)netd_conf[tointeger(id), attribute]:nil;
+    return dflt;
+}
+
+global boolean ServiceGetTruth(string id, string attribute, boolean dflt)
+{
+    if (haskey(netd_conf[tointeger(id)]:$[], attribute))
+	return (boolean)netd_conf[tointeger(id), attribute]:nil;
+    return dflt;
+}
+
+global boolean ServiceEnabled(string id)
+{
+    return ServiceGetTruth(id, "enabled", true);
+}
+
+global boolean ServiceDelete(string id)
+{
+    deleteLine(netd_conf[tointeger(id),"iid"]:"");
+    return true;
+}
+
+global boolean ServiceAdd(service_t service)
+{
+    addLine(service);
+    return true;
+}
+
+global boolean ServiceChange(string id, service_t service)
+{
+    changeLine(service, netd_conf[tointeger(id),"iid"]:"");
+    return true;
+}
+
+
+/* EOF */
+}
+

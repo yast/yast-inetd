@@ -1,0 +1,116 @@
+/**
+ * File:        testsuite/tests/Inetd.ycp
+ * Package:     Configuration of inetd
+ * Summary:     Testsuite for Reading and Writing (x)inetd configuration
+ * Authors:     Martin Vidner <mvidner@suse.cz>
+ *              Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ *
+ * This is testsuite for Inetd.ycp source file.
+ * These tests are checking reading and writing
+ * of inetd or xinetd services.
+ */
+
+{
+    // testedfiles: Inetd.ycp Service.ycp Testsuite.ycp
+
+include "testsuite.ycp";
+import "Inetd";
+import "Report";
+
+Report::DisplayErrors(false, 0);
+
+typedef list< map<string, any> > services_t;
+
+services_t SYSTEM_CONF = [
+    $[
+    "iid": "whatever",
+    "comment": "My service",
+    "enabled": true,
+    "service": "finger",
+    "socket_type": "stream",
+    "protocol": "tcp",
+    "wait": false,
+    "user": "nobody",
+    "server": "/usr/sbin/tcpd",
+    "server_args": "in.fingerd -w",
+    ],
+    $[
+    "iid": "whatever2",
+    "comment": "new service",
+    "enabled": false,
+    "service": "ns",
+    "socket_type": "stream",
+    "protocol": "tcp",
+    "wait": false,
+    "user": "nobody",
+    "server": "/usr/sbin/newservice",
+    "server_args": "none",
+    ]
+];
+
+services_t PROFILE_CONF = [
+    $[
+    "iid": "whatever",
+    "comment": "My service",
+    "enabled": true,
+    "service": "finger",
+    "socket_type": "stream",
+    "protocol": "tcp",
+    "wait": false,
+    "user": "nobody",
+    "server": "/usr/sbin/tcpd",
+    "server_args": "in.fingerd -w",
+    ],
+    $[
+    "iid": "inst1",
+    //"comment": "new service",
+    "enabled": true,
+    "service": "ns",
+    //"socket_type": "stream",
+    "protocol": "tcp",
+    //"wait": false,
+    //"user": "nobody",
+    "server": "newservice",
+    //"server_args": "none",
+    ]
+];
+
+/**
+ * In normal mode, the new installed service has no entry
+ * in netd_conf.
+ */
+services_t EDITED_CONF = [
+    $[
+    "iid": "whatever",
+    "comment": "My service",
+    "enabled": true,
+    "service": "finger",
+    "socket_type": "stream",
+    "protocol": "tcp",
+    "wait": false,
+    "user": "nobody",
+    "server": "/usr/sbin/tcpd",
+    "server_args": "in.fingerd -w",
+    ]
+];
+
+DUMP("\nDefault (full) configuration\n");
+DUMP(SYSTEM_CONF);
+
+DUMP("\nNew package installed in normal mode\n");
+DUMP(Inetd::MergeEditedWithSystem(SYSTEM_CONF, EDITED_CONF));
+DUMP("\n---\n");
+
+Inetd::auto_mode = true;
+
+DUMP("\nNew package installed in autoinstall mode\n");
+DUMP(Inetd::mergeAfterInstall(SYSTEM_CONF, PROFILE_CONF));
+DUMP("\n---\n");
+
+DUMP("\nNo packages was installed --- configuration is the same\n");
+DUMP(Inetd::mergeAfterInstall(SYSTEM_CONF, SYSTEM_CONF));
+DUMP("\n---\n");
+
+}

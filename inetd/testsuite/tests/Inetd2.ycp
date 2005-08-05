@@ -1,0 +1,132 @@
+/**
+ * File:        testsuite/tests/Inetd2.ycp
+ * Package:     Configuration of inetd
+ * Summary:     Testsuite for Reading and Writing (x)inetd configuration
+ * Authors:     Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ *
+ * This is testsuite for Inetd.ycp source file.
+ * These tests are checking reading and writing
+ * of inetd or xinetd services.
+ */
+
+{
+    // testedfiles: Inetd.ycp Service.ycp Testsuite.ycp
+
+include "testsuite.ycp";
+import "Inetd";
+import "Report";
+import "Progress";
+
+Progress::off ();
+Report::DisplayErrors(false, 0);
+
+map s = $[
+    "iid": "whatever",
+    "comment": "My service",
+    "enabled": true,
+    "service": "finger",
+    "socket_type": "stream",
+    "protocol": "tcp",
+    "wait": false,
+    "user": "nobody",
+    "server": "/usr/sbin/tcpd",
+    "server_args": "in.fingerd -w",
+    ];
+
+map service_on = $[
+    "start": [ "3", "5"],
+    "stop":  [ "3", "5"],
+];
+
+map service_off = $[
+    "start": [],
+    "stop":  [],
+];
+
+map READ = $[
+    "target" : $[
+	"size" : -1,
+    ],
+    "init" : $[
+	"scripts" : $[
+	    "exists" : true,
+            "runlevel": $[
+                "xinetd": service_off,
+            ],
+            "comment": $[
+                "xinetd": $[],
+            ],
+	]
+    ],
+    "targetpkg": $[
+        "installed": true,
+    ],
+    "etc" : $[
+        "xinetd_conf": $[
+            "services":  [ s ],
+            ],
+	],
+];
+
+map READInetd = $[];
+READInetd = (map) eval(READ);
+READInetd["init", "scripts", "runlevel", "inetd"]  = service_off;
+READInetd["etc", "xinetd_conf"]                    = $[ ];
+
+map READInetd2 = $[];
+READInetd2 = (map) eval(READ);
+READInetd2["init", "scripts", "runlevel", "inetd"] = service_on;
+READInetd2["etc", "xinetd_conf"]                   = $[ ];
+
+map WRITE = $[
+];
+
+map EXECUTE = $[
+    "target": $[
+        "bash_output": $[
+            "exit":   0,
+            "stdout": "",
+            "stderr": "",
+        ],
+        "mkdir": true,
+    ],
+];
+
+/*
+ * inetd service is installed
+ * inetd is stopped
+ * User will save and use inetd
+ */
+DUMP("\ninetd is stopped and will be started\n");
+DUMP("\nRead  --- read all services\n");
+
+TEST(``(Inetd::Read()),  [READInetd, WRITE, EXECUTE], nil);
+
+// force inetd (by default filled by InetdDialog() according to user choice)
+Inetd::netd_status        = 0; // want to start
+
+DUMP("\nWrite --- write inetd");
+DUMP("  inetd is installed and stopped\n");
+TEST(``(Inetd::Write()), [READInetd, WRITE, EXECUTE], nil);
+
+DUMP("\n  ---\n");
+
+/*
+ * inetd service is installed
+ * inetd is running
+ * User will save and use inetd
+ */
+
+DUMP("\nRead  --- read all services\n");
+
+TEST(``(Inetd::Read()),  [READInetd2, WRITE, EXECUTE], nil);
+
+
+DUMP("\nWrite --- write inetd");
+TEST(``(Inetd::Write()), [READInetd2, WRITE, EXECUTE], nil);
+
+DUMP("\n  ---\n");
+
+}

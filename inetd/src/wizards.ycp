@@ -1,0 +1,97 @@
+/**
+ * File:	include/inetd/wizards.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Wizards definitions
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *		Martin Lazar <mlazar@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "inetd";
+
+import "Wizard";
+import "Label";
+import "Sequencer";
+import "Confirm";
+import "Package";
+import "PackageSystem";
+
+include "inetd/complex.ycp";
+include "inetd/dialogs.ycp";
+
+/**
+ * Whole configuration of inetd
+ * @return sequence result
+ */
+define symbol InetdSequence() ``{
+
+    // agents barf if not root, #35363
+    if (!Confirm::MustBeRoot ())
+    {
+	return `abort;
+    }
+
+    map aliases = $[
+	"read"		: [ ``( ReadDialog() ), true ],
+	"main"		:   ``( InetdDialog() ),
+	"write"		: [ ``( WriteDialog() ), true ]
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	]
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("inetd");
+
+    symbol ret = `abort;
+    
+    if (PackageSystem::CheckAndInstallPackagesInteractive(["xinetd"]))
+        ret = Sequencer::Run (aliases, sequence);
+
+    UI::CloseDialog();
+    Wizard::RestoreScreenShotName();
+    
+    return ret;
+}
+
+/**
+ * Whole configuration of inetd but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+define symbol InetdAutoSequence() ``{
+    string caption = _("Xinetd Configuration");
+    term contents = `Label(_("Initializing ..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("inetd");
+    Wizard::SetContentsButtons(caption, contents, "",
+	    Label::BackButton(), Label::NextButton());
+
+    Package::DoInstall(["xinetd"]);
+
+    symbol ret = InetdDialog ();
+
+    y2milestone("%1", ret);
+    UI::CloseDialog();
+    return ret;
+}
+
+/* EOF */
+}

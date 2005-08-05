@@ -1,0 +1,38 @@
+						-*- outline -*-
+$Id$
+Martin Vidner, 2003-07-15
+This should become a list of features, from common ones to corner
+cases, to help a maintainer see why the code does this or that.
+
+* Use cases
+
+** Enable/disable the superserver
+
+** Enable/disable a service
+
+* Requirements
+
+** Handle xinetd and inetd
+Both are in the distro, xinetd default since 8.2, inetd default until
+then.
+*** If both are installed, let the user choose
+*** If none are installed (eg. Minimal+X.sel), let the user add them
+
+** In the main dialog
+
+*** Show also services that are not installed and offer to install them
+That was for xinetd. Newly also for inetd, probably not for 9.0.
+
+
+* Design
+
+** Why iid
+If there are two variants of the same service, differing only in
+parameters (eg. in.rlogind in inetd.conf), it seemed a good idea to
+use the location of the configuration to differentiate.
+But in autoyast the user cannot supply the correct iid.
+So he cannot enable one of the variants unless the parameters are made
+a key field which we don't want.
+In xinetd there is only one login service with the alternate parameter
+commented out.
+

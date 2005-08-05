@@ -1,0 +1,11 @@
+//
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
+
+    list s = (list) SCR::Read (.test.inetd.services);
+    s[0, "deleted"] = true;
+    s[0, "changed"] = true;
+    boolean r = (boolean) SCR::Write (.test.inetd.services, s);
+
+    return r;
+}
