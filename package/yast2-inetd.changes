@@ -4,6 +4,7 @@ Fri Aug 19 11:19:55 CEST 2005 - locilka@suse.cz
 - fixed bug #105456, AutoInstallation never enabled services
   mentioned in the profile because the 'default' generated
   configuration contained './etc/' path instead of '/etc/'.
+- fixing testsuite
 - 2.12.5
 
 -------------------------------------------------------------------
