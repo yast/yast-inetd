@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 19 11:19:55 CEST 2005 - locilka@suse.cz
+
+- fixed bug #105456, AutoInstallation never enabled services
+  mentioned in the profile because the 'default' generated
+  configuration contained './etc/' path instead of '/etc/'.
+- 2.12.5
+
+-------------------------------------------------------------------
 Thu Aug  4 09:59:05 CEST 2005 - locilka@suse.cz
 
 - fixed bug #73052, table of services is sorted by the service name
