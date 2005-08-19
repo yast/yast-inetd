@@ -370,7 +370,18 @@ global define services_t mergeAfterInstall(services_t system_c, services_t user_
  * @see MergeAyProfile
  */
 global define services_t mergeWithDefaults(services_t changes) ``{
-    return MergeAyProfile (default_conf, changes);
+    list <map <string, any> > repaired_default_conf = [];
+
+    // replacing all './etc/xinetd.d/...' paths with '/etc/xinetd.d/...'
+    // path must be absolute
+    foreach (map <string, any> service, (list <map <string, any> >) default_conf, {
+	string iid = (string) service["iid"]:"";
+	if (regexpmatch(iid, "^(.*):./etc/xinetd.d/(.*)$"))
+	    service["iid"] = regexpsub(iid, "^(.*):\\./etc/xinetd.d/(.*)$", "\\1:/etc/xinetd.d/\\2");
+	repaired_default_conf = add(repaired_default_conf, service);
+    });
+
+    return MergeAyProfile (repaired_default_conf, changes);
 }
 
 /**
