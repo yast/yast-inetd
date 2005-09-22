@@ -40,6 +40,15 @@ EOF
     echo ";}" >> "$1"
 }
 
+# Checking for the required commandline tool
+if [ ! -x /usr/bin/pdb ]; then
+    echo "Please install package 'pdb-commandline'"
+    exit 5
+fi
+
+# Removing the old configuration
+rm -rf etc
+
 if [ ! -d etc ]; then
 extract xinetd etc/xinetd.conf
 

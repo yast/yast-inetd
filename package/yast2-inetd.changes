@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Sep 22 10:24:10 CEST 2005 - locilka@suse.cz
+
+- Fixed bug #118180, generated a new default configuration
+  Fixed tool for generating the configuration to check the
+  environment before it starts and to report errors better
+- Fixed bug #117965, fixed `frustrating` behavior of the module
+  when enabling the not installed service would install the service
+  but leave it disabled for this turn. Now it is also enabled.
+- 2.13.0
+
+-------------------------------------------------------------------
 Fri Aug 19 11:19:55 CEST 2005 - locilka@suse.cz
 
 - fixed bug #105456, AutoInstallation never enabled services
