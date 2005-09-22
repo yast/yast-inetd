@@ -227,27 +227,42 @@ define string CheckInstallable (string id) ``{
 // service_info[3]:"" - service
 // service_info[8]:"" - server
 // service_info[9]:"" - server_args
+// ...
 //
 // Inetd::netd_conf
 //	-line["service"]:""
 //	-line["server"]:""
 //	-line["server_args"]:""
+// ...
+//
+// This function is needed for services which get installed during the configuration
+// of yast2-inetd. They change their name from NI[number1] to [number2]:/path/to/server.
 //
 define string FindNewLineWithNewID (string selected_item_old, term service_info) {
-    string service_info_service     = (string) service_info[3]:"";
-    string service_info_server      = (string) service_info[8]:"";
-    string service_info_server_args = (string) service_info[9]:"";
+    string service_info_service     = (string) service_info[3]:nil;
+    string service_info_socket_type = (string) service_info[4]:nil;
+    string service_info_protocol    = (string) service_info[5]:nil;
+    boolean service_info_wait       = (((string) service_info[6]:"yes" == "yes") ? true:false);
+    string service_info_user        = (string) service_info[7]:nil;
+    string service_info_server      = (string) service_info[8]:nil;
+    string service_info_server_args = (string) service_info[9]:nil;
 
     string ret = selected_item_old;
 
     foreach (map<string, any> inetd_line, Inetd::netd_conf, {
 	if (
-	    service_info_service     == (string) inetd_line["service"]:"" &&
-	    service_info_server      == (string) inetd_line["server"]:"" &&
-	    service_info_server_args == (string) inetd_line["server_args"]:""
+	    service_info_service     == (string)  inetd_line["service"]:"" &&
+	    service_info_socket_type == (string)  inetd_line["socket_type"]:"" &&
+	    service_info_protocol    == (string)  inetd_line["protocol"]:"" &&
+	    service_info_wait        == (boolean) inetd_line["wait"]:nil &&
+	    service_info_user        == (string)  inetd_line["user"]:"" &&
+	    service_info_server      == (string)  inetd_line["server"]:"" &&
+	    service_info_server_args == (string)  inetd_line["server_args"]:""
 	) {
 	    ret = (string) inetd_line["iid"]:"";
-	    y2milestone("Service has changed its ID from %1 to %2", selected_item_old, ret);
+	    // reporting only really changed one
+	    if (selected_item_old != ret)
+		y2milestone("Service has changed its ID from %1 to %2", selected_item_old, ret);
 	    break;
 	}
     });
