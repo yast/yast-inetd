@@ -1,7 +1,7 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devel-packages yast2-users yast2-perl-bindings yast2-security yast2-pam perl-gettext
 
 @HEADER@
+BuildRequires:	yast2-devel-packages yast2-users
 Requires:	yast2
 Requires:	yast2-packager yast2-users
 
