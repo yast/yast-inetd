@@ -1,0 +1,6 @@
+Makefile
+Makefile.in
+default_conf-pkgs
+etc
+*.ybc
+.dep

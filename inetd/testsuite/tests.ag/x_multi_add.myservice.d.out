@@ -1,0 +1,9 @@
+service myservice
+{
+	socket_type     = stream
+	protocol        = tcp
+	wait            = no
+	user            = root
+	server          = /usr/sbin/myserviced
+	server_args     = --foo
+}

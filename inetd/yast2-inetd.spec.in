@@ -1,0 +1,40 @@
+@HEADER-COMMENT@
+
+@HEADER@
+BuildRequires:	yast2-devel-packages yast2-users
+Requires:	yast2
+Requires:	yast2-packager yast2-users
+
+Provides:	yast2-config-inet y2c_inet
+Obsoletes:	yast2-config-inet y2c_inet
+Provides:	yast2-trans-inet y2t_inet
+Obsoletes:	yast2-trans-inet y2t_inet
+
+BuildArchitectures:	noarch
+
+Summary:	Configuration of xinetd
+
+%description
+-
+
+@PREP@
+
+@BUILD@
+
+@INSTALL@
+
+@CLEAN@
+
+%files
+%defattr(-,root,root)
+%dir @yncludedir@/inetd
+@yncludedir@/inetd/*
+@clientdir@/inetd*.ycp
+@clientdir@/xinetd*.ycp
+@moduledir@/Inetd.ycp
+@moduledir@/Inetd.ybc
+@desktopdir@/inetd.desktop
+@scrconfdir@/etc_inetd.scr
+@scrconfdir@/etc_xinetd.scr
+@agentdir@/ag_netd
+%doc @docdir@

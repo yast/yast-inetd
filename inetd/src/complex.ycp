@@ -1,0 +1,59 @@
+/**
+ * File:	include/inetd/complex.ycp
+ * Package:	Configuration of inetd
+ * Summary:	Dialogs definitions
+ * Authors:	Petr Hadraba <phadraba@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "inetd";
+
+import "Wizard";
+import "Users";
+
+import "Inetd";
+
+include "inetd/helps.ycp";
+include "inetd/routines.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() ``{
+    return Inetd::Modified();
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() ``{
+    Wizard::RestoreHelp(HELPS["read"]:"");
+    Wizard::SetScreenShotName("inetd-3-read");
+    Inetd::AbortFunction = ``{ return PollAbort();};
+    boolean ret = Inetd::Read();
+    Users::SetGUI (false);
+    Users::Read ();
+    Wizard::RestoreScreenShotName();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() ``{
+    Wizard::RestoreHelp(HELPS["write"]:"");
+    Wizard::SetScreenShotName("inetd-7-write");
+    Inetd::AbortFunction = ``{ return PollAbort();};
+    boolean ret = Inetd::Write();
+    Wizard::RestoreScreenShotName();
+    return ret ? `next : `abort;
+}
+
+/* EOF */
+}

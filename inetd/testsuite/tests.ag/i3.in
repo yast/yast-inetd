@@ -1,0 +1,7 @@
+# 
+# LPD client support of CUPS
+# Please enable only, after reading the manual, if no LPD daemon is running,
+# and after cups-lpd (package: cups.rpm) is installed.
+# printer stream tcp nowait lp /usr/lib/cups/daemon/cups-lpd cups-lpd -o document-format=application/octet-stream
+# 
+# End.

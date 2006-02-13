@@ -1,0 +1,22 @@
+// adding a service to a multi-file config, #26999
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
+
+    list r = (list) SCR::Read (.test.inetd.services);
+    map service = $[
+	"changed": true,
+	"enabled": true,
+
+	"service": "myservice",
+        "socket_type": "stream",
+        "protocol": "tcp",
+        "wait": false,
+        "user": "root",
+        "server": "/usr/sbin/myserviced",
+        "server_args": "--foo",
+	];
+    r = add (r, service);
+    boolean result = (boolean) SCR::Write (.test.inetd.services, r);
+
+    return result;
+}

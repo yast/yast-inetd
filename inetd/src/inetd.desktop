@@ -1,0 +1,55 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=inetd
+
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=
+X-SuSE-YaST-AutoInstClonable=true
+
+Icon=yast-inetd
+Exec=/sbin/yast2 inetd 
+
+Name=Network Services (xinetd)
+GenericName=Configure network services (xinetd)
+Name[cs]=Síťové služby (xinetd)
+GenericName[cs]=Konfigurovat síťové služby (xinetd)
+Name[de]=Netzwerkdienste (xinetd)
+GenericName[de]=Netzwerkdienste konfigurieren (xinetd)
+Name[es]=Servicios de red (xinetd)
+GenericName[es]=Configurar servicios de red (xinetd)
+Name[hu]=Hálózati szolgáltatások (xinetd)
+GenericName[hu]=Hálózati szolgáltatások beállítása (xinetd)
+Name[it]=Servizi di rete (xinetd)
+GenericName[it]=Configurazione dei servizi di rete (xinetd)
+Name[ko]=네트워크 서비스 (xinetd)
+GenericName[ko]=네트워크 서비스들 설정(xinetd)
+Name[nl]=Netwerk services (xinetd)
+GenericName[nl]=Configureer netwerk services (xinetd)
+Name[pt]=Serviços de rede (xinetd)
+GenericName[pt]=Configure os serviços de rede (xinetd)
+Name[sk]=Sieťové služby (xinetd)
+GenericName[sk]=Konfigurácia sieťových služieb (xinetd)
+Name[sv]=Nätverkstjänster (xinetd)
+GenericName[sv]=Ställ in nätverkstjänster (xinetd)
+Name[el]=Υπηρεσίες Δικτύου (xinetd)
+GenericName[el]=Ρυθμίστε τις Υπηρεσίες Δικτύου (xinetd)
+Name[fr]=Services réseau (xinetd)
+GenericName[fr]=Configurer les services réseau (xinetd)
+Name[ja]=ネットワーク・サービス (xinetd)
+GenericName[ja]=ネットワーク・サービスの設定 (xinetd)
+Name[lt]=Tinklo paslaugos (xinetd)
+Name[sl]=Mrežne storitve (xinetd)
+GenericName[sl]=Nastavi Mrežne Storitve (xinetd)
+Name[tr]=Ağ servisleri (xinetd)
+X-KDE-SubstituteUID=true

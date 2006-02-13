@@ -1,0 +1,15 @@
+// #24379, changing consecutive services
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Inetd (WFM::Args (0))));
+
+    list s = (list) SCR::Read (.test.inetd.services);
+    s[0, "enabled"] = true;
+    s[0, "changed"] = true;
+    s[1, "enabled"] = true;
+    s[1, "changed"] = true;
+    s[2, "enabled"] = true;
+    s[2, "changed"] = true;
+    boolean r = (boolean) SCR::Write (.test.inetd.services, s);
+
+    return r;
+}

@@ -1,0 +1,35 @@
+Dump	
+Dump	inetd is stopped and will be started
+Dump	
+Dump	
+Dump	Read  --- read all services
+Dump	
+Read	.etc.xinetd_conf.services nil
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	Write --- write inetd
+Dump	  inetd is installed and stopped
+Dump	
+Write	.etc.xinetd_conf.services nil true
+Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	  ---
+Dump	
+Dump	
+Dump	Read  --- read all services
+Dump	
+Read	.etc.xinetd_conf.services nil
+Read	.init.scripts.exists "xinetd" true
+Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	Write --- write inetd
+Write	.etc.xinetd_conf.services nil true
+Execute	.target.bash "/etc/init.d/xinetd force-reload" $["TERM":"raw"] 0
+Return	true
+Dump	
+Dump	  ---
+Dump	

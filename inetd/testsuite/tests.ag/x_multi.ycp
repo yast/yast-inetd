@@ -1,0 +1,8 @@
+//
+{
+    SCR::RegisterAgent(.test.inetd, `ag_netd (`Xinetd (WFM::Args (0))));
+
+    list r = (list) SCR::Read (.test.inetd.services);
+
+    return r;
+}
