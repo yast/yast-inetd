@@ -730,7 +730,10 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 		// for flags (wait/nowait) - noneditable ComboBox
 		`HWeight(3,
 		    `ComboBox(`id(`wait), `opt(`hstretch), _("&Wait"),
-			["yes", "no"])
+			[
+			    `item(`id("yes"), _("Yes")),
+			    `item(`id("no"),  _("No"))
+			])
 		),
 		// check for used service - if inetd, add max TextEntry
 		`HWeight(0, `Empty())

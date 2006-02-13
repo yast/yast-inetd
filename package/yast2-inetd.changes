@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Feb 13 13:03:20 CET 2006 - locilka@suse.cz
+
+- Fixed bug #145840, 'wait' options were not translated in the UI.
+  Fixed in the list of services and in dialog for adding or editing
+  the service.
+- 2.13.1
+
+-------------------------------------------------------------------
 Thu Sep 22 10:24:10 CEST 2005 - locilka@suse.cz
 
 - Fixed bug #118180, generated a new default configuration
