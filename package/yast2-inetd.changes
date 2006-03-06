@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar  6 17:11:57 CET 2006 - locilka@suse.cz
+
+- Adjusted BuildRequires for package
+- 2.13.2
+
+-------------------------------------------------------------------
 Mon Feb 13 13:03:20 CET 2006 - locilka@suse.cz
 
 - Fixed bug #145840, 'wait' options were not translated in the UI.

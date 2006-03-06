@@ -1,7 +1,7 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	yast2-devel-packages yast2-users
+BuildRequires:	yast2-users perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
 Requires:	yast2
 Requires:	yast2-packager yast2-users
 
