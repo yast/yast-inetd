@@ -2,7 +2,7 @@
 Thu May 11 14:34:33 CEST 2006 - locilka@suse.cz
 
 - Fixed behavior of editing just installed services (packages
-  installed after used selected to `edit not-installed service).
+  installed after user selected to `edit not-installed service).
   This problematic issue was caused by changed ID of the service
   from NI{int_1} to {int_2}:{/etc/xinetd.d/service} (#172449).
 - 2.13.3
