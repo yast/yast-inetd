@@ -107,6 +107,16 @@ define list<string> GetProvidedPackage(term service_info) ``{
 }
 
 /**
+ * Map of the just installed service, this service changes it's name from
+ * NI{int} to {int}:/etc/{service_conf}
+ * This map is used to find the currently selected service using the names
+ * and options of the service.
+ * Related to bug 172449.
+ * BTW: This module should have been rewritten ages ago! No more hacking, please.
+ */
+map <string, any> just_installed = $[];
+
+/**
  * Ensure that a package is installed.
  * Show dialog with packages names provided non-installed service.
  * @param selected_item iid from table
@@ -118,6 +128,7 @@ define list<string> GetProvidedPackage(term service_info) ``{
  * </pre>
  */
 define symbol InstallProvidedPackage(string selected_item) ``{
+    just_installed = $[];
     symbol ret       = `next;
     // possibly nil it out
     selected_item = CheckInstallable (selected_item);
@@ -176,6 +187,16 @@ define symbol InstallProvidedPackage(string selected_item) ``{
 	    Popup::Message(sformat(_("Package %1 was successfully installed."),
 		package_name[0]:""));
 	    ret = `installed;
+
+	    just_installed = $[
+		"script"	: service_info[3]:nil,
+		"socket_type"	: service_info[4]:nil,
+		"protocol"	: service_info[5]:nil,
+		"user"		: service_info[7]:nil,
+		"server"	: service_info[8]:nil,
+		"server_args"	: service_info[9]:nil,
+	    ];
+	    y2milestone("Just installed %1", just_installed);
 	}
     }
     y2milestone ("%1", ret);
@@ -408,6 +429,7 @@ define symbol InetdDialog () ``{
 	    UI::SetFocus(`id(`stop));
 
 	ret = UI::UserInput();
+	y2milestone("ret %1", ret);
 	if (ret == `cancel)	// window-close button
 	{
 	    ret = `abort;
@@ -606,6 +628,7 @@ define symbol InetdDialog () ``{
 	    string selected_item = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    // line must be selected
 	    if (selected_item != nil) {
+		y2milestone("Selected item %1", selected_item);
 		any result = InstallProvidedPackage(selected_item);
 
 		to_select    = selected_item;
@@ -616,11 +639,38 @@ define symbol InetdDialog () ``{
 		}
 		else
 		{
+		    // y2milestone("All %1", Inetd::netd_conf);
 		    service_t current_line = find (service_t line, Inetd::netd_conf,
 			``(line["iid"]:"0" == selected_item));
 		    if (current_line == nil) current_line = $[];
+		    // Service might have changed it's IID, bug #172449
+		    if (current_line == $[] && just_installed != $[] && just_installed != nil) {
+			foreach (map <string, any> one_service, Inetd::netd_conf, {
+			    if (one_service["protocol"]:nil	== just_installed["protocol"]:"" &&
+				// this one might change, matching "server" is enough
+				// one_service["script"]:nil	== just_installed["script"]:"" &&
+				one_service["server"]:nil	== just_installed["server"]:"" &&
+				one_service["server_args"]:nil	== just_installed["server_args"]:"" &&
+				one_service["socket_type"]:nil	== just_installed["socket_type"]:"" &&
+				one_service["user"]:nil		== just_installed["user"]:""
+			    ) {
+				y2milestone("Service has changed it's ID, found matching %1", one_service);
+				current_line = one_service;
+				// selected_item contains the current (changed) iid
+				selected_item = one_service["iid"]:selected_item;
+				to_select = selected_item;
+				break;
+			    } else {
+				y2debug("Does not match the current one %1", one_service);
+			    }
+			});
+		    }
+		    
+		    // y2milestone("Current line %1", current_line);
 		    /* Translators: Caption of EditOrCreateServiceDlg() */
 		    service_t return_val = EditOrCreateServiceDlg(_("Edit a service entry"), current_line);
+		    // y2milestone("Edit returned %1", return_val);
+		    
 		    // check for changes
 		    if (return_val != nil) {
 			Inetd::changeLine(return_val, selected_item);
