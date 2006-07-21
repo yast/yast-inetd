@@ -237,7 +237,7 @@ define string CheckInstallable (string id) ``{
     else
     {
 	// ids of NotInstalled table items start with NI
-	if (find (id, "NI") != 0)
+	if (regexpmatch(id, "^NI"))
 	    return nil;
     }
     return id;

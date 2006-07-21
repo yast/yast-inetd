@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
 Fri Jul 21 14:44:56 CEST 2006 - locilka@suse.cz
 
-- Replaced deprecated 'find' builting with 'select'.
+- Replaced deprecated 'find' builtin with 'select' or with other
+  builtins.
 - 2.13.4
 
 -------------------------------------------------------------------
