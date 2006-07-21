@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 21 14:44:56 CEST 2006 - locilka@suse.cz
+
+- Replaced deprecated 'find' builting with 'select'.
+- 2.13.4
+
+-------------------------------------------------------------------
 Thu May 11 14:34:33 CEST 2006 - locilka@suse.cz
 
 - Fixed behavior of editing just installed services (packages

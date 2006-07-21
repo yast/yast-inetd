@@ -257,9 +257,10 @@ global define services_t MergeEditedWithSystem (services_t system_conf, services
 	return new_entry;
     });
 
+    y2milestone("CONF: %1", edited_conf);
     // now the added services
     services_t added = filter (service_t edited_s, edited_conf,
-			 ``( find (edited_s["iid"]:"", "new") == 0 ));
+			 ``( search (edited_s["iid"]:"", "new") == 0 ));
     return flatten ([system_conf, added]);
 }
 
@@ -415,7 +416,7 @@ global define services_t MergeAyProfile (services_t target, services_t changes) 
 	// if the matching turns out to be too clever:
 	// skip matching
 	string change_iid = change_s["iid"]:"";
-	if (find (change_iid, "new") != 0
+	if (search (change_iid, "new") != 0
 	    /* || find (change_iid, "inst") == 0*/ ) // do nothing if matches is 0 and we add the service
 	{
 	    // apply the change to the target list:
@@ -511,7 +512,7 @@ global define services_t getChanged(services_t config) ``{
 	    // new or installed services (iid is `^new.*' or `^inst.*')
 	    // are not trimmed
 	    string line_iid = line["iid"]:"";
-	    if (find(line_iid, "new") == 0 || find(line_iid, "inst") == 0) {
+	    if (search (line_iid, "new") == 0 || search (line_iid, "inst") == 0) {
 		changes = add(changes, line);
 		return; // skip the following code
 	    }
