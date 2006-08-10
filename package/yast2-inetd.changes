@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug 10 15:26:54 CEST 2006 - locilka@suse.cz
+
+- Moved (x)inetd agent from yast2-inetd to yast2
+- Adjusting Requires
+- 2.13.5
+
+-------------------------------------------------------------------
 Fri Jul 21 14:44:56 CEST 2006 - locilka@suse.cz
 
 - Replaced deprecated 'find' builtin with 'select' or with other

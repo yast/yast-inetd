@@ -4,7 +4,7 @@
 # $Id$
 #
 
-agent_SCRIPTS = ag_netd
-scrconf_DATA = etc_inetd.scr etc_xinetd.scr
+agent_SCRIPTS =
+scrconf_DATA =
 
 EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA)
