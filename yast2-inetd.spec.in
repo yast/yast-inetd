@@ -34,7 +34,4 @@ Summary:	Configuration of xinetd
 @moduledir@/Inetd.ycp
 @moduledir@/Inetd.ybc
 @desktopdir@/inetd.desktop
-@scrconfdir@/etc_inetd.scr
-@scrconfdir@/etc_xinetd.scr
-@agentdir@/ag_netd
 %doc @docdir@
