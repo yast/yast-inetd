@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug 21 15:55:51 CEST 2006 - locilka@suse.cz
+
+- Using XVersion module for pre-defined paths to X-related binaries
+- Fixed testsuites
+- Regenerated default services configuration
+- 2.13.6
+
+-------------------------------------------------------------------
 Thu Aug 10 15:26:54 CEST 2006 - locilka@suse.cz
 
 - Moved (x)inetd agent from yast2-inetd to yast2
