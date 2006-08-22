@@ -2,7 +2,22 @@
 // Maintainer: Lukas Ocilka <locilka@suse.cz>
 // $Id$
 {
+
 textdomain "inetd";
+import "XVersion";
+
+string GetBinPath () {
+    string bin_path = XVersion::binPath();
+    if (bin_path == nil) {
+	y2error("XVersion::binPath() is nil!");
+	bin_path = "";
+    }
+    return bin_path;
+}
+
+string x_bin_path = GetBinPath();
+
+
 global services_t default_conf =
 [
   $[
@@ -78,24 +93,6 @@ global services_t default_conf =
     "wait" : false
   ],
   $[
-    "comment" : " default: off\n description: Bitlbee is an IRC gateway to other networks.\n",
-    "comment_inside" : "",
-    "enabled" : false,
-    "group" : "nogroup",
-    "iid" : "1:./etc/xinetd.d/bitlbee",
-    "package" : "bitlbee",
-    "protocol" : "tcp",
-    "rpc_version" : "",
-    "script" : "bitlbee",
-    "server" : "/usr/sbin/bitlbee",
-    "server_args" : "",
-    "service" : "ircd",
-    "socket_type" : "stream",
-    "unparsed" : "        type            = UNLISTED\n        port            = 6667\n        log_on_failure  += USERID\n",
-    "user" : "bitlbee",
-    "wait" : false
-  ],
-  $[
     "comment" : " default: off\n description: This is an enhanced version of the CMU BOOTP server which was \n derived from the original BOOTP server created by Bill Croft at Stanford.\n This version merges all the enhancements and bug-fixes from the\n NetBSD, Columbia, and other versions.\n       \n",
     "comment_inside" : "",
     "enabled" : false,
@@ -127,7 +124,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "chargen",
     "socket_type" : "stream",
-    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= chargen-stream\n",
+    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= chargen-stream\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : false
   ],
@@ -145,7 +142,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "chargen",
     "socket_type" : "dgram",
-    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= chargen-dgram\n\tport\t\t= 19\n",
+    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= chargen-dgram\n\tport\t\t= 19\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : true
   ],
@@ -199,7 +196,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "daytime",
     "socket_type" : "stream",
-    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= daytime-stream\n",
+    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= daytime-stream\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : false
   ],
@@ -217,7 +214,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "daytime",
     "socket_type" : "dgram",
-    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= daytime-dgram\n\tport\t\t= 13\n",
+    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= daytime-dgram\n\tport\t\t= 13\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : true
   ],
@@ -253,7 +250,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "echo",
     "socket_type" : "stream",
-    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= echo-stream\n",
+    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= echo-stream\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : false
   ],
@@ -271,7 +268,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "echo",
     "socket_type" : "dgram",
-    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= echo-dgram\n\tport\t\t= 7\n",
+    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= echo-dgram\n\tport\t\t= 7\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : true
   ],
@@ -279,18 +276,18 @@ global services_t default_conf =
     "comment" : " default: off\n description: The fam server answers requests via libfam.  \\\n\tIt is used to report file or directory changes to monitoring \\\n\tclients. \n",
     "comment_inside" : "",
     "enabled" : false,
-    "group" : "nobody",
+    "group" : "root",
     "iid" : "1:./etc/xinetd.d/fam",
     "package" : "fam-server",
     "protocol" : "tcp",
     "rpc_version" : "2",
     "script" : "fam",
-    "server" : "/usr/sbin/fam",
+    "server" : "/usr/sbin/famd",
     "server_args" : "",
     "service" : "fam",
     "socket_type" : "stream",
     "unparsed" : "\ttype            = RPC UNLISTED\n\trpc_number      = 391002\n",
-    "user" : "",
+    "user" : "root",
     "wait" : true
   ],
   $[
@@ -493,7 +490,7 @@ global services_t default_conf =
   ],
   $[
     "comment" : " default: off\n description: NRPE (Nagios Remote Plugin Executor)\n",
-    "comment_inside" : "",
+    "comment_inside" : "only_from       = 127.0.0.1\n",
     "enabled" : false,
     "group" : "nogroup",
     "iid" : "1:./etc/xinetd.d/nagios-nrpe",
@@ -503,9 +500,9 @@ global services_t default_conf =
     "script" : "nagios-nrpe",
     "server" : "/usr/bin/nrpe",
     "server_args" : "-c /etc/nagios/nrpe.cfg --inetd",
-    "service" : "9991",
+    "service" : "nrpe",
     "socket_type" : "stream",
-    "unparsed" : "       \tflags           = REUSE\n       \tlog_on_failure  += USERID\n\tonly_from       = 127.0.0.1\n",
+    "unparsed" : "       \tflags           = REUSE\n\ttype            = UNLISTED\n\tport            = 5666\n       \tlog_on_failure  += USERID\n",
     "user" : "nobody",
     "wait" : false
   ],
@@ -525,6 +522,24 @@ global services_t default_conf =
     "socket_type" : "stream",
     "unparsed" : "",
     "user" : "root",
+    "wait" : false
+  ],
+  $[
+    "comment" : " default: off\n description: NSCA (Nagios Service Check Acceptor)\n",
+    "comment_inside" : "only_from       = 127.0.0.1\n",
+    "enabled" : false,
+    "group" : "daemon",
+    "iid" : "1:./etc/xinetd.d/nsca",
+    "package" : "nagios-nsca",
+    "protocol" : "",
+    "rpc_version" : "",
+    "script" : "nsca",
+    "server" : "/usr/bin/nsca",
+    "server_args" : "-c /etc/nagios/nsca.cfg --inetd",
+    "service" : "nsca",
+    "socket_type" : "stream",
+    "unparsed" : "       \tflags           = REUSE\n\ttype            = UNLISTED\n\tport            = 5667\n       \tlog_on_failure  += USERID\n",
+    "user" : "daemon",
     "wait" : false
   ],
   $[
@@ -559,7 +574,7 @@ global services_t default_conf =
     "server_args" : "-i -t120",
     "service" : "ident",
     "socket_type" : "stream",
-    "unparsed" : "",
+    "unparsed" : "\tflags\t\t= IPv6\n",
     "user" : "root",
     "wait" : false
   ],
@@ -721,7 +736,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "servers",
     "socket_type" : "stream",
-    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tport\t\t= 9099\n\tonly_from\t= 127.0.0.1\n",
+    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tport\t\t= 9099\n\tonly_from\t= 127.0.0.1\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "",
     "wait" : false
   ],
@@ -739,7 +754,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "services",
     "socket_type" : "stream",
-    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tport\t\t= 9098\n\tonly_from\t= 127.0.0.1\n",
+    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tport\t\t= 9098\n\tonly_from\t= 127.0.0.1\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "",
     "wait" : false
   ],
@@ -759,6 +774,24 @@ global services_t default_conf =
     "socket_type" : "stream",
     "unparsed" : "",
     "user" : "root",
+    "wait" : false
+  ],
+  $[
+    "comment" : "\n The Internet secure UUCP service.\n\n Find UUCP config examples at /usr/share/doc/packages/uucp/cfg_example/\n There are also the suucp-*.conf files required for a stunnel driven SUUCP\n client and server configuration.\n",
+    "comment_inside" : "",
+    "enabled" : false,
+    "group" : "",
+    "iid" : "1:./etc/xinetd.d/suucp",
+    "package" : "stunnel",
+    "protocol" : "tcp",
+    "rpc_version" : "",
+    "script" : "suucp",
+    "server" : "/usr/sbin/stunnel",
+    "server_args" : "/etc/uucp/suucp-server.conf",
+    "service" : "suucp",
+    "socket_type" : "stream",
+    "unparsed" : "",
+    "user" : "uucp",
     "wait" : false
   ],
   $[
@@ -865,7 +898,7 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "time",
     "socket_type" : "stream",
-    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= time-stream\n",
+    "unparsed" : "\ttype\t\t= INTERNAL\n\tid\t\t= time-stream\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : false
   ],
@@ -883,13 +916,13 @@ global services_t default_conf =
     "server_args" : "",
     "service" : "time",
     "socket_type" : "dgram",
-    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= time-dgram\n\tport\t\t= 37\n",
+    "unparsed" : "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= time-dgram\n\tport\t\t= 37\n\tFLAGS\t\t= IPv6 IPv4\n",
     "user" : "root",
     "wait" : true
   ],
   $[
-    "comment" : "\n The Internet UUCP service.\n \n",
-    "comment_inside" : "",
+    "comment" : "\n The Internet UUCP service.\n \n Find UUCP config examples at /usr/share/doc/packages/uucp/cfg_example/\n",
+    "comment_inside" : " Activate the bind statement if you use the secure UUCP (SUUCP) service.  In\n this case you do not need to bind uucp on any external interface.\n    bind\t= localhost\n",
     "enabled" : false,
     "group" : "",
     "iid" : "1:./etc/xinetd.d/uucp",
@@ -915,7 +948,7 @@ global services_t default_conf =
     "protocol" : "tcp",
     "rpc_version" : "",
     "script" : "vnc",
-    "server" : "/usr/X11R6/bin/Xvnc",
+    "server" : x_bin_path + "/Xvnc",
     "server_args" : ":42 -inetd -once -query localhost -geometry 1024x768 -depth 16",
     "service" : "vnc1",
     "socket_type" : "stream",
@@ -933,7 +966,7 @@ global services_t default_conf =
     "protocol" : "tcp",
     "rpc_version" : "",
     "script" : "vnc",
-    "server" : "/usr/X11R6/bin/Xvnc",
+    "server" : x_bin_path + "/Xvnc",
     "server_args" : ":42 -inetd -once -query localhost -geometry 1280x1024 -depth 16",
     "service" : "vnc2",
     "socket_type" : "stream",
@@ -951,7 +984,7 @@ global services_t default_conf =
     "protocol" : "tcp",
     "rpc_version" : "",
     "script" : "vnc",
-    "server" : "/usr/X11R6/bin/Xvnc",
+    "server" : x_bin_path + "/Xvnc",
     "server_args" : ":42 -inetd -once -query localhost -geometry 1600x1200 -depth 16",
     "service" : "vnc3",
     "socket_type" : "stream",
@@ -969,7 +1002,7 @@ global services_t default_conf =
     "protocol" : "tcp",
     "rpc_version" : "",
     "script" : "vnc",
-    "server" : "/usr/X11R6/bin/vnc_inetd_httpd",
+    "server" : x_bin_path + "/vnc_inetd_httpd",
     "server_args" : "1024 768 5901",
     "service" : "vnchttpd1",
     "socket_type" : "stream",
@@ -987,7 +1020,7 @@ global services_t default_conf =
     "protocol" : "tcp",
     "rpc_version" : "",
     "script" : "vnc",
-    "server" : "/usr/X11R6/bin/vnc_inetd_httpd",
+    "server" : x_bin_path + "/vnc_inetd_httpd",
     "server_args" : "1280 1024 5902",
     "service" : "vnchttpd2",
     "socket_type" : "stream",
@@ -1005,7 +1038,7 @@ global services_t default_conf =
     "protocol" : "tcp",
     "rpc_version" : "",
     "script" : "vnc",
-    "server" : "/usr/X11R6/bin/vnc_inetd_httpd",
+    "server" : x_bin_path + "/vnc_inetd_httpd",
     "server_args" : "1600 1200 5903",
     "service" : "vnchttpd3",
     "socket_type" : "stream",
@@ -1032,4 +1065,5 @@ global services_t default_conf =
     "wait" : false
   ]
 ]
-;}
+;
+}
