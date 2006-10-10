@@ -34,10 +34,34 @@ function add_header() {
 // Maintainer: $MAINTAINER
 // \$Id\$
 {
+
 textdomain "inetd";
+import "XVersion";
+
+string GetBinPath () {
+    string bin_path = XVersion::binPath();
+    if (bin_path == nil) {
+	y2error("XVersion::binPath() is nil!");
+	bin_path = "";
+    }
+    return bin_path;
+}
+
+string x_bin_path = GetBinPath();
+
+
 global services_t default_conf =
 EOF
-    echo ";}" >> "$1"
+    echo ";
+}" >> "$1"
+}
+
+function change_X11_paths() {
+    mv "$1" "$1"~
+
+    # VNC is part of X11. X11 binaries were moved from one directory to another,
+    # XVersion::binPath() takes care about it
+    sed 's/[ \t]\+:[ \t]\+".*\/\(Xvnc\|vnc_inetd_httpd\)"/ : x_bin_path + "\/\1"/' $1~ > $1
 }
 
 # Checking for the required commandline tool
@@ -66,6 +90,9 @@ ln -snf ../agents servers_non_y2
 
 echo Proceeding in YCP
 Y2DIR=. /sbin/yast2 ${SX}_create.ycp
+
+echo Converting Xpaths
+change_X11_paths ${SX}_xinetd.ycp
 
 # appease check_ycp
 add_header ${SX}_xinetd.ycp

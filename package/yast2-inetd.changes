@@ -1,4 +1,32 @@
 -------------------------------------------------------------------
+Tue Oct 10 12:22:57 CEST 2006 - locilka@suse.cz
+
+- Merged SLES10 SP1 branch to openSUSE 10.2.
+- 2.14.0
+
+-------------------------------------------------------------------
+Mon Aug 21 15:55:51 CEST 2006 - locilka@suse.cz
+
+- Using XVersion module for pre-defined paths to X-related binaries
+- Fixed testsuites
+- Regenerated default services configuration
+- 2.13.6
+
+-------------------------------------------------------------------
+Thu Aug 10 15:26:54 CEST 2006 - locilka@suse.cz
+
+- Moved (x)inetd agent from yast2-inetd to yast2
+- Adjusting Requires
+- 2.13.5
+
+-------------------------------------------------------------------
+Fri Jul 21 14:44:56 CEST 2006 - locilka@suse.cz
+
+- Replaced deprecated 'find' builtin with 'select' or with other
+  builtins.
+- 2.13.4
+
+-------------------------------------------------------------------
 Thu May 11 14:34:33 CEST 2006 - locilka@suse.cz
 
 - Fixed behavior of editing just installed services (packages
