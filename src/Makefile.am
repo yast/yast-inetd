@@ -41,5 +41,5 @@ ycpchook = inetd
 
 YCPCFLAGS=-I.
 
-
+SUBDIRS = config
 EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(module_DATA) $(ydata_DATA) $(desktop_DATA)
