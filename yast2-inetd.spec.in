@@ -34,4 +34,5 @@ Summary:	Configuration of xinetd
 @moduledir@/Inetd.ycp
 @moduledir@/Inetd.ybc
 @desktopdir@/inetd.desktop
+@schemadir@/autoyast/rnc/inetd.rnc
 %doc @docdir@
