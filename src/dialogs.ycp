@@ -237,7 +237,7 @@ define string CheckInstallable (string id) ``{
     else
     {
 	// ids of NotInstalled table items start with NI
-	if (regexpmatch(id, "^NI"))
+	if (! regexpmatch(id, "^NI"))
 	    return nil;
     }
     return id;
@@ -721,7 +721,7 @@ Internet super-server will be disabled."));
 	}
     }
 
-    Wizard::RestoreScreenShotName();
+    // Wizard::RestoreScreenShotName();
     return (symbol) ret;
 }
 

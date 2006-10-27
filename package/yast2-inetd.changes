@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Fri Oct 27 13:06:40 CEST 2006 - locilka@suse.cz
+
+- Adjusted the default configuration according to the current
+  status of services.
+- Do not install the package when it has been installed already,
+  Install it when needed (#215229).
+- Added inetd.rnc for AutoYaST profile validation (#215248).
+- 2.14.1
+
+-------------------------------------------------------------------
 Tue Oct 10 12:22:57 CEST 2006 - locilka@suse.cz
 
 - Merged SLES10 SP1 branch to openSUSE 10.2.

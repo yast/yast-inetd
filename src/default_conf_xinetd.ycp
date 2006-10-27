@@ -546,7 +546,7 @@ global services_t default_conf =
     "comment" : " default: off\n description: The talk server accepts talk requests for chatting with users \\\n       on other systems.\n",
     "comment_inside" : "",
     "enabled" : false,
-    "group" : "root",
+    "group" : "tty",
     "iid" : "1:./etc/xinetd.d/ntalk",
     "package" : "talk-server",
     "protocol" : "udp",
@@ -557,7 +557,7 @@ global services_t default_conf =
     "service" : "ntalk",
     "socket_type" : "dgram",
     "unparsed" : "\tflags\t\t= IPv4\n",
-    "user" : "root",
+    "user" : "nobody",
     "wait" : true
   ],
   $[
@@ -834,7 +834,7 @@ global services_t default_conf =
     "comment" : " default: off\n description: The talk server accepts talk requests for chatting with users \\\n       on other systems.\n",
     "comment_inside" : "",
     "enabled" : false,
-    "group" : "root",
+    "group" : "tty",
     "iid" : "1:./etc/xinetd.d/talk",
     "package" : "talk-server",
     "protocol" : "udp",
@@ -845,7 +845,7 @@ global services_t default_conf =
     "service" : "talk",
     "socket_type" : "dgram",
     "unparsed" : "\tflags\t\t= IPv4\n",
-    "user" : "root",
+    "user" : "nobody",
     "wait" : true
   ],
   $[
