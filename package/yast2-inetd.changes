@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Oct 27 15:16:36 CEST 2006 - locilka@suse.cz
+
+- Do not install the package when it has been installed already,
+  Install it when needed (#215229).
+- Added inetd.rnc for AutoYaST profile validation (#215248).
+- 2.13.7
+
+-------------------------------------------------------------------
 Mon Aug 21 15:55:51 CEST 2006 - locilka@suse.cz
 
 - Using XVersion module for pre-defined paths to X-related binaries
