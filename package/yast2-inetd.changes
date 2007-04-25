@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 25 15:22:14 CEST 2007 - locilka@suse.cz
+
+- Fixing inetd.rnc file (#242148), patch from ug@suse.de.
+- 2.15.0
+
+-------------------------------------------------------------------
 Fri Oct 27 13:06:40 CEST 2006 - locilka@suse.cz
 
 - Adjusted the default configuration according to the current
