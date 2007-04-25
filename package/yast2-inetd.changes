@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 25 15:07:27 CEST 2007 - locilka@suse.cz
+
+- Fixing inetd.rnc file (#242148), patch from ug@suse.de.
+- 2.13.8
+
+-------------------------------------------------------------------
 Fri Oct 27 15:16:36 CEST 2006 - locilka@suse.cz
 
 - Do not install the package when it has been installed already,
