@@ -12,6 +12,8 @@ inetd = element inetd {
             element protocol { text }? &
             element script   { text }? &
             element server   { text }? &
+            element comment  { text }? &
+            element unparsed { text }? &
             element service  {
 		# Bug 215668 - jing - false positive error
 		#   (attribute "type" from ... not allowed at this point;...)
