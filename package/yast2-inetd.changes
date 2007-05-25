@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri May 25 13:30:04 CEST 2007 - jsrain@suse.cz
+
+- removed outdated translations from .desktop-files (#271209)
+
+-------------------------------------------------------------------
 Wed Apr 25 15:22:14 CEST 2007 - locilka@suse.cz
 
 - Fixing inetd.rnc file (#242148), patch from ug@suse.de.
