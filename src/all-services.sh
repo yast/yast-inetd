@@ -89,10 +89,10 @@ fi
 ln -snf ../agents servers_non_y2
 
 echo Proceeding in YCP
-Y2DIR=. /sbin/yast2 ${SX}_create.ycp
+Y2DIR=. /sbin/yast2 ./${SX}_create.ycp
 
 echo Converting Xpaths
-change_X11_paths ${SX}_xinetd.ycp
+change_X11_paths ./${SX}_xinetd.ycp
 
 # appease check_ycp
-add_header ${SX}_xinetd.ycp
+add_header ./${SX}_xinetd.ycp
