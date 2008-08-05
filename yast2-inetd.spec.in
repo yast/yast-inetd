@@ -12,10 +12,10 @@ Obsoletes:	yast2-trans-inet y2t_inet
 
 BuildArchitectures:	noarch
 
-Summary:	Configuration of xinetd
+Summary:	YaST2 - Network Services Configuration
 
 %description
--
+The YaST2 component for configuring the inetd and xinetd daemons. 
 
 @PREP@
 
@@ -35,4 +35,18 @@ Summary:	Configuration of xinetd
 @moduledir@/Inetd.ybc
 @desktopdir@/inetd.desktop
 @schemadir@/autoyast/rnc/inetd.rnc
+
+%package doc
+Group:		System/YaST
+
+Requires:	yast2-inetd
+Provides:	yast2-inetd:/usr/share/doc/packages/yast2-inetd/
+
+Summary:	YaST2 - Network Services Configuration (documentation)
+
+%description doc
+The YaST2 component for configuring the inetd and xinetd daemons (documentation).
+
+%files doc
+%defattr(-,root,root)
 %doc @docdir@
