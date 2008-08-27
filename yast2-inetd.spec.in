@@ -4,6 +4,7 @@
 BuildRequires:	yast2-users perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
 Requires:	yast2 >= 2.13.74
 Requires:	yast2-packager yast2-users
+Conflicts:	yast2-core < 2.17.9
 
 Provides:	yast2-config-inet y2c_inet
 Obsoletes:	yast2-config-inet y2c_inet
