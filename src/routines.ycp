@@ -390,21 +390,6 @@ define boolean ServicesMatch (map<string, any> a, map<string, any> b) ``{
 }
 
 /**
- * Get contents of environment variable.
- * @param environment name of requested variable
- * @return environment variable contents
- */
-define string getenv(string environment) ``{
-    string command = sformat("echo $%1", environment);
-    map result     = (map) SCR::Execute(.target.bash_output, command, []);
-    if(result["stdout"]:"" == "") {
-	return nil;
-    } else {
-	return (string) (result["stdout"]:"");
-    }
-}
-
-/**
  * Cache for @ref IsInstalled.
  */
 map is_installed_cache = $[];

@@ -71,9 +71,9 @@ _("<p><b><big>Adding a New Entry:</big></b>
 Click <b>Create</b> and complete the form.</p>
 ") +
 "<p><br></p>" +
-    _("<p><b><big>Aborting Configuration:</big></b>
-Abort the configuration by pressing the <b>Abort</b> button.
-If you do so, all your changes will be lost and the original configuration will remain untouched.</p>
+    _("<p><b><big>Canceling Configuration:</big></b>
+Leave the configuration untouched by pressing the <b>Cancel</b> button.
+If you do so, all your changes will be lost and the original configuration will remain.</p>
 "),
 
 ];

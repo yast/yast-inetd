@@ -313,7 +313,7 @@ define symbol InetdDialog () ``{
     */
     /* These special options are available, if YAST2_INETD environment variable contains `EXPERT' */
     /* The `expert_inetd' command-line parameter is implemented too. */
-    if((getenv("YAST2_INETD") == "EXPERT\n") || (WFM::Args()[0]:"" == "expert_inetd"))
+    if((getenv("YAST2_INETD") == "EXPERT") || (WFM::Args()[0]:"" == "expert_inetd"))
 	expert_contents = add(expert_contents, `menu("E&xpert tools",
 	    [
 		`item(`id(`all_rev), "&Invert Status"),
@@ -391,6 +391,7 @@ define symbol InetdDialog () ``{
 	    Label::BackButton(), Label::FinishButton());
 
     Wizard::HideBackButton();
+    Wizard::SetAbortButton (`cancel, Label::CancelButton());
 
     Wizard::SetScreenShotName("inetd-5-maindialog");
 
