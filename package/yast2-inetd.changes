@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov 28 17:17:26 CET 2008 - locilka@suse.cz
+
+- Updated to the latest state of packages (default services).
+- Disallowing invalid characters in service name to prevent from
+  failures in writing the configuration (bnc #447487).
+- 2.17.3
+
+-------------------------------------------------------------------
 Thu Oct  9 11:34:47 CEST 2008 - jsuchome@suse.cz
 
 - fixed failing testsuite (Service.ycp)

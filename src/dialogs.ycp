@@ -858,18 +858,24 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 
 	if (user_choice != `back) {
 
+	    string service_name = (string) UI::QueryWidget(`id(`service), `Value);
+
 	    // Are required values filled?
 	    // Inetd specific:
 	    //   Service and Server must be filled
 	    // Xinetd specific:
 	    //   Service must be filled.
-	    if (UI::QueryWidget(`id(`service), `Value) == "")
+	    if (service_name == "")
 	    {
 		Popup::Message(
 		    /* Translators: Popup::Message */
 		    _("Service is empty.
 Enter valid values.
 "));
+		input_failed = true;
+	    } else if (service_name != nil && search (service_name, "/") != nil) {
+		/* Error message */
+		Popup::Message (_("Service name contains disallowed character \"/\""));
 		input_failed = true;
 	    } else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--")))
