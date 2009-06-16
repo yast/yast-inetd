@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jun 16 14:39:04 CEST 2009 - mvidner@suse.cz
+
+- Using autodocs-ycp.ami, which contains a fix for automake 1.11.
+
+-------------------------------------------------------------------
 Fri Nov 28 17:17:26 CET 2008 - locilka@suse.cz
 
 - Updated to the latest state of packages (default services).
