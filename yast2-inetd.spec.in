@@ -16,7 +16,7 @@ BuildArchitectures:	noarch
 Summary:	YaST2 - Network Services Configuration
 
 %description
-The YaST2 component for configuring the inetd and xinetd daemons. 
+The YaST2 component for configuring the inetd and xinetd daemons.
 
 @PREP@
 
@@ -46,7 +46,8 @@ Provides:	yast2-inetd:/usr/share/doc/packages/yast2-inetd/
 Summary:	YaST2 - Network Services Configuration
 
 %description doc
-The YaST2 component for configuring the inetd and xinetd daemons (documentation).
+The YaST2 component for configuring the inetd and xinetd daemons
+(documentation).
 
 %files doc
 %defattr(-,root,root)
