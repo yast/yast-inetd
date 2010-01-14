@@ -19,9 +19,8 @@ X-SuSE-YaST-AutoInstClonable=true
 X-SuSE-YaST-AutoInstSchema=inetd.rnc
 
 Icon=yast-inetd
-Exec=/sbin/yast2 inetd 
+Exec=xdg-su -c "/sbin/yast2 inetd"
 
 Name=Network Services (xinetd)
 GenericName=Configure network services (xinetd)
-X-KDE-SubstituteUID=true
 StartupNotify=true
