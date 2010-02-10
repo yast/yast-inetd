@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 10 16:36:10 CET 2010 - locilka@suse.cz
+
+- Updated list of services.
+- 2.19.0
+
+-------------------------------------------------------------------
 Wed Jan 13 18:56:03 CET 2010 - kmachalkova@suse.cz
 
 - Adjusted .desktop file(s) to wrap /sbin/yast2/ calls in xdg-su

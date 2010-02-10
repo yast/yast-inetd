@@ -20,7 +20,7 @@ SX=default_conf
 function extract() {
     echo "$1" >&2
     # rpm3: etc/foo, rpm4: ./etc/foo
-    rpm2cpio /work/CDs/all/full-i386/suse/*/$1.rpm \
+    rpm2cpio /work/CDs/all/full-head-i586/suse/*/$1.rpm \
     | cpio -idm --no-absolute-filenames "./$2" "$2" 2> /dev/null
 }
 
