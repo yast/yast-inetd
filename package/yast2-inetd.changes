@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  5 12:32:13 CEST 2011 - tgoettlicher@suse.de
+
+- fixed .desktop file (bnc #681249)
+
+-------------------------------------------------------------------
 Wed Feb 10 16:36:10 CET 2010 - locilka@suse.cz
 
 - Updated list of services.
