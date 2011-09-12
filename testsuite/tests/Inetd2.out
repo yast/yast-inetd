@@ -5,15 +5,14 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Read	.init.scripts.exists "xinetd" true
-Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
+Execute	.target.bash "/sbin/service xinetd status" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	Write --- write inetd
 Dump	  inetd is installed and stopped
 Dump	
 Write	.etc.xinetd_conf.services nil true
-Execute	.target.bash_output "/etc/init.d/xinetd force-reload" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash_output "/sbin/service xinetd force-reload" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
@@ -22,13 +21,12 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Read	.init.scripts.exists "xinetd" true
-Execute	.target.bash "/etc/init.d/xinetd status" $["TERM":"raw"] 0
+Execute	.target.bash "/sbin/service xinetd status" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	Write --- write inetd
 Write	.etc.xinetd_conf.services nil true
-Execute	.target.bash_output "/etc/init.d/xinetd force-reload" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash_output "/sbin/service xinetd force-reload" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
