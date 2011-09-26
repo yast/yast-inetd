@@ -805,7 +805,7 @@ define service_t EditOrCreateServiceDlg(string title, service_t line) ``{
 	);
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("inetd");
+    Wizard::SetDesktopTitleAndIcon("inetd");
     Wizard::SetContentsButtons (
 				title,
 				contents,
