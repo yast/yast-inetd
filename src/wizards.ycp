@@ -57,7 +57,7 @@ define symbol InetdSequence() ``{
     ];
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("inetd");
+    Wizard::SetDesktopTitleAndIcon("inetd");
 
     symbol ret = `abort;
     
@@ -80,7 +80,7 @@ define symbol InetdAutoSequence() ``{
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("inetd");
+    Wizard::SetDesktopTitleAndIcon("inetd");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 
