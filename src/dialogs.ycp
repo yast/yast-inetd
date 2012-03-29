@@ -875,7 +875,7 @@ Enter valid values.
 		input_failed = true;
 	    } else if (service_name != nil && search (service_name, "/") != nil) {
 		/* Error message */
-		Popup::Message (_("Service name contains disallowed character \"/\""));
+		Popup::Message (_("Service name contains disallowed character \"/\"."));
 		input_failed = true;
 	    } else if ((UI::QueryWidget(`id(`server), `Value) != "") &&
 		(UI::QueryWidget(`id(`user), `Value) == _("--default--")))
