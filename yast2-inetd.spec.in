@@ -2,7 +2,7 @@
 
 @HEADER@
 Group:	System/YaST
-License: GPL-2.0+
+License: GPL-2.0
 BuildRequires:	yast2-users perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
 # Wizard::SetDialogTitleAndIcon
 Requires:	yast2 >= 2.21.22
