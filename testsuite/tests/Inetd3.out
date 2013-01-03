@@ -2,23 +2,23 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Execute	.target.bash "/sbin/service xinetd status" $["TERM":"raw"] 0
+Execute	.target.bash "/bin/systemctl status xinetd.service" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	Write --- write xinetd
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Execute	.target.bash_output "/sbin/service xinetd force-reload" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash_output "/bin/systemctl force-reload xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Execute	.target.bash "/sbin/service xinetd status" $["TERM":"raw"] 0
+Execute	.target.bash "/bin/systemctl status xinetd.service" $["TERM":"raw"] 0
 Return	true
 Dump	
 Dump	Write --- write xinetd
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Execute	.target.bash_output "/sbin/service xinetd force-reload" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash_output "/bin/systemctl force-reload xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
