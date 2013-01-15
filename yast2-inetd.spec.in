@@ -41,6 +41,9 @@ The YaST2 component for configuring the inetd and xinetd daemons.
 @moduledir@/Inetd.ybc
 @desktopdir@/inetd.desktop
 @schemadir@/autoyast/rnc/inetd.rnc
+%dir @docdir@
+@docdir@/COPYING
+%readme @docdir@/README
 
 %package doc
 Group:		System/YaST
@@ -57,3 +60,5 @@ The YaST2 component for configuring the inetd and xinetd daemons
 %files doc
 %defattr(-,root,root)
 %doc @docdir@
+%exclude @docdir@/COPYING
+%exclude @docdir@/README
