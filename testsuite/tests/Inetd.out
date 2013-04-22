@@ -30,8 +30,8 @@ Dump	  inetd and xinetd are installed and only inetd is running
 Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
 Execute	.target.bash_output "/bin/systemctl stop xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
-Read	.init.scripts.runlevel "xinetd" $["xinetd":$["start":[], "stop":[]]]
-Read	.init.scripts.comment "xinetd" $["xinetd":$[]]
+Execute	.target.bash "/bin/systemctl is-enabled xinetd.service" 0
+Execute	.target.bash_output "/bin/systemctl  disable xinetd.service" $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
