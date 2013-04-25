@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 22 10:25:04 CEST 2013 - tgoettlicher@suse.de
+
+- testsuite adapted to last change of Service.ycp 
+- 2.21.5
+
+-------------------------------------------------------------------
 Tue Jan 15 17:02:35 CET 2013 - locilka@suse.com
 
 - README and COPYING moved to the base package
