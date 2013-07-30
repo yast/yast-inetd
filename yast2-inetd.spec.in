@@ -18,6 +18,8 @@ Obsoletes:	yast2-trans-inet y2t_inet
 
 BuildArchitectures:	noarch
 
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Network Services Configuration
 
 %description
@@ -35,10 +37,9 @@ The YaST2 component for configuring the inetd and xinetd daemons.
 %defattr(-,root,root)
 %dir @yncludedir@/inetd
 @yncludedir@/inetd/*
-@clientdir@/inetd*.ycp
-@clientdir@/xinetd*.ycp
-@moduledir@/Inetd.ycp
-@moduledir@/Inetd.ybc
+@clientdir@/inetd*.rb
+@clientdir@/xinetd*.rb
+@moduledir@/Inetd.rb
 @desktopdir@/inetd.desktop
 @schemadir@/autoyast/rnc/inetd.rnc
 %doc %dir @docdir@

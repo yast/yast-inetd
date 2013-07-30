@@ -8,7 +8,7 @@
 proc run_ag_tests { agent_basename } {
     global srcdir
 
-    set test_cases [lsort [glob $srcdir/tests.ag/*.ycp]]
+    set test_cases [lsort [glob $srcdir/tests.ag/*.rb]]
 
     foreach test_case $test_cases {
 	run_case $test_case $agent_basename
@@ -55,12 +55,6 @@ proc run_case { run ag } {
     # $run is the name of the original testfile with absolute path
     # tests.ag/$filename is the name of the original testfile
     # with relative path, relative to the testsuite directory
-
-    set r_data_name "$tests_ag/$base_name.r.data"
-    set rw_ycp_name "$tests_ag/$base_name.rw.ycp"
-    set rw_ycp_tmp_name "$tmpdir/$base_name.rw.ycp.tmp"
-    set w_data_name "$tests_ag/$base_name.w.data"
-    set w_data_tmp_name "$tmpdir/$base_name.w.data.tmp"
 
     set in_f "$tests_ag/$base_name.in"
     set out_f "$tests_ag/$base_name.out"

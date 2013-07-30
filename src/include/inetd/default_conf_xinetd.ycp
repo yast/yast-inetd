@@ -38,8 +38,7 @@ string GetBinPath () {
 
 string x_bin_path = GetBinPath();
 
-
-global services_t default_conf =
+global list<map <string, any> > default_conf =
 [
   $[
     "comment" : " admind: admin daemon for thin clients\n uses ident and host name lookups for authentication\n security: weak authentication, just enough for thin clients\n client: adminc.pl\n default config file: /etc/opt/SLES/POS/admind.conf\n",
