@@ -1,45 +1,30 @@
-#
-# Makefile.am for devtools/devtools/skeletons/config/src
-#
+# Sources for inetd
 
-# copied from runlevel
-#crude:
-TAGS_DEPENDENCIES = *.ycp
-ETAGS_ARGS = $(TAGS_DEPENDENCIES)
+module_DATA = \
+  modules/Inetd.rb
+
+client_DATA = \
+  clients/inetd.rb \
+  clients/inetd_auto.rb \
+  clients/xinetd.rb \
+  clients/inetd_proposal.rb
 
 yncludedir = @yncludedir@/inetd
+ynclude_DATA = \
+  include/inetd/default_conf_xinetd.rb \
+  include/inetd/wizards.rb \
+  include/inetd/dialogs.rb \
+  include/inetd/complex.rb \
+  include/inetd/routines.rb \
+  include/inetd/helps.rb
 
-client_DATA =			\
-	xinetd.ycp		\
-	inetd.ycp		\
-	inetd_auto.ycp	        \
-	inetd_proposal.ycp
+schemafilesdir = $(schemadir)/autoyast/rnc
+schemafiles_DATA = \
+  autoyast-rnc/inetd.rnc
 
-# all-services to be removed
-ydata_DATA =
+desktop_DATA = \
+  desktop/inetd.desktop
 
-ynclude_DATA =			\
-	helps.ycp		\
-	wizards.ycp		\
-	dialogs.ycp		\
-	complex.ycp		\
-	routines.ycp		\
-	default_conf_xinetd.ycp
-
-desktop_DATA =			\
-	inetd.desktop
-
-module_DATA =			\
-	Inetd.ycp
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(schemafiles_DATA) $(desktop_DATA)
 
 include $(top_srcdir)/Makefile.am.common
-
-inetd:
-	ln -sf . inetd
-
-ycpchook = inetd
-
-YCPCFLAGS=-I.
-
-SUBDIRS = config
-EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(module_DATA) $(ydata_DATA) $(desktop_DATA)
