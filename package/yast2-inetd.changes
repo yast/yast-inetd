@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 31 08:29:45 UTC 2013 - yast-devel@opensuse.org
+
+- converted from YCP to Ruby by YCP Killer
+  (https://github.com/yast/ycp-killer)
+- version 3.0.0
+
+-------------------------------------------------------------------
 Mon Apr 22 10:25:04 CEST 2013 - tgoettlicher@suse.de
 
 - testsuite adapted to last change of Service.ycp 
