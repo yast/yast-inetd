@@ -28,7 +28,7 @@ License:        GPL-2.0
 # yast2-2.23.15 - Service module switched to systemd
 BuildRequires:	yast2 >= 2.23.15
 BuildRequires:	yast2-users perl-XML-Writer update-desktop-files yast2-testsuite
-BuildRequires:  yast2-devtools >= 3.0.6
+BuildRequires:  yast2-devtools >= 3.1.10
 # Wizard::SetDialogTitleAndIcon
 Requires:	yast2 >= 2.21.22
 Requires:	yast2-packager yast2-users
