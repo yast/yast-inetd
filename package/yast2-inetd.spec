@@ -17,8 +17,9 @@
 
 
 Name:           yast2-inetd
-Version:        3.1.2
+Version:        3.1.3
 Release:        0
+Url:            https://github.com/yast/yast-inetd
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
