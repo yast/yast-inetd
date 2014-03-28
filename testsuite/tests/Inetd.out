@@ -5,12 +5,11 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Execute	.target.bash "/bin/systemctl is-active xinetd.service" $["TERM":"raw"] 0
+Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write services
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Execute	.target.bash_output "/bin/systemctl force-reload xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
@@ -22,16 +21,13 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Execute	.target.bash "/bin/systemctl is-active xinetd.service" $["TERM":"raw"] 0
+Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write xinetd
 Dump	  inetd and xinetd are installed and only inetd is running
 Dump	
 Write	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]] true
-Execute	.target.bash_output "/bin/systemctl stop xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
-Execute	.target.bash "/bin/systemctl is-enabled xinetd.service" 0
-Execute	.target.bash_output "/bin/systemctl  disable xinetd.service" $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
