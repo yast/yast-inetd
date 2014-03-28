@@ -5,14 +5,13 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Execute	.target.bash "/bin/systemctl is-active xinetd.service" $["TERM":"raw"] 0
+Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write inetd
 Dump	  inetd is installed and stopped
 Dump	
 Write	.etc.xinetd_conf.services nil true
-Execute	.target.bash_output "/bin/systemctl force-reload xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---
@@ -21,12 +20,11 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Execute	.target.bash "/bin/systemctl is-active xinetd.service" $["TERM":"raw"] 0
+Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write inetd
 Write	.etc.xinetd_conf.services nil true
-Execute	.target.bash_output "/bin/systemctl force-reload xinetd.service" $["TERM":"raw"] $["exit":0, "stderr":"", "stdout":""]
 Return	true
 Dump	
 Dump	  ---

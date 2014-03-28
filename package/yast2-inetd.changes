@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 28 09:56:24 UTC 2014 - vmoravec@suse.com
+
+- Fix failing testsuite
+- 3.1.4
+
+-------------------------------------------------------------------
 Wed Mar 12 09:22:04 UTC 2014 - vmoravec@suse.com
 
 - Fix failing testsuite
