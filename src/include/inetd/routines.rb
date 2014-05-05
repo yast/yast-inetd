@@ -81,10 +81,10 @@ module Yast
     # @param [String] server_args "server_args" field of a service
     # @return basename of the real server
     def GetServerBasename(server, server_args)
-      result = (server == TCPD_BINARY ? server_args.dup : server.dup)
+      result = (server == TCPD_BINARY ? server_args : server).dup
 
       # check nil
-      unless result.nil? || result.empty?
+      if result && !result.empty?
         # find the server name
         server_path = result.strip.split(/[ \t]/).first
         result = File.basename(server_path)

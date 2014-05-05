@@ -303,7 +303,7 @@ module Yast
               "%1 was running --- stoping and disabling service",
               "xinetd"
             )
-            Service.Stop("xinetd") if !@write_only
+            Service.Stop("xinetd") unless @write_only
             Service.Disable("xinetd")
           else
             Builtins.y2milestone(
@@ -315,16 +315,16 @@ module Yast
           # current is running - only reload
           if @netd_status_read
             Builtins.y2milestone(
-              "%1 was running --- calling force-reload",
+              "%1 was running --- calling reload",
               "xinetd"
             )
-            Service.reload("xinetd") if !@write_only
+            Service.reload("xinetd") unless @write_only
           else
             Builtins.y2milestone(
               "%1 was stopped --- enabling and starting service",
               "xinetd"
             )
-            Service.Start("xinetd") if !@write_only
+            Service.Start("xinetd") unless @write_only
             Service.Enable("xinetd")
           end
         end
@@ -477,7 +477,7 @@ module Yast
       #y2milestone("settings = %1", settings);
       @netd_conf = mergeWithDefaults(Ops.get_list(settings, "netd_conf", []))
       # old profile can still use integer value (0 == true)
-      @netd_status = [0, true].include?(settings["netd_status"] || false)
+      @netd_status = [0, true].include?(settings["netd_status"])
 
       # common variables
       @last_created = Ops.get_integer(settings, "last_created", 0)
