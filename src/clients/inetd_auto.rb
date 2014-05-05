@@ -100,7 +100,7 @@ module Yast
         @po = Progress.set(false)
         @ret = Inetd.Read
         Progress.set(@po)
-        Inetd.netd_status = Service.Status("xinetd")
+        Inetd.netd_status = Service.active?("xinetd")
         Inetd.netd_conf = Builtins.maplist(Inetd.netd_conf) do |s|
           Builtins.add(s, "changed", true)
         end

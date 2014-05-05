@@ -2,7 +2,6 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write xinetd
@@ -12,7 +11,6 @@ Dump
 Dump	  ---
 Dump	
 Read	.etc.xinetd_conf.services [$["comment":"My service", "enabled":true, "iid":"whatever", "protocol":"tcp", "server":"/usr/sbin/tcpd", "server_args":"in.fingerd -w", "service":"finger", "socket_type":"stream", "user":"nobody", "wait":false]]
-Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write xinetd

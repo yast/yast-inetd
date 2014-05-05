@@ -30,6 +30,8 @@
 # $Id$
 module Yast
   module InetdRoutinesInclude
+    TCPD_BINARY = "/usr/sbin/tcpd"
+
     def initialize_inetd_routines(include_target)
       Yast.import "UI"
 
@@ -68,27 +70,26 @@ module Yast
       nil
     end
 
-    # Used for cpmparisons whether the servers match:
+    # Used for comparisons whether the servers match:
     # If server is /usr/sbin/tcpd, consider server_args instead.
-    # Then take the firse word (strips arguments or the parenthesized pkg name).
+    # Then take the first word (strips arguments or the parenthesized pkg name).
     # Then take the last slash-delimited component.
     # For sparse matching: nil is returned if server is nil
     # (or if server args is nil AND is needed)
+    #
     # @param [String] server "server" field of a service
     # @param [String] server_args "server_args" field of a service
     # @return basename of the real server
     def GetServerBasename(server, server_args)
-      result = server
-      # discard tcpd
-      result = server_args if result == "/usr/sbin/tcpd"
+      result = (server == TCPD_BINARY ? server_args : server).dup
+
       # check nil
-      if result != nil
-        # program only
-        result = String.FirstChunk(result, " \t")
-        # basename
-        comp = Builtins.splitstring(result, "/")
-        result = Ops.get(comp, Ops.subtract(Builtins.size(comp), 1), "")
+      if result && !result.empty?
+        # find the server name
+        server_path = result.strip.split(/[ \t]/).first
+        result = File.basename(server_path)
       end
+
       result
     end
 

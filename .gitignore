@@ -27,3 +27,12 @@ Makefile.am.common
 .dep
 tmp.*
 *.log
+/doc/autodocs/
+/testsuite/config/
+/testsuite/raw.*
+/testsuite/run/
+/testsuite/*.exp
+/testsuite/tests.ag/*.in.test
+/testsuite/tmp/
+testsuite/*.sum
+testsuite/yast2-inetd.test/*.exp

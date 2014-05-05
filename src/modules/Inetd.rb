@@ -157,7 +157,7 @@ module Yast
 
       # Is xinetd running?
       # These variables contains return values from Service::Status() calls.
-      @netd_status = -1
+      @netd_status = false
       @netd_status_read = @netd_status
 
       # This variable is used for new iid "generator"
@@ -205,7 +205,7 @@ module Yast
         :to   => "list <map <string, any>>"
       )
 
-      @netd_status = Service.Status("xinetd")
+      @netd_status = Service.active?("xinetd")
       @netd_status_read = @netd_status
 
       return false if Abort()
@@ -283,7 +283,8 @@ module Yast
 
       if @write_only
         # enable/disable the current service
-        Service.Adjust("xinetd", @netd_status == 0 ? "enable" : "disable")
+        @netd_status ? Service.enable("xinetd") : Service.disable("xinetd")
+
         # YUCK, looks like autoinst part, should be done in inetd_auto.ycp
         new_conf = []
         new_conf = Convert.convert(
@@ -296,13 +297,13 @@ module Yast
       else
         SCR.Write(path(".etc.xinetd_conf.services"), @netd_conf)
 
-        if @netd_status != 0
-          if @netd_status_read == 0
+        if @netd_status
+          if !@netd_status_read
             Builtins.y2milestone(
               "%1 was running --- stoping and disabling service",
               "xinetd"
             )
-            Service.Stop("xinetd") if !@write_only
+            Service.Stop("xinetd") unless @write_only
             Service.Disable("xinetd")
           else
             Builtins.y2milestone(
@@ -312,18 +313,18 @@ module Yast
           end
         else
           # current is running - only reload
-          if @netd_status_read == 0
+          if @netd_status_read
             Builtins.y2milestone(
-              "%1 was running --- calling force-reload",
+              "%1 was running --- calling reload",
               "xinetd"
             )
-            Service.RunInitScript("xinetd", "force-reload") if !@write_only
+            Service.reload("xinetd") unless @write_only
           else
             Builtins.y2milestone(
               "%1 was stopped --- enabling and starting service",
               "xinetd"
             )
-            Service.Start("xinetd") if !@write_only
+            Service.Start("xinetd") unless @write_only
             Service.Enable("xinetd")
           end
         end
@@ -475,7 +476,8 @@ module Yast
       settings = deep_copy(settings)
       #y2milestone("settings = %1", settings);
       @netd_conf = mergeWithDefaults(Ops.get_list(settings, "netd_conf", []))
-      @netd_status = Ops.get_integer(settings, "netd_status", -1)
+      # old profile can still use integer value (0 == true)
+      @netd_status = [0, true].include?(settings["netd_status"])
 
       # common variables
       @last_created = Ops.get_integer(settings, "last_created", 0)
@@ -577,7 +579,6 @@ module Yast
     # (For use by autoinstallation.)
     # @return [Hash] Dumped settings (later acceptable by Import ())
     def Export
-      #    sleep(3000);
       config = {}
       config = Builtins.add(config, "netd_conf", getChanged(@netd_conf))
       config = Builtins.add(config, "netd_status", @netd_status)
@@ -790,8 +791,8 @@ module Yast
     publish :variable => :auto_mode, :type => "boolean"
     publish :variable => :autoyast_initialized, :type => "boolean"
     publish :variable => :netd_conf, :type => "list <map <string, any>>"
-    publish :variable => :netd_status, :type => "integer"
-    publish :variable => :netd_status_read, :type => "integer"
+    publish :variable => :netd_status, :type => "boolean"
+    publish :variable => :netd_status_read, :type => "boolean"
     publish :variable => :last_created, :type => "integer"
     publish :function => :Read, :type => "boolean ()"
     publish :function => :MergeEditedWithSystem, :type => "list <map <string, any>> (list <map <string, any>>, list <map <string, any>>)"
