@@ -426,7 +426,7 @@ module Yast
       new_state = false
 
       # if service active, enable editting
-      new_state = true if Inetd.netd_status == 0
+      new_state = Inetd.netd_status
       UI.ChangeWidget(Id(:editable), :Value, new_state)
       UI.ChangeWidget(Id(:table), :Enabled, new_state)
       UI.ChangeWidget(Id(:create), :Enabled, new_state)
@@ -468,11 +468,7 @@ module Yast
           UI.ChangeWidget(Id(:toggle_menu), :Enabled, new_state2)
           UI.ChangeWidget(Id(:switch_active), :Enabled, new_state2)
 
-          if new_state2
-            Inetd.netd_status = 0
-          else
-            Inetd.netd_status = -1
-          end
+          Inetd.netd_status = new_state2
         # create new entry
         elsif ret == :create
           selected_item = Convert.to_string(
@@ -779,8 +775,8 @@ module Yast
       end
 
       if ret == :next
-        if Inetd.netd_status == 0 && IsAnyServiceEnabled(Inetd.netd_conf) == :no
-          Inetd.netd_status = -1
+        if Inetd.netd_status && IsAnyServiceEnabled(Inetd.netd_conf) == :no
+          Inetd.netd_status = false
           # Translators: Popup::Warning
           Popup.Warning(
             _(

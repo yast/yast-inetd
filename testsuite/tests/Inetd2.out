@@ -5,7 +5,6 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write inetd
@@ -20,7 +19,6 @@ Dump
 Dump	Read  --- read all services
 Dump	
 Read	.etc.xinetd_conf.services nil
-Log	[DEPRECIATION] `Status' is deprecated; use `active?` instead
 Return	true
 Dump	
 Dump	Write --- write inetd
