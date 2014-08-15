@@ -35,6 +35,10 @@ require "yast"
 
 module Yast
   class InetdClass < Module
+    include Yast::Logger
+
+    SERVICE_NAME = "xinetd"
+
     def main
       Yast.import "UI"
       textdomain "inetd"
@@ -158,7 +162,6 @@ module Yast
       # Is xinetd running?
       # These variables contains return values from Service::Status() calls.
       @netd_status = false
-      @netd_status_read = @netd_status
 
       # This variable is used for new iid "generator"
       @last_created = 0
@@ -205,8 +208,7 @@ module Yast
         :to   => "list <map <string, any>>"
       )
 
-      @netd_status = Service.active?("xinetd")
-      @netd_status_read = @netd_status
+      @netd_status = Service.active?(SERVICE_NAME)
 
       return false if Abort()
       ProgressNextStage(_("Finished"))
@@ -282,9 +284,6 @@ module Yast
       return false if Abort()
 
       if @write_only
-        # enable/disable the current service
-        @netd_status ? Service.enable("xinetd") : Service.disable("xinetd")
-
         # YUCK, looks like autoinst part, should be done in inetd_auto.ycp
         new_conf = []
         new_conf = Convert.convert(
@@ -293,43 +292,10 @@ module Yast
           :to   => "list <map <string, any>>"
         )
         @netd_conf = mergeAfterInstall(new_conf, @netd_conf)
-        SCR.Write(path(".etc.xinetd_conf.services"), @netd_conf)
-      else
-        SCR.Write(path(".etc.xinetd_conf.services"), @netd_conf)
-
-        if @netd_status
-          if !@netd_status_read
-            Builtins.y2milestone(
-              "%1 was running --- stoping and disabling service",
-              "xinetd"
-            )
-            Service.Stop("xinetd") unless @write_only
-            Service.Disable("xinetd")
-          else
-            Builtins.y2milestone(
-              "%1 was stopped --- leaving unchanged",
-              "xinetd"
-            )
-          end
-        else
-          # current is running - only reload
-          if @netd_status_read
-            Builtins.y2milestone(
-              "%1 was running --- calling reload",
-              "xinetd"
-            )
-            Service.reload("xinetd") unless @write_only
-          else
-            Builtins.y2milestone(
-              "%1 was stopped --- enabling and starting service",
-              "xinetd"
-            )
-            Service.Start("xinetd") unless @write_only
-            Service.Enable("xinetd")
-          end
-        end
       end
 
+      SCR.Write(path(".etc.xinetd_conf.services"), @netd_conf)
+      adjust_xinetd_service
 
       Builtins.y2milestone("Writing done\n")
 
@@ -342,6 +308,31 @@ module Yast
       return false if Abort()
       Progress.Finish
       true
+    end
+
+    # Starts or stops and enables or disables the xinetd service
+    # depending on the current and requested service state
+    def adjust_xinetd_service
+      current_status = Service.active?(SERVICE_NAME)
+
+      if @netd_status
+        if current_status
+          log.info "#{SERVICE_NAME} was running -> calling reload"
+          Service.reload(SERVICE_NAME) unless @write_only
+        else
+          log.info "#{SERVICE_NAME} was stopped -> enabling and starting service"
+          Service.Start(SERVICE_NAME) unless @write_only
+        end
+        Service.Enable(SERVICE_NAME)
+      else
+        if current_status
+          log.info "#{SERVICE_NAME} was running -> stoping and disabling service"
+          Service.Stop(SERVICE_NAME) unless @write_only
+        else
+          log.info "#{SERVICE_NAME} was stopped -> leaving unchanged"
+        end
+        Service.Disable(SERVICE_NAME)
+      end
     end
 
     # Only Write settings
@@ -619,10 +610,8 @@ module Yast
         _S = Summary.AddLine(_S, Summary.NotConfigured)
       else
         # Translators: Summary head, if something configured
-        head = Builtins.sformat(
-          _("Network services are managed via %1"),
-          "xinetd"
-        )
+        head = Builtins.sformat(_("Network services are managed via %1"), SERVICE_NAME)
+
         _S = Summary.AddHeader(_S, head)
         _S = Summary.AddHeader(_S, _("These services will be enabled"))
         _S = Builtins.sformat("%1<ul>%2</ul></p>", _S, mkeServiceSummary)

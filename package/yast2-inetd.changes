@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 15 15:43:33 CEST 2014 - locilka@suse.com
+
+- Fixed adjusting the xinetd service status (bnc#886420)
+- 3.1.6
+
+-------------------------------------------------------------------
 Mon May  5 13:21:51 CEST 2014 - locilka@suse.com
 
 - Replaced obsolete Service.* calls with new ones
