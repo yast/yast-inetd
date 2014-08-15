@@ -780,14 +780,12 @@ module Yast
         UI.ChangeWidget(Id(:table), :CurrentItem, to_select) if to_select != ""
       end
 
-      if ret == :next && Inetd.netd_status
+      if ret == :next
         if Inetd.netd_status && IsAnyServiceEnabled(Inetd.netd_conf) == :no
           Inetd.netd_status = false
           # Translators: Popup::Warning
           Popup.Warning(
-            _(
-              "All services are marked as disabled (locked).\nInternet super-server will be disabled."
-            )
+            _("All services are marked as disabled (locked).\nInternet super-server will be disabled.")
           )
         end
       end
