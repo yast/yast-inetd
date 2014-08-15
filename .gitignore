@@ -36,3 +36,7 @@ tmp.*
 /testsuite/tmp/
 testsuite/*.sum
 testsuite/yast2-inetd.test/*.exp
+/test-driver
+/testsuite/site.bak
+/test/*.trs
+/agents/servers_non_y2
