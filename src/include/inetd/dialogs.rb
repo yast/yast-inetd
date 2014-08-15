@@ -28,8 +28,12 @@
 #		Martin Lazar <mlazar@suse.cz>
 #
 # $Id$
+require "yast"
+
 module Yast
   module InetdDialogsInclude
+    include Yast::Logger
+
     def initialize_inetd_dialogs(include_target)
       Yast.import "UI"
 
@@ -329,12 +333,11 @@ module Yast
         VSpacing(0.5),
         Left(
           RadioButtonGroup(
+            Id(:enable_disable_inetd),
             VBox(
               # Translators: Initial and target state of xinetd (or inetd)
-              Left(RadioButton(Id(:stop), Opt(:notify), _("D&isable"), true)),
-              Left(
-                RadioButton(Id(:editable), Opt(:notify), _("Enab&le"), false)
-              )
+              Left(RadioButton(Id(:disable), Opt(:notify), _("D&isable"))),
+              Left(RadioButton(Id(:enable), Opt(:notify), _("Enab&le")))
             )
           )
         ),
@@ -427,7 +430,8 @@ module Yast
 
       # if service active, enable editting
       new_state = Inetd.netd_status
-      UI.ChangeWidget(Id(:editable), :Value, new_state)
+
+      UI.ChangeWidget(Id(:enable_disable_inetd), :CurrentButton, new_state ? :enable : :disable)
       UI.ChangeWidget(Id(:table), :Enabled, new_state)
       UI.ChangeWidget(Id(:create), :Enabled, new_state)
       UI.ChangeWidget(Id(:delete), :Enabled, new_state)
@@ -449,18 +453,20 @@ module Yast
         # AARGH unused.
         need_rebuild = true
 
-        if Convert.to_boolean(UI.QueryWidget(Id(:editable), :Value))
+        if Inetd.netd_status
           UI.SetFocus(Id(:table))
         else
-          UI.SetFocus(Id(:stop))
+          UI.SetFocus(Id(:enable))
         end
 
         ret = UI.UserInput
-        Builtins.y2milestone("ret %1", ret)
+        log.info "User ret: #{ret}"
+
         ret = :abort if ret == :cancel # window-close button
 
-        if ret == :editable || ret == :stop
-          new_state2 = Convert.to_boolean(UI.QueryWidget(Id(:editable), :Value))
+        if [:enable, :disable].include?(ret)
+          new_state2 = UI.QueryWidget(Id(:enable_disable_inetd), :CurrentButton) == :enable
+
           UI.ChangeWidget(Id(:table), :Enabled, new_state2)
           UI.ChangeWidget(Id(:create), :Enabled, new_state2)
           UI.ChangeWidget(Id(:delete), :Enabled, new_state2)
@@ -774,7 +780,7 @@ module Yast
         UI.ChangeWidget(Id(:table), :CurrentItem, to_select) if to_select != ""
       end
 
-      if ret == :next
+      if ret == :next && Inetd.netd_status
         if Inetd.netd_status && IsAnyServiceEnabled(Inetd.netd_conf) == :no
           Inetd.netd_status = false
           # Translators: Popup::Warning
