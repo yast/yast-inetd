@@ -9,6 +9,7 @@ AG=$5
 
 unset Y2DEBUG
 unset Y2DEBUGGER
+export Y2ALLGLOBAL=1
 
 shopt -s expand_aliases
 alias kick-nonerror-lines="grep -v -e ' <[0-2]> '"
