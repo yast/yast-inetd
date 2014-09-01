@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep  1 12:22:05 UTC 2014 - mvidner@suse.com
+
+- allow tested code to know it is being tested (bnc#893965)
+- 3.1.7
+
+-------------------------------------------------------------------
 Fri Aug 15 15:43:33 CEST 2014 - locilka@suse.com
 
 - Fixed adjusting the xinetd service status (bnc#886420)
