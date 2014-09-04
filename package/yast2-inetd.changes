@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep  4 12:21:02 UTC 2014 - mvidner@suse.com
+
+- Use a more flexible rubygem requirement syntax (bnc#895069)
+- 3.1.8
+
+-------------------------------------------------------------------
 Mon Sep  1 12:22:05 UTC 2014 - mvidner@suse.com
 
 - allow tested code to know it is being tested (bnc#893965)
