@@ -17,7 +17,7 @@
 
 
 Name:           yast2-inetd
-Version:        3.1.7
+Version:        3.1.8
 Release:        0
 Url:            https://github.com/yast/yast-inetd
 
@@ -31,7 +31,7 @@ BuildRequires:	yast2 >= 2.23.15
 BuildRequires:	yast2-users perl-XML-Writer update-desktop-files yast2-testsuite
 BuildRequires:  yast2-devtools >= 3.1.10
 BuildRequires:  yast2-ruby-bindings
-BuildRequires:  rubygem-rspec
+BuildRequires:  rubygem(rspec)
 # Wizard::SetDialogTitleAndIcon
 Requires:	yast2 >= 2.21.22
 Requires:	yast2-packager yast2-users
