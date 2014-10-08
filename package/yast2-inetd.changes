@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 29 10:51:23 CEST 2014 - schubi@suse.de
+
+- Checking nil parameters (server,server_args) in GetServerBasename
+  before making a dup. (bnc#898745)
+- 3.1.9
+
+-------------------------------------------------------------------
 Thu Sep  4 12:21:02 UTC 2014 - mvidner@suse.com
 
 - Use a more flexible rubygem requirement syntax (bnc#895069)
