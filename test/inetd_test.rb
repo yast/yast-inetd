@@ -54,5 +54,96 @@ describe Yast::Inetd do
         end
       end
     end
+
+    context "GetServerBasename: return basename of the real server" do
+
+      context "server binary is tcpd" do
+        let(:tcpd_name) { "/usr/sbin/tcpd" }
+
+        context "server name is defined in server_args" do
+          it "returns server name from server_args" do
+            expect(Yast::Inetd.GetServerBasename(tcpd_name, "/usr/sbin/in.rlogin")).to eq("in.rlogin")
+            expect(Yast::Inetd.GetServerBasename(tcpd_name, "/usr/sbin/in.rlogin arg")).to eq("in.rlogin")
+          end
+        end
+
+        context "server name is not defined in server_args" do
+          it "returns nil" do
+            expect(Yast::Inetd.GetServerBasename(tcpd_name, "")).to be_nil
+            expect(Yast::Inetd.GetServerBasename(tcpd_name, nil)).to be_nil
+          end
+        end
+      end
+
+      context "server binary is not tcpd" do
+        let(:texecd_name) { "/usr/sbin/in.texecd" }
+        it "returns given server name" do
+          expect(Yast::Inetd.GetServerBasename(texecd_name, nil)).to eq("in.texecd")
+          expect(Yast::Inetd.GetServerBasename(texecd_name, "not interested")).to eq("in.texecd")
+        end
+      end
+
+      context "server binary is nil" do
+        it "returns nil" do
+          expect(Yast::Inetd.GetServerBasename(nil, nil)).to be_nil
+          expect(Yast::Inetd.GetServerBasename(nil, "not interested")).to be_nil
+        end
+      end
+    end
+
+    context "MergeAyProfile: Merges AY profile items into a target list (defaults or system)" do
+      it "Merging profiles" do
+        target = [
+          { "enabled"=>false,
+            "iid"=>"1:/etc/xinetd.d/time",
+            "protocol"=>"tcp",
+            "script"=>"time",
+            "service"=>"time"
+          }
+        ]
+        changes = [
+          { "enabled"=>false,
+            "iid"=>"1:/etc/xinetd.d/services",
+            "protocol"=>"tcp",
+            "script"=>"services",
+            "service"=>"services" },
+          { "enabled"=>false,
+            "iid"=>"1:/etc/xinetd.d/vnc",
+            "protocol"=>"tcp",
+            "script"=>"vnc",
+            "server"=>"/usr/bin/Xvnc",
+            "server_args"=>"-noreset -inetd -once -query localhost",
+            "service"=>"vnc1" },
+          { "enabled"=>true,
+            "iid"=>"1:/etc/xinetd.d/time",
+            "protocol"=>"tcp",
+            "script"=>"time",
+            "service"=>"time"
+          }
+        ]
+        ret = [
+          { "enabled"=>true,
+            "iid"=>"1:/etc/xinetd.d/time",
+            "protocol"=>"tcp",
+            "script"=>"time",
+            "service"=>"time",
+            "changed"=>true },
+          { "enabled"=>false,
+            "iid"=>"1:/etc/xinetd.d/services",
+            "protocol"=>"tcp",
+            "script"=>"services",
+            "service"=>"services" },
+          { "enabled"=>false,
+            "iid"=>"1:/etc/xinetd.d/vnc",
+            "protocol"=>"tcp",
+            "script"=>"vnc",
+            "server"=>"/usr/bin/Xvnc",
+            "server_args"=>"-noreset -inetd -once -query localhost",
+            "service"=>"vnc1" }
+        ]
+        expect(Yast::Inetd.MergeAyProfile(target, changes)).to eq(ret)
+      end
+    end
+
   end
 end

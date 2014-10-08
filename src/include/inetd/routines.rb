@@ -81,17 +81,17 @@ module Yast
     # @param [String] server_args "server_args" field of a service
     # @return basename of the real server
     def GetServerBasename(server, server_args)
-      result = (server == TCPD_BINARY ? server_args : server).dup
+      arg = server == TCPD_BINARY ? server_args : server
+      return nil unless arg
 
-      # check nil
-      if result && !result.empty?
-        # find the server name
-        server_path = result.strip.split(/[ \t]/).first
-        result = File.basename(server_path)
-      end
+      arg = arg.dup # do we really modify arg???
 
-      result
+      server_path = arg.strip.split(/[ \t]/).first
+      return server_path if !server_path || server_path.empty?
+
+      File.basename(server_path)
     end
+
 
     # Considers the maps as structs and tests
     # some of their fields for equality (conjunctively, short circuit).
