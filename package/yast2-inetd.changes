@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jun  2 15:47:07 UTC 2015 - lslezak@suse.cz
+
+- remove broken split provides, causes yast2-inetd-doc package
+  reinstallation (bnc#921353)
+- 3.1.11
+
+-------------------------------------------------------------------
 Thu Dec  4 09:50:15 UTC 2014 - jreidinger@suse.com
 
 - remove X-KDE-Library from desktop file (bnc#899104)

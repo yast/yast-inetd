@@ -17,7 +17,7 @@
 
 
 Name:           yast2-inetd
-Version:        3.1.10
+Version:        3.1.11
 Release:        0
 Url:            https://github.com/yast/yast-inetd
 
@@ -78,7 +78,6 @@ The YaST2 component for configuring the inetd and xinetd daemons.
 Group:		System/YaST
 
 Requires:	yast2-inetd
-Provides:	yast2-inetd:/usr/share/doc/packages/yast2-inetd/
 
 Summary:	YaST2 - Network Services Configuration
 
