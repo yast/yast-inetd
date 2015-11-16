@@ -8,13 +8,15 @@ inetd = element inetd {
 	LIST,
 	element conf {
 	    element enabled  { BOOLEAN }? &
-            element iid      { text }? &
-            element protocol { text }? &
-            element script   { text }? &
-            element server   { text }? &
-            element comment  { text }? &
-            element unparsed { text }? &
-            element service  {
+            element iid             { text }? &
+            element protocol        { text }? &
+            element script          { text }? &
+            element server          { text }? &
+            element comment         { text }? &
+            element comment_inside  { text }? &
+            element unparsed        { text }? &
+            element server_args     { text }? &
+            element service         {
 		# Bug 215668 - jing - false positive error
 		#   (attribute "type" from ... not allowed at this point;...)
 		attribute config:type { "boolean" }?, text
@@ -22,5 +24,5 @@ inetd = element inetd {
 	}*
     }? &
     element netd_service { SYMBOL }? &
-    element netd_status  { INTEGER }?
+    element netd_status  { BOOLEAN }?
 }
