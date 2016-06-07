@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun  7 11:27:35 UTC 2016 - igonzalezsosa@suse.com
+
+- Stop generating autodocs (fate#320356)
+- 3.1.13
+
+-------------------------------------------------------------------
 Mon Nov 16 17:17:04 UTC 2015 - igonzalezsosa@suse.com
 
 - Fix validation of AutoYaST profiles (bsc#954412)
