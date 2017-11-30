@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 30 08:46:47 UTC 2017 - lslezak@suse.cz
+
+- Fixed build failure caused by a jemalloc warning printed on
+  the STDERR (bsc#1068883)
+- 4.0.0
+
+-------------------------------------------------------------------
 Tue Jun  7 11:27:35 UTC 2016 - igonzalezsosa@suse.com
 
 - Stop generating autodocs (fate#320356)

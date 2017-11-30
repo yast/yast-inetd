@@ -14,6 +14,8 @@ export Y2ALLGLOBAL=1
 shopt -s expand_aliases
 alias kick-nonerror-lines="grep -v -e ' <[0-2]> '"
 alias kick-empty-lines="grep -v '^$'"
+# workaround for a jemalloc issue (bsc#1068883)
+alias kick-jemalloc-warning="grep -v '^<main>: warning: pthread_create failed for timer: '"
 alias strip-constant-part="sed 's/^....-..-.. ..:..:.. [^)]*) //g'"
 alias mask-line-numbers="sed 's/^\([^ ]* [^)]*):\)[[:digit:]]*/\1XXX/'"
 
@@ -45,6 +47,7 @@ Y=/usr/lib/YaST2/bin/y2base
 Y2DIR="$AGDIR" $Y -l - 2>&1 >"$OUT_TMP" "$YCP" '("'"$IN.test"'")' testsuite \
     | kick-nonerror-lines \
     | kick-empty-lines \
+    | kick-jemalloc-warning \
     | strip-constant-part \
     | mask-line-numbers \
     > "$ERR_TMP"
