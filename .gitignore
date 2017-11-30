@@ -1,3 +1,6 @@
+/.yardoc/
+/yardoc/
+/coverage/
 Makefile
 /Makefile.am
 Makefile.in
@@ -30,7 +33,7 @@ tmp.*
 /doc/autodocs/
 /testsuite/config/
 /testsuite/raw.*
-/testsuite/run/
+/testsuite/run/runtest.sh
 /testsuite/*.exp
 /testsuite/tests.ag/*.in.test
 /testsuite/tmp/

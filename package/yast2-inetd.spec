@@ -17,7 +17,7 @@
 
 
 Name:           yast2-inetd
-Version:        3.1.13
+Version:        4.0.0
 Release:        0
 Url:            https://github.com/yast/yast-inetd
 
