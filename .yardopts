@@ -1,3 +1,0 @@
-# generate the output to different directory to not
-# overwrite the existing documentation there
--o doc/autodoc
