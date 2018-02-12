@@ -1,3 +1,0 @@
-# /bin/true looks like a boolean, root is 0
-# see bug 21804
-ftp stream tcp nowait 0 /usr/sbin/tcpd true
